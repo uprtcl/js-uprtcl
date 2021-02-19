@@ -46,26 +46,28 @@ export class WikiDiff extends servicesConnect(LitElement) {
     const oldPages = this.oldData ? this.oldData.pages : [];
     this.oldTitle = this.oldData ? this.oldData.title : '';
 
-    this.newPages = this.newData.pages.filter((page) =>
-      this.oldData ? !oldPages.includes(page) : true
+    this.newPages = await Promise.all(
+      this.newData.pages
+        .filter((page) => (this.oldData ? !oldPages.includes(page) : true))
+        .map((page) => this.getTitle(page))
     );
-    this.deletedPages = this.oldData
-      ? oldPages.filter((page) => !this.newData.pages.includes(page))
-      : [];
+
+    this.deletedPages = await Promise.all(
+      oldPages
+        .filter((page) => !this.newData.pages.includes(page))
+        .map((page) => this.getTitle(page))
+    );
 
     this.loading = false;
   }
 
-  renderPage(page: string, classes: string[]) {
-    return html`
-      <div class=${['page-row'].concat(classes).join(' ')}>
-        <documents-editor
-          .client=${this.localEvees.client}
-          uref=${page}
-          read-only
-        ></documents-editor>
-      </div>
-    `;
+  async getTitle(uref: string): Promise<string> {
+    const data = await this.localEvees.getPerspectiveData(uref);
+    return this.localEvees.behavior(data.object, 'title');
+  }
+
+  renderPage(title: string, classes: string[]) {
+    return html` <div class=${['page-row'].concat(classes).join(' ')}>${title}</div> `;
   }
 
   renderTitleChange(title: string, classes: string[]) {
@@ -88,7 +90,6 @@ export class WikiDiff extends servicesConnect(LitElement) {
 
     if (this.summary) {
       return html`
-        ${titleChanged ? html` <span class="">Title changed, </span> ` : ''}
         ${newPages.length ? html` <span>${newPages.length} new pages added,</span> ` : ''}
         ${deletedPages.length ? html` <span>${deletedPages.length} pages deleted.</span> ` : ''}
       `;
@@ -108,7 +109,7 @@ export class WikiDiff extends servicesConnect(LitElement) {
         ? html`
             <div class="pages-list">
               <div class="page-list-title">Pages Added</div>
-              ${newPages.map((page) => this.renderPage(page, ['green-background']))}
+              ${newPages.map((title) => this.renderPage(title, ['green-background']))}
             </div>
           `
         : ''}
@@ -116,7 +117,7 @@ export class WikiDiff extends servicesConnect(LitElement) {
         ? html`
             <div class="pages-list">
               <div class="page-list-title">Pages Removed</div>
-              ${deletedPages.map((page) => this.renderPage(page, ['red-background']))}
+              ${deletedPages.map((title) => this.renderPage(title, ['red-background']))}
             </div>
           `
         : ''}

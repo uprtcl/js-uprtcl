@@ -21,6 +21,10 @@ export class PageListEditable extends EveesBaseDraft<Wiki> {
     }
   }
 
+  async checkoutOfficial() {
+    await super.seeOfficial();
+  }
+
   async addPage() {
     if (!this.mineId) throw new Error('mineId not defined');
 
@@ -40,11 +44,16 @@ export class PageListEditable extends EveesBaseDraft<Wiki> {
 
     const pages = this.data ? this.data.object.pages : [];
 
-    return html`<div>
-      <div>${pages.map((page) => html`<page-list-item uref=${page}></page-list-item>`)}</div>
+    return html` <div>
+        ${pages.map((page) => html`<page-list-item uref=${page}></page-list-item>`)}
+      </div>
+      ${this.isDraft
+        ? html`<uprtcl-button @click=${() => this.addPage()}>new page</uprtcl-button>`
+        : ''}
       ${!this.isDraft
         ? html`<uprtcl-button @click=${() => this.checkoutDraft()}>edit</uprtcl-button>`
-        : html`<uprtcl-button @click=${() => this.addPage()}>new page</uprtcl-button>`}
-    </div>`;
+        : html`<uprtcl-button @click=${() => this.checkoutOfficial()}
+            >see official</uprtcl-button
+          >`}`;
   }
 }

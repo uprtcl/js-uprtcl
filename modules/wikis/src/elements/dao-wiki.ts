@@ -1,7 +1,13 @@
-import { html, css, LitElement, property, internalProperty } from 'lit-element';
+import { html, css, LitElement, property, internalProperty, query } from 'lit-element';
 
-import { Logger, RecursiveContextMergeStrategy, servicesConnect } from '@uprtcl/evees';
-import { styles } from '@uprtcl/common-ui';
+import {
+  Evees,
+  EveesDiff,
+  Logger,
+  RecursiveContextMergeStrategy,
+  servicesConnect,
+} from '@uprtcl/evees';
+import { MenuConfig, styles } from '@uprtcl/common-ui';
 
 export class DaoWiki extends servicesConnect(LitElement) {
   logger = new Logger('DAO-WIKI');
@@ -9,11 +15,19 @@ export class DaoWiki extends servicesConnect(LitElement) {
   @property({ type: String })
   uref!: string;
 
+  @query('#evees-update-diff')
+  eveesDiff!: EveesDiff;
+
   @internalProperty()
   selectedPageId!: string;
 
   @internalProperty()
   hasChanges = false;
+
+  @internalProperty()
+  showChangesDialog = false;
+
+  mergeEvees!: Evees;
 
   firstUpdated() {
     this.checkChanges();
@@ -25,16 +39,36 @@ export class DaoWiki extends servicesConnect(LitElement) {
       e.stopPropagation();
       this.selectedPageId = e.detail.uref;
     });
+
+    // this.addEventListener<any>('option-selected', (e: CustomEvent) => {
+    //   e.stopPropagation();
+    //   this.dialogOptionSelected(e);
+    // });
   }
 
   async checkChanges() {
     const forks = await this.evees.client.searchEngine.forks(this.uref);
     if (forks.length > 0) {
-      const mergeEvees = this.evees.clone();
-      const merger = new RecursiveContextMergeStrategy(mergeEvees);
+      this.mergeEvees = this.evees.clone();
+      const merger = new RecursiveContextMergeStrategy(this.mergeEvees);
       await merger.mergePerspectivesExternal(this.uref, forks[0], { forceOwner: true });
-      const diff = await mergeEvees.client.diff();
+      const diff = await this.mergeEvees.client.diff();
       this.hasChanges = diff.updates.length > 0;
+    }
+  }
+
+  async showMergeDialog() {
+    this.showChangesDialog = true;
+    await this.updateComplete;
+
+    // inject the merge workspace as the dialog context
+    this.eveesDiff.localEvees = this.mergeEvees;
+    this.eveesDiff.loadUpdates();
+  }
+
+  dialogOptionSelected(e: CustomEvent) {
+    if (e.detail.option === 'close') {
+      this.showChangesDialog = false;
     }
   }
 
@@ -45,9 +79,18 @@ export class DaoWiki extends servicesConnect(LitElement) {
   render() {
     this.logger.log('rendering wiki after loading');
 
+    const updateDialogOptions: MenuConfig = {
+      close: {
+        text: 'close',
+      },
+    };
     return html`
       <div class="top-bar">
-        ${this.hasChanges ? html`<uprtcl-button>propose changes</uprtcl-button>` : ''}
+        ${this.hasChanges
+          ? html`<uprtcl-button @click=${() => this.showMergeDialog()}
+              >propose changes</uprtcl-button
+            >`
+          : ''}
       </div>
       <div class="wiki-content-with-nav">
         <div class="wiki-navbar">
@@ -70,6 +113,15 @@ export class DaoWiki extends servicesConnect(LitElement) {
             : html` <div class="home-container">${this.renderHome()}</div> `}
         </div>
       </div>
+      ${this.showChangesDialog
+        ? html`<uprtcl-dialog
+            id="updates-dialog"
+            .options=${updateDialogOptions}
+            @option-selected=${this.dialogOptionSelected}
+          >
+            <evees-update-diff id="evees-update-diff"></evees-update-diff>
+          </uprtcl-dialog>`
+        : ''}
     `;
   }
 

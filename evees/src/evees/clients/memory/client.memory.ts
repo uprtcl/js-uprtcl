@@ -183,7 +183,7 @@ export class ClientOnMemory implements Client {
   async diff(): Promise<EveesMutation> {
     return {
       newPerspectives: Array.from(this.newPerspectives.values()),
-      updates: Array.prototype.concat([], [...Array.from(this.updates.values())]),
+      updates: Array.prototype.concat.apply([], [...Array.from(this.updates.values())]),
       deletedPerspectives: [],
     };
   }
