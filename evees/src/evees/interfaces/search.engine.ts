@@ -5,5 +5,4 @@ export interface SearchEngine {
   /** inverse search, who's child is this?' */
   locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]>;
   forks(perspectiveId: string): Promise<string[]>;
-  proposals(perspectiveId: string): Promise<string[]>;
 }

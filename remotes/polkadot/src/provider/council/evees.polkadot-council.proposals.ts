@@ -16,6 +16,7 @@ export class ProposalsPolkadotCouncil implements Proposals {
   constructor(
     public connection: PolkadotConnection,
     public councilStore: PolkadotCouncilEveesStorage,
+    public remoteId: string,
     public config: ProposalConfig
   ) {}
 
@@ -47,6 +48,7 @@ export class ProposalsPolkadotCouncil implements Proposals {
     this.logger.info('createProposal()', { proposal });
 
     const proposalManifest: ProposalManifest = {
+      remote: this.remoteId,
       fromPerspectiveId: proposal.fromPerspectiveId,
       toPerspectiveId: proposal.toPerspectiveId,
       creatorId: this.connection.account,

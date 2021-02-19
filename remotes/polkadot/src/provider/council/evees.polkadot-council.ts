@@ -38,7 +38,7 @@ export class EveesPolkadotCouncil implements RemoteEvees {
   ) {
     this.accessControl = new EveesAccessControlFixedOwner();
     this.councilStorage = new PolkadotCouncilEveesStorage(connection, config, this.casID);
-    this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, config);
+    this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, this.id, config);
   }
 
   setStore(store: CASStore) {
@@ -109,11 +109,12 @@ export class EveesPolkadotCouncil implements RemoteEvees {
   }
 
   async login(): Promise<void> {
-    return this.connection.connectWallet();
+    await this.connection.connectWallet();
+    await this.proposals.init();
   }
 
   logout(): Promise<void> {
-    throw new Error('Method not implemented.');
+    return this.connection.disconnectWallet();
   }
 
   async connect() {

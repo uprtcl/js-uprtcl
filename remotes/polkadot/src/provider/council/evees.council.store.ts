@@ -34,8 +34,7 @@ export class PolkadotCouncilEveesStorage {
       throw new Error('networkId undefined');
     }
     this.db = new EveesCouncilDB(localStoreName);
-    console.error('Council not fetched!');
-    // await this.fetchCouncilDatas();
+    await this.fetchCouncilDatas();
   }
 
   setStore(store: CASStore) {

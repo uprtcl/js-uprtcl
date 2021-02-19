@@ -44,7 +44,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiffEl!: EveesDiff;
 
-  proposal!: Entity<Proposal>;
+  proposal!: Proposal;
   executed = false;
   canExecute = false;
 
@@ -64,13 +64,19 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     this.loading = true;
     this.loadingCreator = true;
 
-    this.proposal = await this.evees.getPerspectiveData(this.proposalId);
+    const proposal = await this.evees.client.store.getEntity(this.proposalId);
+    const remote = this.evees.getRemote(proposal.object.remote);
+    if (!remote.proposals) {
+      throw new Error('Proposals not defined');
+    }
 
-    const fromPerspective = this.proposal.object.fromPerspectiveId
-      ? await this.evees.client.store.getEntity(this.proposal.object.fromPerspectiveId)
+    this.proposal = await remote.proposals.getProposal(this.proposalId);
+
+    const fromPerspective = this.proposal.fromPerspectiveId
+      ? await this.evees.client.store.getEntity(this.proposal.fromPerspectiveId)
       : undefined;
 
-    this.toRemote = await this.evees.getPerspectiveRemote(this.proposal.object.toPerspectiveId);
+    this.toRemote = await this.evees.getPerspectiveRemote(this.proposal.toPerspectiveId);
 
     /** the author is the creator of the fromPerspective */
     this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
@@ -91,7 +97,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   async checkExecuted() {
     /* a proposal is considered accepted if all the updates are now ancestors of their target */
     const isAncestorVector = await Promise.all(
-      this.proposal.object.mutation.updates
+      this.proposal.mutation.updates
         .filter((u) => !!u.details.headId)
         .map((update) => {
           return this.evees.isAncestorCommit(
@@ -109,7 +115,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     /* check the update list, if user canUpdate on all the target perspectives,
     the user can execute the proposal */
     const canExecuteVector = await Promise.all(
-      this.proposal.object.mutation.updates.map(
+      this.proposal.mutation.updates.map(
         async (update): Promise<boolean> => {
           return this.evees.client.canUpdate(update.perspectiveId);
         }
@@ -121,7 +127,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
   async showProposalChanges() {
     const localEvees = this.evees.clone();
-    await localEvees.client.update(this.proposal.object.mutation);
+    await localEvees.client.update(this.proposal.mutation);
 
     this.showDiff = true;
     const options: MenuConfig = {};
@@ -173,7 +179,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
       this.dispatchEvent(
         new ContentUpdatedEvent({
-          detail: { uref: this.proposal.object.toPerspectiveId },
+          detail: { uref: this.proposal.toPerspectiveId },
           bubbles: true,
           composed: true,
         })

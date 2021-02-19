@@ -1,10 +1,13 @@
-import { html } from 'lit-element';
+import { html, property } from 'lit-element';
 import { EveesBaseDraft } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
 import { TextNode, TextType } from '@uprtcl/documents';
 
 export class PageListEditable extends EveesBaseDraft<Wiki> {
+  @property({ type: Boolean })
+  editable: boolean = false;
+
   async checkoutDraft() {
     await super.checkoutDraft(false);
 
@@ -50,10 +53,12 @@ export class PageListEditable extends EveesBaseDraft<Wiki> {
       ${this.isDraft
         ? html`<uprtcl-button @click=${() => this.addPage()}>new page</uprtcl-button>`
         : ''}
-      ${!this.isDraft
-        ? html`<uprtcl-button @click=${() => this.checkoutDraft()}>edit</uprtcl-button>`
-        : html`<uprtcl-button @click=${() => this.checkoutOfficial()}
-            >see official</uprtcl-button
-          >`}`;
+      ${this.editable
+        ? !this.isDraft
+          ? html`<uprtcl-button @click=${() => this.checkoutDraft()}>edit</uprtcl-button>`
+          : html`<uprtcl-button @click=${() => this.checkoutOfficial()}
+              >see official</uprtcl-button
+            >`
+        : ''}`;
   }
 }

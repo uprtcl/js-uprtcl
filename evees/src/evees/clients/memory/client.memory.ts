@@ -51,6 +51,10 @@ export class ClientOnMemory implements Client {
     return this.base.searchEngine;
   }
 
+  get proposals() {
+    return this.base.proposals;
+  }
+
   async getPerspective(
     perspectiveId: string,
     options?: GetPerspectiveOptions

@@ -4,10 +4,13 @@ import {
   Evees,
   EveesDiff,
   Logger,
+  Proposal,
   RecursiveContextMergeStrategy,
+  RemoteEvees,
+  RemoteEveesLocal,
   servicesConnect,
 } from '@uprtcl/evees';
-import { MenuConfig, styles } from '@uprtcl/common-ui';
+import { MenuConfig, styles, UprtclPopper } from '@uprtcl/common-ui';
 
 export class DaoWiki extends servicesConnect(LitElement) {
   logger = new Logger('DAO-WIKI');
@@ -18,8 +21,17 @@ export class DaoWiki extends servicesConnect(LitElement) {
   @query('#evees-update-diff')
   eveesDiff!: EveesDiff;
 
+  @query('#proposals-popper')
+  proposalsPopper!: UprtclPopper;
+
   @internalProperty()
   selectedPageId!: string;
+
+  @internalProperty()
+  isLogged = false;
+
+  @internalProperty()
+  canPropose = false;
 
   @internalProperty()
   hasChanges = false;
@@ -28,9 +40,12 @@ export class DaoWiki extends servicesConnect(LitElement) {
   showChangesDialog = false;
 
   mergeEvees!: Evees;
+  remote!: RemoteEvees;
 
-  firstUpdated() {
+  async firstUpdated() {
+    this.remote = await this.evees.getPerspectiveRemote(this.uref);
     this.checkChanges();
+    this.checkLogin();
   }
 
   connectedCallback() {
@@ -39,11 +54,6 @@ export class DaoWiki extends servicesConnect(LitElement) {
       e.stopPropagation();
       this.selectedPageId = e.detail.uref;
     });
-
-    // this.addEventListener<any>('option-selected', (e: CustomEvent) => {
-    //   e.stopPropagation();
-    //   this.dialogOptionSelected(e);
-    // });
   }
 
   async checkChanges() {
@@ -55,6 +65,23 @@ export class DaoWiki extends servicesConnect(LitElement) {
       const diff = await this.mergeEvees.client.diff();
       this.hasChanges = diff.updates.length > 0;
     }
+  }
+
+  async checkLogin() {
+    this.isLogged = await this.remote.isLogged();
+    this.canPropose =
+      this.isLogged &&
+      this.remote.proposals !== undefined &&
+      (await this.remote.proposals.canPropose(this.uref));
+  }
+
+  async loginClicked() {
+    if (!this.isLogged) {
+      await this.remote.login();
+    } else {
+      await this.remote.logout();
+    }
+    this.checkLogin();
   }
 
   async showMergeDialog() {
@@ -70,23 +97,69 @@ export class DaoWiki extends servicesConnect(LitElement) {
     if (e.detail.option === 'close') {
       this.showChangesDialog = false;
     }
+    if (e.detail.option === 'propose') {
+      this.proposeMerge();
+    }
+  }
+
+  async proposeMerge() {
+    if (!this.evees.client.proposals) throw new Error('Proposals not defined');
+
+    const mutation = await this.mergeEvees.client.diff();
+    const proposal: Proposal = {
+      toPerspectiveId: this.uref,
+      mutation,
+    };
+    this.evees.client.proposals.createProposal(proposal);
   }
 
   renderHome() {
     return html`<h1>Home</h1>`;
   }
 
+  renderProposals() {
+    return html`
+      <div class="list-container">
+        <evees-proposals-list
+          id="evees-proposals-list"
+          perspective-id=${this.uref}
+          @dialogue-closed=${() => (this.proposalsPopper.showDropdown = false)}
+        ></evees-proposals-list>
+      </div>
+    `;
+  }
+
   render() {
     this.logger.log('rendering wiki after loading');
 
     const updateDialogOptions: MenuConfig = {
+      propose: {
+        text: 'Propose',
+      },
       close: {
-        text: 'close',
+        text: 'Close',
+        skinny: true,
       },
     };
     return html`
       <div class="top-bar">
-        ${this.hasChanges
+        <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
+          <uprtcl-button
+            slot="icon"
+            class="proposals-button"
+            icon="arrow_drop_down"
+            skinny
+            transition
+          >
+            proposals
+          </uprtcl-button>
+          ${this.renderProposals()}
+        </uprtcl-popper>
+        <uprtcl-button @click=${() => this.loginClicked()}
+          >${this.isLogged ? 'logout' : 'login'}</uprtcl-button
+        >
+        ${this.isLogged && !this.canPropose ? html`<span>can't make proposals :(</span>` : ``}
+        ${this.hasChanges && this.canPropose
           ? html`<uprtcl-button @click=${() => this.showMergeDialog()}
               >propose changes</uprtcl-button
             >`
@@ -94,7 +167,7 @@ export class DaoWiki extends servicesConnect(LitElement) {
       </div>
       <div class="wiki-content-with-nav">
         <div class="wiki-navbar">
-          <editable-page-list uref=${this.uref}></editable-page-list>
+          <editable-page-list uref=${this.uref} ?editable=${this.canPropose}></editable-page-list>
         </div>
 
         <div class="wiki-content">

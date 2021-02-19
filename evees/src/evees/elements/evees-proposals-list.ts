@@ -30,7 +30,9 @@ export class ProposalsList extends servicesConnect(LitElement) {
     this.loadingProposals = true;
     this.logger.info('loadProposals');
 
-    this.proposalsIds = await this.evees.client.searchEngine.proposals(this.perspectiveId);
+    this.proposalsIds = this.evees.client.proposals
+      ? await this.evees.client.proposals.getProposalsToPerspective(this.perspectiveId)
+      : [];
 
     /** data on other perspectives (proposals are injected on them) */
     this.remote = await this.evees.getPerspectiveRemote(this.perspectiveId);

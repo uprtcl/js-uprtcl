@@ -29,6 +29,10 @@ export class ProposalsWithEvees implements Proposals {
     return childId;
   }
 
+  async getProposalsToPerspective() {
+    return [];
+  }
+
   async getOrCreateProposalsSpace(): Promise<string> {
     const home = await this.evees.getHome(this.remoteId);
     const homeData = await this.evees.getOrCreatePerspectiveData(home.id);
