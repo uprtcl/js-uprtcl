@@ -148,6 +148,14 @@ export class Evees {
     return update;
   }
 
+  async checkText(update: Update, patternName = 'text'): Promise<Update> {
+    const data = await this.getCommitData(update.details.headId as string);
+    const text = this.behavior(data.object, patternName);
+    update.text = text;
+
+    return update;
+  }
+
   /** A helper methods that processes an update and appends the links */
   async checkLinks(update: Update, patternName = 'children'): Promise<Update> {
     if (update.linkChanges) {
@@ -211,6 +219,7 @@ export class Evees {
     update = await this.checkOldDetails(update);
     update = await this.checkLinks(update, 'children');
     update = await this.checkLinks(update, 'linksTo');
+    update = await this.checkText(update, 'text');
     return this.client.updatePerspective(update);
   }
 
