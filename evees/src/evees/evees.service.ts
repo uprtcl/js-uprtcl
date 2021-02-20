@@ -148,11 +148,10 @@ export class Evees {
     return update;
   }
 
-  async checkText(update: Update, patternName = 'text'): Promise<Update> {
+  async checkText(update: Update, patternName): Promise<Update> {
     const data = await this.getCommitData(update.details.headId as string);
     const text = this.behavior(data.object, patternName);
     update.text = text;
-
     return update;
   }
 
@@ -216,10 +215,15 @@ export class Evees {
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async updatePerspective(update: Update) {
+    console.error(update);
     update = await this.checkOldDetails(update);
-    update = await this.checkLinks(update, 'children');
-    update = await this.checkLinks(update, 'linksTo');
-    update = await this.checkText(update, 'text');
+    try {
+      update = await this.checkLinks(update, 'children');
+      update = await this.checkLinks(update, 'linksTo');
+      update = await this.checkText(update, 'text');
+    } catch(err) {
+      console.error(err);
+    }
     return this.client.updatePerspective(update);
   }
 
