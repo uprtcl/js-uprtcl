@@ -87,7 +87,9 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     await this.checkExecuted();
 
     /** the proposal creator is set at proposal creation */
-    this.canRemove = await this.evees.client.canUpdate(this.proposalId);
+    this.canRemove = this.evees.client.proposals
+      ? await this.evees.client.proposals.canDelete(this.proposalId)
+      : false;
 
     this.loading = false;
   }

@@ -69,7 +69,6 @@ export class EveesPolkadotWrapper {
     };
     const pkdCouncilEvees = new EveesPolkadotCouncil(
       pkdConnection,
-      searchEngine,
       this.ipfsStore.casID,
       councilConfig
     );

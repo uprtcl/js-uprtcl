@@ -6,7 +6,7 @@ export interface Proposals {
 
   getProposalsToPerspective(perspectiveId: string): Promise<string[]>;
 
-  canPropose(perspectiveId?: string, userId?: string): Promise<boolean>;
+  canPropose(proposalId: string, userId?: string): Promise<boolean>;
 
   canDelete(proposalId: string, userId?: string): Promise<boolean>;
 }

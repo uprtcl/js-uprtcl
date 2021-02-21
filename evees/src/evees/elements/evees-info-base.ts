@@ -228,7 +228,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     const canUpdate = toDetails.canUpdate !== undefined;
     const canPropose = toRemote
       ? toRemote.proposals
-        ? await toRemote.proposals.canPropose(this.remote.userId)
+        ? await toRemote.proposals.canPropose(this.uref, this.remote.userId)
         : false
       : false;
 

@@ -29,22 +29,24 @@ export class ProposalsRouter extends BaseRouter implements Proposals {
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
     const all = await Promise.all(
       this.remotes.map((remote) => {
-        return remote.searchEngine
-          ? remote.proposals
-            ? remote.proposals.getProposalsToPerspective(perspectiveId)
-            : []
-          : [];
+        return remote.proposals ? remote.proposals.getProposalsToPerspective(perspectiveId) : [];
       })
     );
     return Array.prototype.concat.apply([], all);
   }
-  getProposal(proposalId: string): Promise<Proposal> {
-    throw new Error('Method not implemented.');
+  async getProposal(proposalId: string): Promise<Proposal> {
+    const remote = await this.getPerspectiveRemote(proposalId);
+    if (!remote.proposals) throw new Error('Proposals service not defined');
+    return remote.proposals.getProposal(proposalId);
   }
-  canPropose(perspectiveId?: string, userId?: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async canPropose(proposalId: string, userId?: string): Promise<boolean> {
+    const remote = await this.getPerspectiveRemote(proposalId);
+    if (!remote.proposals) throw new Error('Proposals service not defined');
+    return remote.proposals.canPropose(proposalId, userId);
   }
-  canDelete(proposalId: string, userId?: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async canDelete(proposalId: string, userId?: string): Promise<boolean> {
+    const remote = await this.getPerspectiveRemote(proposalId);
+    if (!remote.proposals) throw new Error('Proposals service not defined');
+    return remote.proposals.canDelete(proposalId, userId);
   }
 }

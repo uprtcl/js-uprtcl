@@ -110,7 +110,8 @@ export class DaoWiki extends servicesConnect(LitElement) {
       toPerspectiveId: this.uref,
       mutation,
     };
-    this.evees.client.proposals.createProposal(proposal);
+    await this.evees.client.proposals.createProposal(proposal);
+    await this.evees.client.flush();
   }
 
   renderHome() {

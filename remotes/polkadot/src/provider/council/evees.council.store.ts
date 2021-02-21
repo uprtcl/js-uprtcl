@@ -254,9 +254,9 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getProposalManifest(proposalId: string): Promise<ProposalManifest> {
-    const { object: proposalManifest } = await this.store.getEntity<ProposalManifest>(proposalId);
-    if (!proposalManifest) throw new Error(`Proposal ${proposalId} not found`);
-    return proposalManifest;
+    const proposalPerspective = await this.store.getEntity<Signed<Perspective>>(proposalId);
+    if (!proposalPerspective) throw new Error(`Proposal ${proposalId} not found`);
+    return proposalPerspective.object.payload.meta.proposal;
   }
 
   async initLocalProposal(proposalId: string): Promise<LocalProposal> {
@@ -338,8 +338,27 @@ export class PolkadotCouncilEveesStorage {
     if (this.connection.account === undefined) throw new Error('user not logged in');
     if (!(await this.connection.canSign())) throw new Error('user cant sign');
 
+    /** a proposal is a perspective like object (includes the remote) but we make it inmutable by adding the
+     * proposal details (mutation or list of changes) part of the perspective object. */
+    const proposalObject: Signed<Perspective> = {
+      payload: {
+        remote: proposalManifest.remote,
+        context: '',
+        creatorId: '',
+        path: '',
+        timestamp: Date.now(),
+        meta: {
+          proposal: proposalManifest,
+        },
+      },
+      proof: {
+        signature: '',
+        type: '',
+      },
+    };
+
     const proposalId = await this.store.storeEntity({
-      object: proposalManifest,
+      object: proposalObject,
       casID: this.casID,
     });
     const council = await this.connection.getCouncil(proposalManifest.block);

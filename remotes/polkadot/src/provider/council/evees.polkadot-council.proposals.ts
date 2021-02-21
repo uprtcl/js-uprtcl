@@ -74,11 +74,7 @@ export class ProposalsPolkadotCouncil implements Proposals {
 
     this.logger.info('getProposal() - pre', { proposalId });
 
-    const { object: proposalManifest } = await this.store.getEntity<ProposalManifest>(proposalId);
-
-    // const newPerspectives = proposalManifest.updates.filter(update => update.fromPerspectiveId === undefined).map(update => {
-    //   perspect
-    // })
+    const proposalManifest = await this.councilStore.getProposalManifest(proposalId);
 
     const proposal: Proposal = {
       creatorId: '',
