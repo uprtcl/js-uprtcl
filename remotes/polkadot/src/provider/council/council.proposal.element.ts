@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { prettyTimePeriod } from '@uprtcl/common-ui';
-import { Evees, Perspective, Secured, servicesConnect, Signed } from '@uprtcl/evees';
+import { Evees, Perspective, RemoteLoggedEvents, servicesConnect, Signed } from '@uprtcl/evees';
 
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 
@@ -22,7 +22,6 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   voting = false;
 
   remote!: EveesPolkadotCouncil;
-  fromPerspective!: Secured<Perspective>;
 
   proposalManifest!: ProposalManifest;
   proposalStatusUI!: {
@@ -34,6 +33,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
 
   async firstUpdated() {
     this.remote = this.evees.findRemote<EveesPolkadotCouncil>('council');
+    this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.load());
     this.load();
   }
 
@@ -45,18 +45,14 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   }
 
   async loadManifest() {
-    const { object: proposalManifest } = await this.evees.client.store.getEntity<ProposalManifest>(
+    const perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(
       this.proposalId
     );
-    if (!proposalManifest) throw new Error('Proposal not found');
-    this.proposalManifest = proposalManifest;
+    if (!perspective) throw new Error('Proposal not found');
+    this.proposalManifest = perspective.object.payload.meta.proposal;
 
-    this.fromPerspective = await this.evees.client.store.getEntity<Signed<Perspective>>(
-      this.proposalManifest.fromPerspectiveId as string
-    );
-
+    // apply the changes in the proposal on a new Evees workspace
     this.eveesWorkspace = this.evees.clone();
-    // apply the changes on a new Evees client
     this.eveesWorkspace.client.update(this.proposalManifest.mutation);
   }
 
@@ -203,7 +199,6 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
             by
             <evees-author
               user-id=${this.proposalManifest.creatorId ? this.proposalManifest.creatorId : ''}
-              remote-id=${this.fromPerspective.object.payload.remote}
               show-name
             ></evees-author>
           </div>
@@ -240,11 +235,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
     return html`
       <div @click=${() => this.showProposalDetails()} class="row-container">
         <div class="proposal-name">
-          <evees-author
-            user-id=${creatorId}
-            remote-id=${this.fromPerspective.object.payload.remote}
-            show-name
-          ></evees-author>
+          <evees-author user-id=${creatorId} show-name></evees-author>
         </div>
         <div class="proposal-state">
           <uprtcl-icon-button icon=${icon}></uprtcl-icon-button>

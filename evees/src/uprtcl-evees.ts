@@ -40,7 +40,7 @@ export { mergeStrings, mergeResult } from './evees/merge/utils';
 export { EveesPerspectivesList } from './evees/elements/evees-perspectives-list';
 export { EveesBaseElement } from './evees/elements/evees-base';
 export { EveesBaseDraft } from './evees/elements/evees-base-draft';
-export { EveesInfoPopper } from './evees/elements/evees-info-popper';
+export { EveesInfoPopper, EveesInfoConfig } from './evees/elements/evees-info-popper';
 export { EveesInfoBase } from './evees/elements/evees-info-base';
 export { ProposalsList } from './evees/elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './evees/elements/evees-perspective-icon';
@@ -69,11 +69,12 @@ export { ConnectionLogged } from './utils/connection.logged';
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
 export { Proposals } from './evees/proposals/proposals';
+export { ProposalsWithUI } from './evees/proposals/proposals.with-ui';
 export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 
 /** Aceess Control */
 export { AccessControl } from './evees/interfaces/access-control';
-export { RemoteLogged } from './evees/interfaces/remote.logged';
+export { RemoteLogged, RemoteLoggedEvents } from './evees/interfaces/remote.logged';
 export { RemoteWithUI } from './evees/interfaces/remote.with-ui';
 
 export { Logger } from './utils/logger';

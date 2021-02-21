@@ -83,7 +83,10 @@ export class PolkadotCouncilEveesStorage {
 
     myCouncilData.proposals = [...councilProposals];
     this.logger.log('CouncilData Updated to', myCouncilData);
-    return this.store.storeEntity({ object: myCouncilData, casID: this.casID });
+    const dataId = await this.store.storeEntity({ object: myCouncilData, casID: this.casID });
+    await this.store.flush();
+
+    return dataId;
   }
 
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
@@ -373,9 +376,8 @@ export class PolkadotCouncilEveesStorage {
       object: newCouncilData,
       casID: this.casID,
     });
-
     this.logger.log('createProposal', { newCouncilDataHash, newCouncilData });
-    await this.updateCouncilData(newCouncilDataHash);
+    await Promise.all([this.store.flush(), this.updateCouncilData(newCouncilDataHash)]);
 
     /** cache this proposal on my localdb */
     const localProposal = await this.initLocalProposal(proposalId);
@@ -431,8 +433,9 @@ export class PolkadotCouncilEveesStorage {
       object: newCouncilData,
       casID: this.casID,
     });
+
     this.logger.log('vote', { vote, newCouncilDataHash, newCouncilData });
-    await this.updateCouncilData(newCouncilDataHash);
+    await Promise.all([this.store.flush(), this.updateCouncilData(newCouncilDataHash)]);
 
     /** update the proposal status based  */
     await this.fetchCouncilDatas();

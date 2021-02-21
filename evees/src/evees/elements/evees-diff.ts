@@ -35,6 +35,7 @@ export class EveesDiff extends servicesConnect(LitElement) {
 
   async firstUpdated() {
     this.logger.log('firstUpdated()');
+    this.loadUpdates();
   }
 
   async updated(changedProperties) {

@@ -1,4 +1,6 @@
-import { CASStore, Logger, NewPerspective, Proposal, Proposals } from '@uprtcl/evees';
+import { html } from 'lit-html';
+
+import { CASStore, Lens, Logger, Proposal, ProposalsWithUI } from '@uprtcl/evees';
 
 import { PolkadotConnection } from '../../connection.polkadot';
 
@@ -6,7 +8,7 @@ import { ProposalConfig, VoteValue } from './proposal.config.types';
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
 
-export class ProposalsPolkadotCouncil implements Proposals {
+export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
 
   public store!: CASStore;
@@ -103,5 +105,18 @@ export class ProposalsPolkadotCouncil implements Proposals {
 
   async vote(proposalId: string, vote: VoteValue) {
     return this.councilStore.vote(proposalId, vote);
+  }
+
+  lense(): Lens {
+    return {
+      name: 'evees-polkadot:proposal',
+      type: 'proposal',
+      render: (entity: any) => {
+        return html`
+          <evees-polkadot-council-proposal proposal-id=${entity.proposalId}>
+          </evees-polkadot-council-proposal>
+        `;
+      },
+    };
   }
 }

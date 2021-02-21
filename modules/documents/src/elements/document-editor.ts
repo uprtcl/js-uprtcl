@@ -19,8 +19,8 @@ import {
   Perspective,
   Secured,
   hashObject,
-  EveesInfoConfig,
   CommitType,
+  EveesInfoConfig,
   HasChildren,
 } from '@uprtcl/evees';
 

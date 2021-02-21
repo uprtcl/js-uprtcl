@@ -1,3 +1,5 @@
+import { EventEmitter } from 'events';
+
 import {
   RemoteEvees,
   Perspective,
@@ -12,6 +14,7 @@ import {
   PerspectiveGetResult,
   SearchEngine,
   Update,
+  RemoteLoggedEvents,
 } from '@uprtcl/evees';
 import { EveesAccessControlFixedOwner } from '@uprtcl/evees-blockchain';
 
@@ -30,16 +33,17 @@ export class EveesPolkadotCouncil implements RemoteEvees {
   proposals: ProposalsPolkadotCouncil;
   councilStorage: PolkadotCouncilEveesStorage;
   searchEngine!: SearchEngine;
+  events!: EventEmitter;
 
   constructor(
     readonly connection: PolkadotConnection,
-
     readonly casID: string,
     readonly config: ProposalConfig
   ) {
     this.accessControl = new EveesAccessControlFixedOwner();
     this.councilStorage = new PolkadotCouncilEveesStorage(connection, config, this.casID);
     this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, this.id, config);
+    this.events = new EventEmitter();
   }
 
   setStore(store: CASStore) {
@@ -112,9 +116,14 @@ export class EveesPolkadotCouncil implements RemoteEvees {
   async login(): Promise<void> {
     await this.connection.connectWallet();
     await this.proposals.init();
+
+    this.events.emit(RemoteLoggedEvents.logged_out);
+    this.events.emit(RemoteLoggedEvents.logged_status_changed);
   }
 
   logout(): Promise<void> {
+    this.events.emit(RemoteLoggedEvents.logged_in);
+    this.events.emit(RemoteLoggedEvents.logged_status_changed);
     return this.connection.disconnectWallet();
   }
 

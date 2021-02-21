@@ -10,6 +10,7 @@ import { EveesDiff } from './evees-diff';
 import { ContentUpdatedEvent } from './events';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 import { Proposal } from '../proposals/types';
+import { ProposalsWithUI } from '../proposals/proposals.with-ui';
 
 export class EveesProposalRow extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -49,6 +50,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   canExecute = false;
 
   protected toRemote!: RemoteWithUI;
+  protected proposals!: ProposalsWithUI;
 
   async firstUpdated() {
     this.load();
@@ -77,6 +79,9 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
       : undefined;
 
     this.toRemote = await this.evees.getPerspectiveRemote(this.proposal.toPerspectiveId);
+
+    if (!this.toRemote.proposals) throw new Error('ToRemote dont have proposals service');
+    this.proposals = this.toRemote.proposals as ProposalsWithUI;
 
     /** the author is the creator of the fromPerspective */
     this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
@@ -160,6 +165,8 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     await this.updateComplete;
 
     this.eveesDiffEl.localEvees = localEvees;
+    await this.eveesDiffEl.loadUpdates();
+
     this.updatesDialogEl.options = options;
 
     const value = await new Promise((resolve) => {
@@ -240,9 +247,9 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     let renderDefault = true;
     let lense: any = undefined;
-    if (this.toRemote && this.toRemote.proposal !== undefined) {
+    if (this.proposals && this.proposals.lense) {
       renderDefault = false;
-      lense = this.toRemote.proposal as any;
+      lense = this.proposals.lense;
     }
 
     return renderDefault ? this.renderDefault() : lense().render({ proposalId: this.proposalId });

@@ -8,5 +8,4 @@ export interface RemoteWithUI extends RemoteEvees {
   lense?(): Lens;
   icon?(path?: string): TemplateResult;
   avatar?(userId: string, config: any): TemplateResult;
-  proposal?(proposalId: string): Lens;
 }
