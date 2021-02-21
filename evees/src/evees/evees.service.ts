@@ -154,7 +154,9 @@ export class Evees {
     if(hasData) {
       const data = await this.getCommitData(update.details.headId as string);
       const text = this.behavior(data.object, patternName);
-      update.text = text;
+      
+      if(typeof text === 'string')
+        update.text = text;
     }
 
     return update;
