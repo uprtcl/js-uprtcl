@@ -149,9 +149,14 @@ export class Evees {
   }
 
   async checkText(update: Update, patternName): Promise<Update> {
-    const data = await this.getCommitData(update.details.headId as string);
-    const text = this.behavior(data.object, patternName);
-    update.text = text;
+    const hasData = update.details.headId;
+
+    if(hasData) {
+      const data = await this.getCommitData(update.details.headId as string);
+      const text = this.behavior(data.object, patternName);
+      update.text = text;
+    }
+
     return update;
   }
 
