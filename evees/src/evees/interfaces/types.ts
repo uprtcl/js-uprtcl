@@ -142,6 +142,12 @@ export interface SearchOptions {
   query?: string;
   orderBy?: string;
 }
+
+export interface SearchResult {
+  perspectiveIds: string[];
+  slice?: Slice;
+}
+
 export interface ParentAndChild {
   parentId: string;
   childId: string;

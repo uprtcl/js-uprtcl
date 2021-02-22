@@ -1,6 +1,6 @@
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
-import { ParentAndChild, SearchOptions } from '../interfaces/types';
+import { ParentAndChild, SearchOptions, SearchResult } from '../interfaces/types';
 
 export class SearchEngineRouter implements SearchEngine {
   constructor(protected remotes: RemoteEvees[]) {}
@@ -29,12 +29,31 @@ export class SearchEngineRouter implements SearchEngine {
     );
     return Array.prototype.concat.apply([], all);
   }
-  async explore(options: SearchOptions) {
-    const all = await Promise.all(
+  async explore(options: SearchOptions): Promise<SearchResult> {
+    const allResults = await Promise.all(
       this.remotes.map((remote) => {
-        return remote.searchEngine ? remote.searchEngine.explore(options) : [];
+        return remote.searchEngine ? remote.searchEngine.explore(options) : { perspectiveIds: [] };
       })
     );
-    return Array.prototype.concat.apply([], all);
+    // search results are concatenated
+    let combinedResult: SearchResult = {
+      perspectiveIds: [],
+      slice: {
+        entities: [],
+        perspectives: [],
+      },
+    };
+    allResults.forEach((result) => {
+      combinedResult.perspectiveIds.push(...result.perspectiveIds);
+      if (combinedResult.slice) {
+        if (result.slice) {
+          combinedResult.slice.entities.push(...result.slice?.entities);
+        }
+        if (result.slice) {
+          combinedResult.slice.perspectives.push(...result.slice.perspectives);
+        }
+      }
+    });
+    return combinedResult;
   }
 }
