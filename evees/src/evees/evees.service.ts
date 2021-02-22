@@ -206,11 +206,10 @@ export class Evees {
     if (hasData) {
       const data = await this.getCommitData(update.details.headId as string);
 
-      let have = true;
-      let text;
+      const has = this.hasBehavior(data.object, 'text');
 
-      if (have) {
-        update.text = text;
+      if (has) {
+        update.text = this.behaviorFirst(data.object, 'text');
       }
     }
 
