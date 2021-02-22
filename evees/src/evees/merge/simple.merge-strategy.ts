@@ -123,7 +123,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     newDatas: Entity<T>[],
     config: any
   ): Promise<T> {
-    const merge = this.evees.behavior(originalData.object, 'merge');
+    const merge = this.evees.behaviorFirst(originalData.object, 'merge') as Function;
 
     if (!merge)
       throw new Error(

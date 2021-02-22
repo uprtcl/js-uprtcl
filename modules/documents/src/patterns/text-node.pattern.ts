@@ -54,8 +54,6 @@ export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode
 
   text = (node: TextNode): string => node.text;
 
-  links = async (node: TextNode) => this.children(node);
-
   lenses = (node: TextNode): Lens[] => {
     return [
       {

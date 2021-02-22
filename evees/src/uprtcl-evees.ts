@@ -29,7 +29,11 @@ export { SearchEngine } from './evees/interfaces/search.engine';
 export { Client, ClientEvents } from './evees/interfaces/client';
 
 /** Default Perspectives */
-export { getHome, snapDefaultPerspective, getConceptPerspective } from './evees/default.perspectives';
+export {
+  getHome,
+  snapDefaultPerspective,
+  getConceptPerspective,
+} from './evees/default.perspectives';
 
 /** Merge */
 export { SimpleMergeStrategy } from './evees/merge/simple.merge-strategy';
@@ -89,7 +93,7 @@ export { CASRemote } from './cas/interfaces/cas-remote';
 export { CidConfig } from './cas/interfaces/cid-config';
 
 /** Patterns */
-export { HasChildren, HasLinks } from './patterns/behaviours/has-links';
+export { HasChildren, HasLinks, LinkingBehaviorNames } from './patterns/behaviours/has-links';
 export { HasLenses, Lens } from './patterns/behaviours/has-lenses';
 export { HasTitle } from './patterns/behaviours/has-title';
 export { PatternRecognizer } from './patterns/recognizer/pattern-recognizer';

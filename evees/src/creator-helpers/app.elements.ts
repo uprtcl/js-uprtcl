@@ -168,7 +168,7 @@ export class AppElements {
     }
 
     /** a one to one mapping from data children to element children is assumed */
-    const dataChildren = this.evees.behavior(data.object, 'children');
+    const dataChildren = this.evees.behaviorConcat(data.object, 'children');
     await Promise.all(
       element.children.map(async (child, ix) => {
         const childId = dataChildren[ix];

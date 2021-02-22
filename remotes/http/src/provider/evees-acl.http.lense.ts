@@ -73,7 +73,7 @@ export class EveesAccessControlHttpLense extends servicesConnect(LitElement) {
     const delegatedUref = this.permissions.delegateTo;
 
     const data = await this.evees.getPerspectiveData(delegatedUref);
-    const title = this.evees.behavior(data.object, 'title');
+    const title = this.evees.behaviorFirst(data.object, 'title');
 
     this.delegatedTitle = title;
   }
