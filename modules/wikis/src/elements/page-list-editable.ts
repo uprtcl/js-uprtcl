@@ -39,7 +39,9 @@ export class PageListEditable extends EveesBaseDraft<Wiki> {
     const childId = await this.evees.addNewChild(this.mineId, page);
     await this.evees.client.flush();
 
-    return childId;
+    this.dispatchEvent(
+      new CustomEvent('select-page', { bubbles: true, composed: true, detail: { uref: childId } })
+    );
   }
 
   render() {

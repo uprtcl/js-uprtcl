@@ -1,4 +1,8 @@
-import { CASStore, Secured } from 'src/uprtcl-evees';
+import EventEmitter from 'events';
+import { ClientEvents } from 'src/evees/interfaces/client';
+import { CASStore } from '../../../cas/interfaces/cas-store';
+import { Secured } from '../../../cas/utils/cid-hash';
+
 import { snapDefaultPerspective } from '../../default.perspectives';
 import { AccessControl } from '../../interfaces/access-control';
 import { RemoteEvees } from '../../interfaces/remote.evees';
@@ -29,6 +33,7 @@ export class RemoteEveesLocal implements RemoteEvees {
   store!: CASStore;
   searchEngine: SearchEngine;
   db: EveesDB;
+  events: EventEmitter;
 
   get userId() {
     return 'local';
@@ -44,6 +49,7 @@ export class RemoteEveesLocal implements RemoteEvees {
   constructor(readonly casID: string) {
     this.searchEngine = new LocalSearchEngine(this);
     this.db = new EveesDB();
+    this.events = new EventEmitter();
   }
 
   setStore(store: CASStore) {
@@ -75,6 +81,13 @@ export class RemoteEveesLocal implements RemoteEvees {
       : Promise.resolve([]);
 
     await Promise.all([create, update]);
+
+    if (mutation.updates && mutation.updates.length > 0) {
+      this.events.emit(
+        ClientEvents.updated,
+        mutation.updates.map((u) => u.perspectiveId)
+      );
+    }
   }
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     await this.db.perspectives.put({

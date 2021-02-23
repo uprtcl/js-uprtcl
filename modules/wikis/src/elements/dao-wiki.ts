@@ -1,6 +1,7 @@
 import { html, css, LitElement, property, internalProperty, query } from 'lit-element';
 
 import {
+  ClientEvents,
   Evees,
   EveesDiff,
   Logger,
@@ -41,9 +42,18 @@ export class DaoWiki extends servicesConnect(LitElement) {
 
   mergeEvees!: Evees;
   remote!: RemoteEvees;
+  defaultRemote!: RemoteEvees;
 
   async firstUpdated() {
     this.remote = await this.evees.getPerspectiveRemote(this.uref);
+    this.defaultRemote =
+      this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
+
+    /** check changes every time the default remote is updated */
+    if (this.defaultRemote.events) {
+      this.defaultRemote.events.on(ClientEvents.updated, () => this.checkChanges());
+    }
+
     this.checkChanges();
     this.checkLogin();
   }
@@ -57,6 +67,7 @@ export class DaoWiki extends servicesConnect(LitElement) {
   }
 
   async checkChanges() {
+    this.logger.log('CheckChanges()');
     const forks = await this.evees.client.searchEngine.forks(this.uref);
     if (forks.length > 0) {
       this.mergeEvees = this.evees.clone();

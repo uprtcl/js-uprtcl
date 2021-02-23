@@ -2,6 +2,7 @@ import { property, internalProperty } from 'lit-element';
 
 import { Logger } from '../../utils/logger';
 import { RemoteEvees } from '../interfaces/remote.evees';
+import { RemoteLoggedEvents } from '../interfaces/remote.logged';
 import { EveesBaseElement } from './evees-base';
 
 /** A base component for evees with one official perspective and one draft per user */
@@ -20,6 +21,10 @@ export class EveesBaseDraft<T extends object> extends EveesBaseElement<T> {
     this.defaultRemote =
       this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
     super.firstUpdated();
+
+    if (this.defaultRemote.events) {
+      this.defaultRemote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.load());
+    }
   }
 
   async load() {
