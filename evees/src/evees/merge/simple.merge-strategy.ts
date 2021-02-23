@@ -122,7 +122,8 @@ export class SimpleMergeStrategy implements MergeStrategy {
     newDatas: Entity<T>[],
     config: any
   ): Promise<T> {
-    const merge = this.evees.behaviorFirst(originalData.object, 'merge') as Function;
+    /** use "ours" latest version of the object as the selector for the merge strategy */
+    const merge = this.evees.behaviorFirst(newDatas[0].object, 'merge') as Function;
 
     if (!merge)
       throw new Error(
