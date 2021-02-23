@@ -1,11 +1,17 @@
 import { Behaviour } from '../interfaces/behaviour';
 
-export interface HasLinks<T = any> extends Behaviour<T> {
-  links: (pattern: T) => Promise<string[]>;
+export enum LinkingBehaviorNames {
+  LINKS_TO = 'linksTo',
+  CHILDREN = 'children',
+  REPLACE_CHILDREN = 'replaceChildren',
 }
 
-export interface HasChildren<T = any> extends HasLinks<T> {
-  children: (pattern: T) => string[];
+export interface HasLinks<T = any> extends Behaviour<T> {
+  [LinkingBehaviorNames.LINKS_TO]: (pattern: T) => string[];
+}
 
-  replaceChildren: (pattern: T) => (links: string[]) => any;
+export interface HasChildren<T = any> extends Behaviour<T> {
+  [LinkingBehaviorNames.CHILDREN]: (pattern: T) => string[];
+
+  [LinkingBehaviorNames.REPLACE_CHILDREN]: (pattern: T) => (links: string[]) => any;
 }

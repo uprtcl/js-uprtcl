@@ -42,7 +42,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     /** read children recursively */
     const data = await this.evees.getPerspectiveData(perspectiveId);
-    const children = this.evees.behavior(data.object, 'children');
+    const children = this.evees.behaviorConcat(data.object, 'children');
 
     const promises = children.map(async (child) => {
       const isPerspective = await this.isPattern(child, PerspectiveType);

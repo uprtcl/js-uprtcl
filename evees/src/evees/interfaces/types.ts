@@ -46,6 +46,7 @@ export interface Update {
   perspectiveId: string;
   details: PerspectiveDetails;
   linkChanges?: LinkChanges;
+  text?: string;
   oldDetails?: PerspectiveDetails;
   fromPerspectiveId?: string;
 }
@@ -129,17 +130,22 @@ export interface EveesMutationCreate {
   deletedPerspectives?: string[];
 }
 
-export interface Join {
-  type: 'AND' | 'OR' | 'XOR';
-  negation: boolean;
+export interface SearchOptionsJoin {
+  type?: 'AND' | 'OR' | 'XOR';
+  negation?: boolean;
   id: string;
 }
 
 export interface SearchOptions {
-  under: Join[];
-  linksTo: Join[];
-  query: string;
-  orderBy: string;
+  under?: SearchOptionsJoin[];
+  linksTo: SearchOptionsJoin[];
+  query?: string;
+  orderBy?: string;
+}
+
+export interface SearchResult {
+  perspectiveIds: string[];
+  slice?: Slice;
 }
 
 export interface ParentAndChild {
