@@ -4,7 +4,6 @@ import { CreateCommit, Evees } from '../evees.service';
 import { Entity } from '../../cas/interfaces/entity';
 
 import findMostRecentCommonAncestor from './common-ancestor';
-import { mergeResult } from './utils';
 import { Client } from '../interfaces/client';
 import { MergeStrategy } from './merge-strategy';
 
@@ -137,54 +136,5 @@ export class SimpleMergeStrategy implements MergeStrategy {
       this,
       config
     );
-  }
-
-  async mergeLinks(
-    originalLinks: string[],
-    modificationsLinks: string[][],
-    config: any
-  ): Promise<string[]> {
-    const allLinks: Map<string, boolean> = new Map();
-
-    const originalLinksDic = {};
-    for (let i = 0; i < originalLinks.length; i++) {
-      const link = originalLinks[i];
-      originalLinksDic[link] = {
-        index: i,
-        link: link,
-      };
-    }
-
-    const newLinks: Array<Map<string, { index: number; link: string }>> = [];
-    for (let i = 0; i < modificationsLinks.length; i++) {
-      const newData = modificationsLinks[i];
-      const links: Map<string, { index: number; link: string }> = new Map();
-      for (let j = 0; j < newData.length; j++) {
-        const link = newData[j];
-        links[link] = {
-          index: j,
-          link: link,
-        };
-        allLinks[link] = true;
-      }
-      newLinks.push(links);
-    }
-
-    const resultLinks: any[] = [];
-    for (const link of Object.keys(allLinks)) {
-      const linkResult = mergeResult(
-        originalLinksDic[link],
-        newLinks.map((newLink) => newLink[link])
-      );
-      if (linkResult) {
-        resultLinks.push(linkResult);
-      }
-    }
-
-    const sortedLinks = resultLinks
-      .sort((link1, link2) => link1.index - link2.index)
-      .map((link) => link.link);
-
-    return sortedLinks;
   }
 }

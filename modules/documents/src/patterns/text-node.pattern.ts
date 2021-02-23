@@ -11,6 +11,9 @@ import {
   HasTitle,
   Lens,
   Evees,
+  LinkingBehaviorNames,
+  HasMerge,
+  MergingBehaviorNames,
 } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
@@ -44,13 +47,16 @@ export class TextNodePattern extends Pattern<TextNode> {
   type = DocumentsBindings.TextNodeType;
 }
 
-export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode> {
-  replaceChildren = (node: TextNode) => (childrenHashes: string[]): TextNode => ({
+export class TextNodeCommon
+  implements HasLenses<TextNode>, HasChildren<TextNode>, HasMerge<TextNode> {
+  [LinkingBehaviorNames.REPLACE_CHILDREN] = (node: TextNode) => (
+    childrenHashes: string[]
+  ): TextNode => ({
     ...node,
     links: childrenHashes,
   });
 
-  children = (node: TextNode): string[] => node.links;
+  [LinkingBehaviorNames.CHILDREN] = (node: TextNode): string[] => node.links;
 
   text = (node: TextNode): string => node.text;
 
@@ -107,7 +113,7 @@ export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode
     ];
   };
 
-  merge = (originalNode: TextNode) => async (
+  [MergingBehaviorNames.MERGE] = (originalNode: TextNode) => async (
     modifications: TextNode[],
     merger: MergeStrategy,
     config: any
@@ -118,7 +124,9 @@ export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode
       modifications.map((data) => data.type)
     );
 
-    const mergedLinks = await merger.mergeLinks(
+    if (!merger.mergeChildren) throw new Error('mergeChildren function not found in merger');
+
+    const mergedLinks = await merger.mergeChildren(
       originalNode.links,
       modifications.map((data) => data.links),
       config

@@ -1,5 +1,6 @@
 import { PerspectiveType } from '../patterns/perspective.pattern';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
+import { mergeArrays } from './utils';
 
 export interface FromTo {
   to?: string;
@@ -89,7 +90,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     }
   }
 
-  async mergeLinks(
+  async mergeChildren(
     originalLinks: string[],
     modificationsLinks: string[][],
     config: any
@@ -108,7 +109,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       modificationsPromises.map((promises) => Promise.all(promises))
     );
 
-    const mergedLinks = await super.mergeLinks(originalMergeIds, modificationsMergeIds, config);
+    const mergedLinks = mergeArrays(originalMergeIds, modificationsMergeIds);
 
     const dictionary = this.perspectivesByContext;
 

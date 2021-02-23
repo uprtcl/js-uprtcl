@@ -1,14 +1,12 @@
 import { Behaviour } from '../../patterns/interfaces/behaviour';
-import { Evees } from '../evees.service';
+import { MergeStrategy } from './merge-strategy';
 
-export interface Merge<T = any> extends Behaviour<T> {
-  merge: (
+export enum MergingBehaviorNames {
+  MERGE = 'merge',
+}
+
+export interface HasMerge<T = any> extends Behaviour<T> {
+  [MergingBehaviorNames.MERGE]: (
     ancestor: T
-  ) => (
-    modifications: any[],
-    strategy: any,
-    evees: Evees,
-    config: any,
-    parentId?: string
-  ) => Promise<any>;
+  ) => (modifications: any[], strategy: MergeStrategy, config: any) => Promise<any>;
 }
