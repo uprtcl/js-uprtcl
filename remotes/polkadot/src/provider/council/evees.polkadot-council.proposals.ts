@@ -1,17 +1,19 @@
 import { html } from 'lit-html';
 
-import { CASStore, Lens, Logger, Proposal, ProposalsWithUI } from '@uprtcl/evees';
+import { CASStore, Lens, Logger, Proposal, ProposalEvents, ProposalsWithUI } from '@uprtcl/evees';
 
 import { PolkadotConnection } from '../../connection.polkadot';
 
 import { ProposalConfig, VoteValue } from './proposal.config.types';
 import { PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
+import EventEmitter from 'events';
 
 export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
 
   public store!: CASStore;
+  events: EventEmitter;
 
   private canProposeCache = false;
 
@@ -20,7 +22,9 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
     public councilStore: PolkadotCouncilEveesStorage,
     public remoteId: string,
     public config: ProposalConfig
-  ) {}
+  ) {
+    this.events = new EventEmitter();
+  }
 
   async ready(): Promise<void> {
     await this.init();
@@ -67,6 +71,8 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
       proposalId,
       proposalManifest,
     });
+
+    this.events.emit(ProposalEvents.created, [proposalId]);
 
     return proposalId;
   }

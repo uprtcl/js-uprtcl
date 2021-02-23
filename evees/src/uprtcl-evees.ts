@@ -68,7 +68,7 @@ export { ConnectionLogged } from './utils/connection.logged';
 
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
-export { Proposals } from './evees/proposals/proposals';
+export { Proposals, ProposalEvents } from './evees/proposals/proposals';
 export { ProposalsWithUI } from './evees/proposals/proposals.with-ui';
 export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 

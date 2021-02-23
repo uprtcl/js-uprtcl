@@ -1,5 +1,12 @@
+import { EventEmitter } from 'events';
 import { Proposal } from './types';
+
+export enum ProposalEvents {
+  created = 'created',
+}
 export interface Proposals {
+  events?: EventEmitter;
+
   createProposal(newProposal: Proposal): Promise<string>;
 
   getProposal(proposalId: string): Promise<Proposal>;
