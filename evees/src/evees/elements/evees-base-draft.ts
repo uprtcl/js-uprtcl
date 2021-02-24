@@ -20,7 +20,8 @@ export class EveesBaseDraft<T extends object> extends EveesBaseElement<T> {
     this.firstRef = this.uref;
     this.defaultRemote =
       this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
-    super.firstUpdated();
+
+    await super.firstUpdated();
 
     if (this.defaultRemote.events) {
       this.defaultRemote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.load());
@@ -28,11 +29,12 @@ export class EveesBaseDraft<T extends object> extends EveesBaseElement<T> {
   }
 
   async load() {
-    super.load();
+    await super.load();
 
     /** it's assumed that there is only one fork per user un the remote  */
     const drafts = await this.defaultRemote.searchEngine.forks(this.firstRef);
     this.mineId = drafts.length > 0 ? drafts[0] : undefined;
+    this.logger.log('BaseDraft -- load() set mineId', this.mineId);
   }
 
   async checkoutDraft(recurse: boolean = true) {
@@ -50,6 +52,8 @@ export class EveesBaseDraft<T extends object> extends EveesBaseElement<T> {
       undefined,
       recurse
     );
+    await this.evees.client.flush();
+    this.logger.log('BaseDraft -- createDraft()', this.mineId);
     return this.seeDraft();
   }
 
@@ -57,12 +61,12 @@ export class EveesBaseDraft<T extends object> extends EveesBaseElement<T> {
     if (!this.mineId) throw new Error(`mineId not defined`);
     this.uref = this.mineId;
     this.isDraft = true;
-    return super.load();
+    return this.load();
   }
 
   async seeOfficial(): Promise<void> {
     this.uref = this.firstRef;
     this.isDraft = false;
-    return super.load();
+    return this.load();
   }
 }
