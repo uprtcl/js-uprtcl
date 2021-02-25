@@ -56,7 +56,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   }
 
   async toggleDraft() {
-    if (this.isDraft) {
+    if (!this.isDraft) {
       this.checkoutDraft();
     } else {
       this.seeOfficial();
@@ -92,13 +92,12 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
 
   renderInfo() {
     return html`<div class="toggle-container">
-      <span>official</span
-      ><uprtcl-toggle
+      <uprtcl-toggle
         @click=${() => (this.hasOfficial ? this.toggleDraft() : null)}
         ?active=${this.isDraft}
         ?disabled=${!this.hasOfficial}
       ></uprtcl-toggle
-      ><span>draft</span>
+      >${this.isDraft ? html`<span class="toggle-container-text">editing</span>` : ''}
     </div>`;
   }
 
@@ -107,6 +106,12 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
       css`
         .toggle-container {
           display: flex;
+          align-items: center;
+        }
+        .toggle-container-text {
+          color: #cccccc;
+          font-size: 10px;
+          margin-left: 6px;
         }
       `,
     ];

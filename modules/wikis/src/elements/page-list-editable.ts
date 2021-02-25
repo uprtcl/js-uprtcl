@@ -50,17 +50,11 @@ export class PageListEditable extends EveesBaseEditable<Wiki> {
     const pages = this.data ? this.data.object.pages : [];
 
     return html` <div>
+        ${this.renderInfo()}
         ${pages.map((page) => html`<page-list-item uref=${page}></page-list-item>`)}
       </div>
       ${this.isDraft
         ? html`<uprtcl-button @click=${() => this.addPage()}>new page</uprtcl-button>`
-        : ''}
-      ${this.editable
-        ? !this.isDraft
-          ? html`<uprtcl-button @click=${() => this.checkoutDraft()}>edit</uprtcl-button>`
-          : html`<uprtcl-button @click=${() => this.checkoutOfficial()}
-              >see official</uprtcl-button
-            >`
         : ''}`;
   }
 }
