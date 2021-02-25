@@ -1,4 +1,3 @@
-import lodash from 'lodash-es';
 import { EventEmitter } from 'events';
 
 import {
@@ -64,7 +63,7 @@ export class ClientOnMemory implements Client {
       /** skip asking the base client only if we already search for the requested levels under
        * this perspective */
       if (!options || options.levels === undefined || options.levels === cachedPerspective.levels) {
-        return { details: lodash.cloneDeep(cachedPerspective.details) };
+        return { details: { ...cachedPerspective.details } };
       }
     }
 

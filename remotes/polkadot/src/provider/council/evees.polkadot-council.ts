@@ -82,7 +82,7 @@ export class EveesPolkadotCouncil implements RemoteEvees {
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
     const details = await this.councilStorage.getPerspective(perspectiveId);
-    return { details };
+    return { details: { ...details } };
   }
   update(mutation: EveesMutationCreate) {
     throw new Error('Method not implemented.');
@@ -117,12 +117,12 @@ export class EveesPolkadotCouncil implements RemoteEvees {
     await this.connection.connectWallet();
     await this.proposals.init();
 
-    this.events.emit(RemoteLoggedEvents.logged_out);
+    this.events.emit(RemoteLoggedEvents.logged_in);
     this.events.emit(RemoteLoggedEvents.logged_status_changed);
   }
 
   logout(): Promise<void> {
-    this.events.emit(RemoteLoggedEvents.logged_in);
+    this.events.emit(RemoteLoggedEvents.logged_out);
     this.events.emit(RemoteLoggedEvents.logged_status_changed);
     return this.connection.disconnectWallet();
   }

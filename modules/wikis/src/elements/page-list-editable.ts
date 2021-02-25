@@ -1,10 +1,10 @@
 import { html, property } from 'lit-element';
-import { EveesBaseDraft } from '@uprtcl/evees';
+import { EveesBaseEditable } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
 import { TextNode, TextType } from '@uprtcl/documents';
 
-export class PageListEditable extends EveesBaseDraft<Wiki> {
+export class PageListEditable extends EveesBaseEditable<Wiki> {
   @property({ type: Boolean })
   editable: boolean = false;
 

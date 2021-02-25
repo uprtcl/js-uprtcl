@@ -8,12 +8,12 @@ import {
   Proposal,
   RecursiveContextMergeStrategy,
   RemoteEvees,
-  RemoteEveesLocal,
+  RemoteLoggedEvents,
   servicesConnect,
 } from '@uprtcl/evees';
 import { MenuConfig, styles, UprtclPopper } from '@uprtcl/common-ui';
 
-export class DaoWiki extends servicesConnect(LitElement) {
+export class EditableWiki extends servicesConnect(LitElement) {
   logger = new Logger('DAO-WIKI');
 
   @property({ type: String })
@@ -40,22 +40,25 @@ export class DaoWiki extends servicesConnect(LitElement) {
   @internalProperty()
   showChangesDialog = false;
 
+  @internalProperty()
+  creatingProposal = false;
+
   mergeEvees!: Evees;
   remote!: RemoteEvees;
-  defaultRemote!: RemoteEvees;
+  editRemote!: RemoteEvees;
 
   async firstUpdated() {
-    this.remote = await this.evees.getPerspectiveRemote(this.uref);
-    this.defaultRemote =
-      this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
+    this.remote = this.evees.remotes[0];
+    this.editRemote = this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
 
     /** check changes every time the default remote is updated */
-    if (this.defaultRemote.events) {
-      this.defaultRemote.events.on(ClientEvents.updated, () => this.checkChanges());
+    if (this.editRemote.events) {
+      this.editRemote.events.on(ClientEvents.updated, () => this.checkChanges());
     }
 
-    this.checkChanges();
-    this.checkLogin();
+    if (this.remote.events) {
+      this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.reload());
+    }
   }
 
   connectedCallback() {
@@ -66,7 +69,14 @@ export class DaoWiki extends servicesConnect(LitElement) {
     });
   }
 
+  async reload() {
+    await this.checkLogin();
+    await this.checkChanges();
+  }
+
   async checkChanges() {
+    if (!this.isLogged) return;
+
     this.logger.log('CheckChanges()');
     const forks = await this.evees.client.searchEngine.forks(this.uref);
     if (forks.length > 0) {
@@ -109,12 +119,15 @@ export class DaoWiki extends servicesConnect(LitElement) {
       this.showChangesDialog = false;
     }
     if (e.detail.option === 'propose') {
+      this.showChangesDialog = false;
       this.proposeMerge();
     }
   }
 
   async proposeMerge() {
     if (!this.evees.client.proposals) throw new Error('Proposals not defined');
+
+    this.creatingProposal = true;
 
     const mutation = await this.mergeEvees.client.diff();
     const proposal: Proposal = {
@@ -123,6 +136,8 @@ export class DaoWiki extends servicesConnect(LitElement) {
     };
     await this.evees.client.proposals.createProposal(proposal);
     await this.evees.client.flush();
+
+    this.creatingProposal = false;
   }
 
   renderHome() {
@@ -176,6 +191,7 @@ export class DaoWiki extends servicesConnect(LitElement) {
               >propose changes</uprtcl-button
             >`
           : ''}
+        ${this.creatingProposal ? html`<uprtcl-loading></uprtcl-loading>` : ''}
       </div>
       <div class="wiki-content-with-nav">
         <div class="wiki-navbar">
@@ -186,13 +202,7 @@ export class DaoWiki extends servicesConnect(LitElement) {
           ${this.selectedPageId !== undefined
             ? html`
                 <div class="page-container">
-                  <documents-editor
-                    id="doc-editor"
-                    uref=${this.selectedPageId}
-                    parent-id=${this.uref}
-                    color=${'black'}
-                  >
-                  </documents-editor>
+                  <editable-document-editor uref=${this.selectedPageId}></editable-document-editor>
                 </div>
               `
             : html` <div class="home-container">${this.renderHome()}</div> `}

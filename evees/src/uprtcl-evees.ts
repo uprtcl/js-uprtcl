@@ -39,7 +39,7 @@ export { mergeStrings, mergeResult } from './evees/merge/utils';
 /** Elements */
 export { EveesPerspectivesList } from './evees/elements/evees-perspectives-list';
 export { EveesBaseElement } from './evees/elements/evees-base';
-export { EveesBaseDraft } from './evees/elements/evees-base-draft';
+export { EveesBaseEditable } from './evees/elements/evees-base-editable';
 export { EveesInfoPopper, EveesInfoConfig } from './evees/elements/evees-info-popper';
 export { EveesInfoBase } from './evees/elements/evees-info-base';
 export { ProposalsList } from './evees/elements/evees-proposals-list';
