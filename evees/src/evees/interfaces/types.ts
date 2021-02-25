@@ -138,13 +138,18 @@ export interface SearchOptionsJoin {
 
 export interface SearchOptions {
   under?: SearchOptionsJoin[];
-  linksTo: SearchOptionsJoin[];
+  linksTo?: SearchOptionsJoin[];
   query?: string;
   orderBy?: string;
+  pagination?: {
+    first: number;
+    offset: number;
+  };
 }
 
 export interface SearchResult {
   perspectiveIds: string[];
+  ended?: boolean;
   slice?: Slice;
 }
 
@@ -155,7 +160,12 @@ export interface ParentAndChild {
 
 export interface DiffLens {
   name: string;
-  render: (evees: Evees, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;
+  render: (
+    evees: Evees,
+    newEntity: any,
+    oldEntity: any,
+    summary: boolean
+  ) => TemplateResult;
   type?: string;
 }
 
