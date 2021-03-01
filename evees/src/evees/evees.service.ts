@@ -12,9 +12,11 @@ import {
   NewPerspective,
   Update,
   ForkDetails,
+  EveesMutation,
+  UpdateDetails,
 } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
-import { HasChildren } from '../patterns/behaviours/has-links';
+import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
 import { Signed } from '../patterns/interfaces/signable';
 import { ErrorWithCode } from '../utils/error';
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
@@ -415,8 +417,8 @@ export class Evees {
   }
 
   async getPerspectiveChildren(uref: string): Promise<string[]> {
-    const data = await this.getPerspectiveData(uref);
-    return this.behaviorConcat(data.object, 'children');
+    const data = await this.tryGetPerspectiveData(uref);
+    return data ? this.behaviorConcat(data.object, LinkingBehaviorNames.CHILDREN) : [];
   }
 
   async spliceChildren(
@@ -732,6 +734,50 @@ export class Evees {
     const home = await getHome(remote, userId ? userId : remote.userId);
     await this.client.store.storeEntity({ object: home.object, remote: remote.id });
     return home;
+  }
+
+  async exploreDiffUnder(perspectiveId: string, localEvees: Evees): Promise<UpdateDetails[]> {
+    const mutation = await localEvees.client.diff();
+    /** explore the root perspective and look for updates in the mutation. Store the updates in this.updatesDetails */
+    return this.exploreDiffOn(perspectiveId, mutation, localEvees);
+  }
+
+  private async exploreDiffOn(
+    perspectiveId: string,
+    mutation: EveesMutation,
+    localEvees: Evees,
+    path: string[] = [],
+    updateDetails: UpdateDetails[] = []
+  ): Promise<UpdateDetails[]> {
+    const update = mutation.updates.find((update) => update.perspectiveId === perspectiveId);
+
+    if (update && update.details.headId) {
+      const newData = await localEvees.getCommitData(update.details.headId);
+
+      const oldData =
+        update.oldDetails && update.oldDetails.headId !== undefined
+          ? await localEvees.getCommitData(update.oldDetails.headId)
+          : undefined;
+
+      const updateDetail: UpdateDetails = {
+        path,
+        newData,
+        oldData,
+        update,
+      };
+
+      updateDetails.push(updateDetail);
+    }
+
+    /** recursively call on the perspective children (children are computed based on the
+     * curren head, not the updated one) */
+    const children = await this.getPerspectiveChildren(perspectiveId);
+    for (const child of children) {
+      // recursive call to explore diffs of the children
+      await this.exploreDiffOn(child, mutation, localEvees, path.concat(child), updateDetails);
+    }
+
+    return updateDetails;
   }
 }
 

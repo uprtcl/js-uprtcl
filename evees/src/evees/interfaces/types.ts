@@ -185,3 +185,10 @@ export interface EveesConfig {
     owner: string;
   };
 }
+
+export interface UpdateDetails {
+  path: string[];
+  newData: Entity<any>;
+  oldData?: Entity<any>;
+  update: Update;
+}

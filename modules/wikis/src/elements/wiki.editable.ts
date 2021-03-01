@@ -224,7 +224,10 @@ export class EditableWiki extends servicesConnect(LitElement) {
             .options=${updateDialogOptions}
             @option-selected=${this.dialogOptionSelected}
           >
-            <evees-update-diff id="evees-update-diff"></evees-update-diff>
+            <evees-update-diff
+              id="evees-update-diff"
+              perspective-id=${this.uref}
+            ></evees-update-diff>
           </uprtcl-dialog>`
         : ''}
     `;

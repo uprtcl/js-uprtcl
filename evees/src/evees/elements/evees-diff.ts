@@ -1,33 +1,27 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
 import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { Update, DiffLens } from '../interfaces/types';
 import { Evees } from '../evees.service';
+import { UpdateDetails } from '../interfaces/types';
 
 const LOGINFO = true;
-
-interface UpdateDetails {
-  update?: Update;
-  newData: any;
-  oldData: any;
-  diffLense: DiffLens;
-}
 
 export class EveesDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
-  @property({ type: String, attribute: 'root-perspective' })
+  @property({ type: String, attribute: 'perspective-id' })
   rootPerspective!: string;
 
   @property({ type: Boolean })
   summary = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   loading: boolean = true;
 
-  updatesDetails: Map<string, UpdateDetails> = new Map();
+  @internalProperty()
+  updateDetails!: UpdateDetails[];
 
   /** the evees service can be set from a parent component*/
   localEvees!: Evees;
@@ -38,8 +32,6 @@ export class EveesDiff extends servicesConnect(LitElement) {
   }
 
   async updated(changedProperties) {
-    this.logger.log('updated()', changedProperties);
-
     if (changedProperties.has('rootPerspective')) {
       this.loadUpdates();
     }
@@ -51,50 +43,15 @@ export class EveesDiff extends servicesConnect(LitElement) {
     }
 
     this.loading = true;
-
-    const mutation = await this.localEvees.client.diff();
-
-    const updates = mutation.updates.filter((u) => !!u.details.headId);
-
-    /** how the new perspective as a change if is the rootPerspective */
-    if (this.rootPerspective) {
-      updates.push(
-        ...mutation.newPerspectives
-          .filter((np) => np.perspective.id === this.rootPerspective)
-          .map((np) => np.update)
-      );
-    }
-
-    const getDetails = updates.map(async (update) => {
-      if (!update.details.headId) throw new Error('newHead undefined');
-
-      const newData = await this.localEvees.getCommitData(update.details.headId);
-
-      const oldData =
-        update.oldDetails && update.oldDetails.headId !== undefined
-          ? await this.localEvees.getCommitData(update.oldDetails.headId)
-          : undefined;
-
-      const diffLenses = this.localEvees.behaviorFirst(newData.object, 'diffLenses');
-
-      this.updatesDetails[update.perspectiveId] = {
-        diffLense: diffLenses[0],
-        update,
-        oldData,
-        newData,
-      };
-    });
-
-    await Promise.all(getDetails);
-
+    this.updateDetails = await this.evees.exploreDiffUnder(this.rootPerspective, this.localEvees);
     this.loading = false;
   }
 
   renderUpdateDiff(details: UpdateDetails) {
-    // TODO: review if old data needs to be
+    const lenses = this.evees.behaviorFirst(details.newData.object, 'diffLenses');
     return html`
       <div class="evee-diff">
-        ${details.diffLense.render(
+        ${lenses[0].render(
           this.localEvees,
           details.newData.object,
           details.oldData ? details.oldData.object : undefined,
@@ -109,12 +66,9 @@ export class EveesDiff extends servicesConnect(LitElement) {
       return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
-    const perspectiveIds = Object.keys(this.updatesDetails);
-    return perspectiveIds.length === 0
+    return this.updateDetails.length === 0
       ? html` <span><i>no changes found</i></span> `
-      : perspectiveIds.map((perspectiveId) =>
-          this.renderUpdateDiff(this.updatesDetails[perspectiveId])
-        );
+      : this.updateDetails.map((updateDetails) => this.renderUpdateDiff(updateDetails));
   }
 
   static get styles() {

@@ -19,6 +19,7 @@ export {
   SearchOptions,
   ParentAndChild,
   SearchResult,
+  UpdateDetails,
 } from './evees/interfaces/types';
 
 /** interfaces */
