@@ -93,7 +93,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
      * head and data are undefined, we need to know the initial data object (usually the correspondent of the "empty" object)
      * to be used as reference for the merge, and assume the ancestorData and the to branch have that data as its current value */
 
-    const emptyObject = this.evees.behavior(fromData.object, 'empty');
+    const emptyObject = this.evees.behaviorFirst(fromData.object, 'empty');
     const emptyEntity = await this.evees
       .getRemote(remote)
       .store.hashEntity({ object: emptyObject, remote: remote });

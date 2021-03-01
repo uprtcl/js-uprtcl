@@ -63,7 +63,7 @@ export class WikiDiff extends servicesConnect(LitElement) {
 
   async getTitle(uref: string): Promise<string> {
     const data = await this.localEvees.getPerspectiveData(uref);
-    return this.localEvees.behavior(data.object, 'title');
+    return this.localEvees.behaviorFirst(data.object, 'title');
   }
 
   renderPage(title: string, classes: string[]) {

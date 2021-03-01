@@ -39,7 +39,6 @@ export {
 /** Merge */
 export { SimpleMergeStrategy } from './evees/merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './evees/merge/recursive-context.merge-strategy';
-export { MergeStrategy } from './evees/merge/merge-strategy';
 export { HasMerge, MergingBehaviorNames } from './evees/merge/merge.behaviour';
 
 export { mergeStrings, mergeResult, mergeArrays } from './evees/merge/utils';

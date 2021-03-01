@@ -1,12 +1,12 @@
 import { Signed } from '../../../patterns/interfaces/signable';
 import { SearchEngine } from '../../interfaces/search.engine';
-import { SearchOptions, ParentAndChild, Perspective } from '../../interfaces/types';
+import { SearchOptions, ParentAndChild, Perspective, SearchResult } from '../../interfaces/types';
 import { RemoteEveesLocal } from './remote.local';
 
 export class LocalSearchEngine implements SearchEngine {
   constructor(protected remote: RemoteEveesLocal) {}
 
-  explore(options: SearchOptions) {
+  explore(options: SearchOptions): Promise<SearchResult> {
     throw new Error('Method not implemented.');
   }
   locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {

@@ -12,8 +12,8 @@ import {
   HasEmpty,
   Lens,
   Pattern,
-  RecursiveContextMergeStrategy,
   Evees,
+  MergeStrategy,
 } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
@@ -44,8 +44,8 @@ export class WikiLinks implements HasChildren<Wiki>, HasEmpty<Wiki> {
   };
 
   merge = (originalNode: Wiki) => async (
-    modifications: (Wiki | undefined)[],
-    mergeStrategy: RecursiveContextMergeStrategy,
+    modifications: Wiki[],
+    merger: MergeStrategy,
     config: MergeConfig
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
@@ -53,10 +53,11 @@ export class WikiLinks implements HasChildren<Wiki>, HasEmpty<Wiki> {
       modifications.map((data) => (!!data ? data.title : originalNode.title))
     );
 
-    // TODO: add entity
-    const mergedPages = await mergeStrategy.mergeLinks(
+    if (!merger.mergeChildren) throw new Error('mergeChildren function not found in merger');
+
+    const mergedPages = await merger.mergeChildren(
       originalNode.pages,
-      modifications.map((data) => (!!data ? data.pages : originalNode.pages)),
+      modifications.map((data) => data.pages),
       config
     );
 

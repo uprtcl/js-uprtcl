@@ -75,7 +75,7 @@ export class EveesDiff extends servicesConnect(LitElement) {
           ? await this.localEvees.getCommitData(update.oldDetails.headId)
           : undefined;
 
-      const diffLenses = this.localEvees.behavior(newData.object, 'diffLenses');
+      const diffLenses = this.localEvees.behaviorFirst(newData.object, 'diffLenses');
 
       this.updatesDetails[update.perspectiveId] = {
         diffLense: diffLenses[0],
