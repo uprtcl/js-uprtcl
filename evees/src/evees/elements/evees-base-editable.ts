@@ -15,6 +15,9 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   @internalProperty()
   hasOfficial = false;
 
+  @internalProperty()
+  isLoggedEdit = false;
+
   protected firstRef!: string;
   protected mineId: string | undefined = undefined;
   protected editRemote!: RemoteEvees;
@@ -23,6 +26,13 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.firstRef = this.uref;
     this.remote = this.evees.remotes[0];
     this.editRemote = this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
+    this.checkLoggedEdit();
+
+    if (this.editRemote.events) {
+      this.editRemote.events.on(RemoteLoggedEvents.logged_status_changed, () =>
+        this.checkLoggedEdit()
+      );
+    }
 
     await super.firstUpdated();
 
@@ -30,6 +40,10 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
       this.remote.events.on(RemoteLoggedEvents.logged_out, () => this.seeOfficial());
       this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.load());
     }
+  }
+
+  async checkLoggedEdit() {
+    this.isLoggedEdit = await this.editRemote.isLogged();
   }
 
   async load() {
@@ -91,12 +105,14 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   }
 
   renderInfo() {
+    if (!this.isLogged || !this.isLoggedEdit) return '';
+
+    if (!this.hasOfficial) {
+      return html`<span class="toggle-container-text">draft</span>`;
+    }
+
     return html`<div class="toggle-container">
-      <uprtcl-toggle
-        @click=${() => (this.hasOfficial ? this.toggleDraft() : null)}
-        ?active=${this.isDraft}
-        ?disabled=${!this.hasOfficial}
-      ></uprtcl-toggle
+      <uprtcl-toggle @click=${() => this.toggleDraft()} ?active=${this.isDraft}></uprtcl-toggle
       >${this.isDraft ? html`<span class="toggle-container-text">editing</span>` : ''}
     </div>`;
   }

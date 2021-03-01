@@ -9,6 +9,7 @@ import {
   HasTitle,
   HasLenses,
   HasChildren,
+  HasEmpty,
   Lens,
   Pattern,
   RecursiveContextMergeStrategy,
@@ -30,7 +31,7 @@ export class WikiPattern extends Pattern<Wiki> {
   type = WikiBindings.WikiType;
 }
 
-export class WikiLinks implements HasChildren<Wiki> {
+export class WikiLinks implements HasChildren<Wiki>, HasEmpty<Wiki> {
   replaceChildren = (wiki: Wiki) => (childrenHashes: string[]): Wiki => ({
     ...wiki,
     pages: childrenHashes,
@@ -38,7 +39,9 @@ export class WikiLinks implements HasChildren<Wiki> {
 
   children: (wiki: Wiki) => string[] = (wiki: Wiki): string[] => wiki.pages;
 
-  links: (wiki: Wiki) => Promise<string[]> = async (wiki: Wiki) => this.children(wiki);
+  empty = (): Wiki => {
+    return { title: '', pages: [] };
+  };
 
   merge = (originalNode: Wiki) => async (
     modifications: (Wiki | undefined)[],

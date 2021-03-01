@@ -95,6 +95,7 @@ export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
 export { HasChildren } from './patterns/behaviours/has-links';
 export { HasLenses, Lens } from './patterns/behaviours/has-lenses';
 export { HasTitle } from './patterns/behaviours/has-title';
+export { HasEmpty } from './patterns/behaviours/has-empty';
 export { PatternRecognizer } from './patterns/recognizer/pattern-recognizer';
 export { Pattern } from './patterns/interfaces/pattern';
 export { PerspectiveType } from './evees/patterns/perspective.pattern';

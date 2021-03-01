@@ -62,9 +62,9 @@ export class CASLocal implements CASRemote {
     const entities = await this.storeEntities([object]);
     return entities[0].id;
   }
-  async hashEntity(object: any): Promise<string> {
+  async hashEntity<T = any>(object: any): Promise<Entity<T>> {
     const entities = await this.hashEntities([object]);
-    return entities[0].id;
+    return entities[0];
   }
   async ready(): Promise<void> {}
 }

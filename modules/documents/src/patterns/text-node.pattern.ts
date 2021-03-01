@@ -9,6 +9,7 @@ import {
   Pattern,
   HasChildren,
   HasTitle,
+  HasEmpty,
   Lens,
   Evees,
 } from '@uprtcl/evees';
@@ -44,7 +45,8 @@ export class TextNodePattern extends Pattern<TextNode> {
   type = DocumentsBindings.TextNodeType;
 }
 
-export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode> {
+export class TextNodeCommon
+  implements HasLenses<TextNode>, HasChildren<TextNode>, HasEmpty<TextNode> {
   replaceChildren = (node: TextNode) => (childrenHashes: string[]): TextNode => ({
     ...node,
     links: childrenHashes,
@@ -52,7 +54,9 @@ export class TextNodeCommon implements HasLenses<TextNode>, HasChildren<TextNode
 
   children = (node: TextNode): string[] => node.links;
 
-  links = async (node: TextNode) => this.children(node);
+  empty = (): TextNode => {
+    return { text: '', type: TextType.Title, links: [] };
+  };
 
   lenses = (node: TextNode): Lens[] => {
     return [

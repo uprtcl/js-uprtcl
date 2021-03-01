@@ -44,6 +44,19 @@ export class ClientOnMemory implements Client {
     if (mutation) {
       this.update(mutation);
     }
+
+    if (this.base.events) {
+      this.base.events.on(ClientEvents.updated, (perspectiveIds: string[]) => {
+        /** remove the cached perspectives if updated */
+        perspectiveIds.forEach((id) => {
+          if (this.cachedPerspectives.get(id) !== undefined) {
+            this.cachedPerspectives.delete(id);
+          }
+        });
+
+        this.events.emit(ClientEvents.updated, perspectiveIds);
+      });
+    }
   }
 
   get searchEngine() {

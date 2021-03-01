@@ -1,3 +1,5 @@
+import { Entity } from '../../cas/interfaces/entity';
+
 export interface MergeConfig {
   forceOwner?: boolean;
   remote?: string;

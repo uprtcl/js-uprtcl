@@ -1,5 +1,6 @@
+import EventEmitter from 'events';
 import { CASStore } from '../../cas/interfaces/cas-store';
-import { Client } from '../interfaces/client';
+import { Client, ClientEvents } from '../interfaces/client';
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
 import {
@@ -18,11 +19,23 @@ import { SearchEngineRouter } from './search.router';
 export class RemoteRouter extends BaseRouter implements Client {
   proposals?: Proposals | undefined;
   searchEngine!: SearchEngine;
+  events: EventEmitter;
 
   constructor(protected remotes: RemoteEvees[], public store: CASStore) {
     super(remotes, store);
     this.searchEngine = new SearchEngineRouter(remotes, store);
     this.proposals = new ProposalsRouter(remotes, store);
+    this.events = new EventEmitter();
+
+    /** forward events */
+
+    this.remotes.forEach((remote) => {
+      if (remote.events) {
+        remote.events.on(ClientEvents.updated, (perspectiveIds) =>
+          this.events.emit(ClientEvents.updated, perspectiveIds)
+        );
+      }
+    });
   }
 
   getRemote(remoteId: string): RemoteEvees {

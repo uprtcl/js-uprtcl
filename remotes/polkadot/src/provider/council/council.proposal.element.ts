@@ -1,40 +1,71 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
 import { prettyTimePeriod } from '@uprtcl/common-ui';
-import { Evees, Perspective, RemoteLoggedEvents, servicesConnect, Signed } from '@uprtcl/evees';
+import {
+  Evees,
+  Logger,
+  Perspective,
+  ProposalEvents,
+  RemoteLoggedEvents,
+  servicesConnect,
+  Signed,
+} from '@uprtcl/evees';
 
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 
 import { ProposalManifest, ProposalSummary } from './types';
 import { ProposalStatus, VoteValue } from './proposal.config.types';
+import { ConnectionEvents } from 'src/connection.polkadot';
 
 export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
+  logger = new Logger('EveesPolkadotCouncilProposalElement');
+
   @property({ type: String, attribute: 'proposal-id' })
   proposalId!: string;
 
-  @property({ attribute: false })
+  @internalProperty()
   loading = true;
 
-  @property({ attribute: false })
+  @internalProperty()
   showDetails = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   voting = false;
 
-  remote!: EveesPolkadotCouncil;
-
-  proposalManifest!: ProposalManifest;
+  @internalProperty()
   proposalStatusUI!: {
     summary: ProposalSummary;
     council: string[];
     isCouncilMember: boolean;
   };
+
+  remote!: EveesPolkadotCouncil;
+  proposalManifest!: ProposalManifest;
   eveesWorkspace!: Evees;
 
   async firstUpdated() {
     this.remote = this.evees.findRemote<EveesPolkadotCouncil>('council');
+
     this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.load());
+
+    this.remote.proposals.events.on(ProposalEvents.status_changed, (proposalStatus) => {
+      if (proposalStatus.id === this.proposalId) {
+        this.logger.log('proposal status changed', proposalStatus);
+        this.loadProposalStatus();
+      }
+    });
+
+    if (this.remote.connection.events) {
+      this.remote.connection.events.on(ConnectionEvents.newBlock, () => this.loadProposalStatus());
+    }
+
     this.load();
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('proposalId') && changedProperties.get('proposalId') !== undefined) {
+      this.loadProposalStatus();
+    }
   }
 
   async load() {
@@ -201,6 +232,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
               user-id=${this.proposalManifest.creatorId ? this.proposalManifest.creatorId : ''}
               show-name
             ></evees-author>
+            current block: ${this.proposalStatusUI.summary.block}
           </div>
           <evees-update-diff .localEvees=${this.eveesWorkspace}> </evees-update-diff>
           <div class="column">

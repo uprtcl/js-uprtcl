@@ -15,11 +15,12 @@ import {
   SearchEngine,
   Update,
   RemoteLoggedEvents,
+  ClientEvents,
 } from '@uprtcl/evees';
 import { EveesAccessControlFixedOwner } from '@uprtcl/evees-blockchain';
 
 import { PolkadotConnection } from '../../connection.polkadot';
-import { PolkadotCouncilEveesStorage } from './evees.council.store';
+import { CouncilStoreEvents, PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalsPolkadotCouncil } from './evees.polkadot-council.proposals';
 import { ProposalConfig } from './proposal.config.types';
 
@@ -44,6 +45,12 @@ export class EveesPolkadotCouncil implements RemoteEvees {
     this.councilStorage = new PolkadotCouncilEveesStorage(connection, config, this.casID);
     this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, this.id, config);
     this.events = new EventEmitter();
+
+    if (this.councilStorage.events) {
+      this.councilStorage.events.on(CouncilStoreEvents.perspectivesUpdated, (perpectiveIds) => {
+        this.events.emit(ClientEvents.updated, perpectiveIds);
+      });
+    }
   }
 
   setStore(store: CASStore) {
@@ -76,8 +83,7 @@ export class EveesPolkadotCouncil implements RemoteEvees {
 
   async snapPerspective(perspective: PartialPerspective): Promise<Secured<Perspective>> {
     /** only the council can create perspectives */
-    const creatorId = 'council';
-    return snapDefaultPerspective(this, { creatorId: 'council' });
+    return snapDefaultPerspective(this, { ...perspective, creatorId: 'council' });
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
@@ -121,10 +127,11 @@ export class EveesPolkadotCouncil implements RemoteEvees {
     this.events.emit(RemoteLoggedEvents.logged_status_changed);
   }
 
-  logout(): Promise<void> {
+  async logout(): Promise<void> {
+    await this.connection.disconnectWallet();
+
     this.events.emit(RemoteLoggedEvents.logged_out);
     this.events.emit(RemoteLoggedEvents.logged_status_changed);
-    return this.connection.disconnectWallet();
   }
 
   async connect() {

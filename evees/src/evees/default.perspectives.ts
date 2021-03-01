@@ -22,7 +22,7 @@ export const snapDefaultPerspective = async (
     remote: remote.id,
   });
 
-  const context = perspective.context !== undefined ? perspective.context : defaultContext;
+  const context = perspective.context !== undefined ? perspective.context : defaultContext.id;
 
   const object: Perspective = {
     creatorId: creatorId,
@@ -44,11 +44,7 @@ export const snapDefaultPerspective = async (
     },
   };
 
-  const hash = await remote.store.hashEntity({ object: secured, remote: remote.id });
-  return {
-    id: hash,
-    object: secured,
-  };
+  return remote.store.hashEntity({ object: secured, remote: remote.id });
 };
 
 export const getHome = async (
@@ -73,9 +69,5 @@ export const getHome = async (
     },
   };
 
-  const hash = await remote.store.hashEntity({ object: secured, remote: remote.id });
-  return {
-    id: hash,
-    object: secured,
-  };
+  return remote.store.hashEntity({ object: secured, remote: remote.id });
 };

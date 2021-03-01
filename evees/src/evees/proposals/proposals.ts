@@ -3,6 +3,7 @@ import { Proposal } from './types';
 
 export enum ProposalEvents {
   created = 'created',
+  status_changed = 'status_changed',
 }
 export interface Proposals {
   events?: EventEmitter;

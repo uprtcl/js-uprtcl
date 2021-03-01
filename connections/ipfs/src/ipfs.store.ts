@@ -3,7 +3,6 @@ import IPFS from 'ipfs';
 
 import {
   CidConfig,
-  CASStore,
   Connection,
   ConnectionOptions,
   sortObject,
@@ -168,8 +167,8 @@ export class IpfsStore extends Connection implements CASRemote {
     const entities = await this.storeEntities([object]);
     return entities[0].id;
   }
-  async hashEntity(object: any): Promise<string> {
+  async hashEntity<T = any>(object: any): Promise<Entity<T>> {
     const entities = await this.hashEntities([object]);
-    return entities[0].id;
+    return entities[0];
   }
 }

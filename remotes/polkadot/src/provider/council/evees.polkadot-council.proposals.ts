@@ -5,7 +5,7 @@ import { CASStore, Lens, Logger, Proposal, ProposalEvents, ProposalsWithUI } fro
 import { PolkadotConnection } from '../../connection.polkadot';
 
 import { ProposalConfig, VoteValue } from './proposal.config.types';
-import { PolkadotCouncilEveesStorage } from './evees.council.store';
+import { CouncilStoreEvents, PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
 import EventEmitter from 'events';
 
@@ -24,6 +24,12 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
     public config: ProposalConfig
   ) {
     this.events = new EventEmitter();
+    if (this.councilStore.events) {
+      this.councilStore.events.on(CouncilStoreEvents.proposalStatusChanged, (proposalStatus) => {
+        this.logger.log('Proposal Status Changed', proposalStatus);
+        this.events.emit(ProposalEvents.status_changed, proposalStatus);
+      });
+    }
   }
 
   async ready(): Promise<void> {

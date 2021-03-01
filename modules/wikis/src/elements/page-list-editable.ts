@@ -45,6 +45,7 @@ export class PageListEditable extends EveesBaseEditable<Wiki> {
   }
 
   render() {
+    console.log('render()');
     if (this.loading) return html`<uprtcl-loading></uprtcl-loading>`;
 
     const pages = this.data ? this.data.object.pages : [];

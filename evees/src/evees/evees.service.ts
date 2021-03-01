@@ -20,6 +20,7 @@ import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
+import { CASOnMemory } from 'src/cas/stores/cas.memory';
 
 export interface CreateCommit {
   dataId: string;
@@ -51,7 +52,8 @@ export class Evees {
   /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
   clone(client?: Client): Evees {
-    client = client || new ClientOnMemory(this.client, this.client.store);
+    const store = new CASOnMemory(this.client.store);
+    client = client || new ClientOnMemory(this.client, store);
     return new Evees(client, this.recognizer, this.remotes, this.config, this.modules);
   }
 

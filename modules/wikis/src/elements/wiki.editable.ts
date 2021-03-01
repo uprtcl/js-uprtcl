@@ -43,7 +43,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
   @internalProperty()
   creatingProposal = false;
 
-  mergeEvees!: Evees;
+  mergeEvees: Evees | undefined;
   remote!: RemoteEvees;
   editRemote!: RemoteEvees;
 
@@ -75,7 +75,11 @@ export class EditableWiki extends servicesConnect(LitElement) {
   }
 
   async checkChanges() {
-    if (!this.isLogged) return;
+    if (!this.isLogged) {
+      this.mergeEvees = undefined;
+      this.hasChanges = false;
+      return;
+    }
 
     this.logger.log('CheckChanges()');
     const forks = await this.evees.client.searchEngine.forks(this.uref);
@@ -106,6 +110,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
   }
 
   async showMergeDialog() {
+    if (!this.mergeEvees) throw new Error('this.mergeEvees undefined');
     this.showChangesDialog = true;
     await this.updateComplete;
 
@@ -126,10 +131,15 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
   async proposeMerge() {
     if (!this.evees.client.proposals) throw new Error('Proposals not defined');
+    if (!this.mergeEvees) throw new Error('mergeEvees not defined');
 
     this.creatingProposal = true;
 
     const mutation = await this.mergeEvees.client.diff();
+
+    /** the entities associated to the proposal are preemptively persisted on the CASRemote */
+    await this.mergeEvees.client.store.flush();
+
     const proposal: Proposal = {
       toPerspectiveId: this.uref,
       mutation,
