@@ -1,8 +1,8 @@
 import { CASStore } from 'src/cas/interfaces/cas-store';
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
-import { ParentAndChild, SearchOptions } from '../interfaces/types';
 import { BaseRouter } from './base.router';
+import { ParentAndChild, SearchOptions, SearchResult } from '../interfaces/types';
 
 export class SearchEngineRouter extends BaseRouter implements SearchEngine {
   constructor(protected remotes: RemoteEvees[], protected store: CASStore) {
@@ -28,9 +28,28 @@ export class SearchEngineRouter extends BaseRouter implements SearchEngine {
   async explore(options: SearchOptions) {
     const all = await Promise.all(
       this.remotes.map((remote) => {
-        return remote.searchEngine ? remote.searchEngine.explore(options) : [];
+        return remote.searchEngine ? remote.searchEngine.explore(options) : { perspectiveIds: [] };
       })
     );
-    return Array.prototype.concat.apply([], all);
+    // search results are concatenated
+    let combinedResult: SearchResult = {
+      perspectiveIds: [],
+      slice: {
+        entities: [],
+        perspectives: [],
+      },
+    };
+    all.forEach((result) => {
+      combinedResult.perspectiveIds.push(...result.perspectiveIds);
+      if (combinedResult.slice) {
+        if (result.slice) {
+          combinedResult.slice.entities.push(...result.slice?.entities);
+        }
+        if (result.slice) {
+          combinedResult.slice.perspectives.push(...result.slice.perspectives);
+        }
+      }
+    });
+    return combinedResult;
   }
 }

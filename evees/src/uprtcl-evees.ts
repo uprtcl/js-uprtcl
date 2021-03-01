@@ -18,6 +18,7 @@ export {
   Slice,
   SearchOptions,
   ParentAndChild,
+  SearchResult,
 } from './evees/interfaces/types';
 
 /** interfaces */
@@ -29,12 +30,19 @@ export { SearchEngine } from './evees/interfaces/search.engine';
 export { Client, ClientEvents } from './evees/interfaces/client';
 
 /** Default Perspectives */
-export { getHome, snapDefaultPerspective } from './evees/default.perspectives';
+export {
+  getHome,
+  snapDefaultPerspective,
+  getConceptPerspective,
+} from './evees/default.perspectives';
 
 /** Merge */
 export { SimpleMergeStrategy } from './evees/merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './evees/merge/recursive-context.merge-strategy';
-export { mergeStrings, mergeResult } from './evees/merge/utils';
+export { MergeStrategy } from './evees/merge/merge-strategy';
+export { HasMerge, MergingBehaviorNames } from './evees/merge/merge.behaviour';
+
+export { mergeStrings, mergeResult, mergeArrays } from './evees/merge/utils';
 
 /** Elements */
 export { EveesPerspectivesList } from './evees/elements/evees-perspectives-list';
@@ -92,7 +100,7 @@ export { CidConfig } from './cas/interfaces/cid-config';
 export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
 
 /** Patterns */
-export { HasChildren } from './patterns/behaviours/has-links';
+export { HasChildren, HasLinks, LinkingBehaviorNames } from './patterns/behaviours/has-links';
 export { HasLenses, Lens } from './patterns/behaviours/has-lenses';
 export { HasTitle } from './patterns/behaviours/has-title';
 export { HasEmpty } from './patterns/behaviours/has-empty';

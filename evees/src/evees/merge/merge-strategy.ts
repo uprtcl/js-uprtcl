@@ -40,5 +40,9 @@ export interface MergeStrategy {
    * Merges the links to other entities appropiately
    * @returns the new list of links
    */
-  mergeLinks(originalLinks: string[], modificationsLinks: string[][], config: any): Promise<any[]>;
+  mergeChildren?(
+    originalLinks: string[],
+    modificationsLinks: string[][],
+    config: any
+  ): Promise<any[]>;
 }

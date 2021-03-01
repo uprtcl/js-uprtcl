@@ -16,6 +16,7 @@ import {
 import { Entity } from '../cas/interfaces/entity';
 import { HasChildren } from '../patterns/behaviours/has-links';
 import { Signed } from '../patterns/interfaces/signable';
+import { ErrorWithCode } from '../utils/error';
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { getHome } from './default.perspectives';
@@ -39,6 +40,8 @@ export interface CreatePerspective {
   timestamp?: number;
   creatorId?: string;
 }
+
+export const BEHAVIOUR_NOT_FOUND_ERROR = 'BehaviorNotFound';
 
 export class Evees {
   constructor(
@@ -141,13 +144,62 @@ export class Evees {
     }
   }
 
-  behavior(object: object, behaviorName: string) {
-    const behaviors = this.recognizer.recognizeBehaviours(object);
-    const behavior = behaviors.find((b) => b[behaviorName]);
-    if (!behavior) throw new Error(`No behaviors found for object ${JSON.stringify(object)}`);
-    if (!behavior[behaviorName])
-      throw new Error(`Behavior ${behaviorName} not found for object ${JSON.stringify(object)}`);
-    return behavior[behaviorName](object);
+  private behavior(object: object, behaviorName: string): Array<any> {
+    const allBehaviors = this.recognizer.recognizeBehaviours(object);
+    const thisBehaviors = allBehaviors.filter((b) => b[behaviorName]);
+
+    if (!allBehaviors.length) {
+      throw new ErrorWithCode(
+        `No behaviors found for object ${JSON.stringify(object)}`,
+        BEHAVIOUR_NOT_FOUND_ERROR
+      );
+    }
+    if (thisBehaviors.length === 0) {
+      throw new ErrorWithCode(
+        `Behavior ${behaviorName} not found for object ${JSON.stringify(object)}`,
+        BEHAVIOUR_NOT_FOUND_ERROR
+      );
+    }
+
+    return thisBehaviors.map((behavior) => {
+      return behavior[behaviorName](object);
+    });
+  }
+
+  private hasBehavior(object: object, behaviorName: string) {
+    try {
+      this.behavior(object, behaviorName);
+    } catch (e) {
+      if (e.code === BEHAVIOUR_NOT_FOUND_ERROR) {
+        return false;
+      } else {
+        throw new Error(e.msg);
+      }
+    }
+    return true;
+  }
+
+  /** returns the first beheavior matched by the object, ignoring
+   * other possible matches */
+  behaviorFirst<T = any>(object: object, behaviorName: string) {
+    const allBehaviors = this.behavior(object, behaviorName);
+    return allBehaviors[0];
+  }
+
+  /** concatenate the results of behaviors matched by this object,
+   * assuming each match will be an array of elements,
+   * and remove duplicates */
+  behaviorConcat<T = any>(object: object, behaviorName: string): Array<T> {
+    const allBehaviors = this.behavior(object, behaviorName);
+    const uniqueMatches = new Set<any>();
+
+    allBehaviors.forEach((matched) => {
+      matched.forEach((match) => {
+        uniqueMatches.add(match);
+      });
+    });
+
+    return [...uniqueMatches];
   }
 
   /** a helper to add the old details on un update to have a set of added and removed
@@ -164,49 +216,67 @@ export class Evees {
     return update;
   }
 
-  /** A helper methods that processes an update and appends the links */
-  async checkLinks(update: Update, patternName = 'children'): Promise<Update> {
-    if (update.linkChanges) {
-      return update;
-    }
-
+  async checkText(update: Update): Promise<Update> {
     const hasData = update.details.headId;
 
     if (hasData) {
       const data = await this.getCommitData(update.details.headId as string);
-      const children = this.behavior(data.object, patternName);
-      let oldChildren: string[] = [];
+      const has = this.hasBehavior(data.object, 'text');
 
-      if (update.oldDetails && update.oldDetails.headId) {
-        const oldData = await this.getCommitData(update.oldDetails.headId);
-        oldChildren = this.behavior(oldData.object, patternName);
+      if (has) {
+        update.text = this.behaviorFirst(data.object, 'text');
       }
+    }
 
-      let addedChildren: string[] = [];
-      let removedChildren: string[] = [];
+    return update;
+  }
 
-      // identify added and removed children
-      const difference = oldChildren
-        .filter((oldChild: string) => !children.includes(oldChild))
-        .concat(children.filter((newChild: string) => !oldChildren.includes(newChild)));
+  /** A helper methods that processes an update and appends the links */
+  async checkLinks(update: Update, patternName = 'children'): Promise<Update> {
+    const hasData = update.details.headId;
 
-      difference.map((child) => {
-        if (oldChildren.includes(child)) {
-          removedChildren.push(child);
+    if (hasData) {
+      const data = await this.getCommitData(update.details.headId as string);
+      const has = this.hasBehavior(data.object, patternName);
+
+      if (has) {
+        const children = this.behaviorConcat(data.object, patternName);
+
+        let oldChildren: string[] = [];
+
+        if (update.oldDetails && update.oldDetails.headId) {
+          const oldData = await this.getCommitData(update.oldDetails.headId);
+
+          const oldHas = this.hasBehavior(oldData.object, patternName);
+          oldChildren = oldHas ? this.behaviorConcat(oldData.object, patternName) : [];
         }
 
-        if (children.includes(child)) {
-          addedChildren.push(child);
-        }
-      });
+        let addedChildren: string[] = [];
+        let removedChildren: string[] = [];
 
-      /** set the details */
-      update.linkChanges = {
-        [patternName]: {
-          added: addedChildren,
-          removed: removedChildren,
-        },
-      };
+        // identify added and removed children
+        const difference = oldChildren
+          .filter((oldChild: string) => !children.includes(oldChild))
+          .concat(children.filter((newChild: string) => !oldChildren.includes(newChild)));
+
+        difference.map((child) => {
+          if (oldChildren.includes(child)) {
+            removedChildren.push(child);
+          }
+
+          if (children.includes(child)) {
+            addedChildren.push(child);
+          }
+        });
+
+        /** set the details */
+        update.linkChanges = {
+          [patternName]: {
+            added: addedChildren,
+            removed: removedChildren,
+          },
+        };
+      }
     }
 
     return update;
@@ -216,16 +286,24 @@ export class Evees {
     return update;
   }
 
+  /** process the update and automatically append indexing data (children, links, and text) based on the new value */
+  async appendIndexing(update) {
+    update = await this.checkLinks(update, 'children');
+    update = await this.checkLinks(update, 'linksTo');
+    update = await this.checkText(update);
+    return update;
+  }
+
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async newPerspective(newPerspective: NewPerspective) {
-    newPerspective.update = await this.checkLinks(newPerspective.update);
+    newPerspective.update = await this.appendIndexing(newPerspective.update);
     return this.client.newPerspective(newPerspective);
   }
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async updatePerspective(update: Update) {
     update = await this.checkOldDetails(update);
-    update = await this.checkLinks(update);
+    update = await this.appendIndexing(update);
     return this.client.updatePerspective(update);
   }
 
@@ -338,7 +416,7 @@ export class Evees {
 
   async getPerspectiveChildren(uref: string): Promise<string[]> {
     const data = await this.getPerspectiveData(uref);
-    return this.behavior(data.object, 'children');
+    return this.behaviorConcat(data.object, 'children');
   }
 
   async spliceChildren(
@@ -384,7 +462,7 @@ export class Evees {
     childId: string,
     parentId: string,
     index = 0,
-    setGuardian = true
+    setGuardian = false
   ): Promise<void> {
     const parentData = await this.getPerspectiveData(parentId);
 
@@ -466,13 +544,13 @@ export class Evees {
 
   async getChildId(perspectiveId: string, ix: number) {
     const data = await this.getPerspectiveData(perspectiveId);
-    const children = this.behavior(data.object, 'children');
+    const children = this.behaviorConcat(data.object, 'children');
     return children[ix];
   }
 
   async getChildIndex(perspectiveId: string, childId: string): Promise<number> {
     const data = await this.getPerspectiveData(perspectiveId);
-    const allChildren = this.behavior(data.object, 'children') as string[];
+    const allChildren = this.behaviorConcat(data.object, 'children') as string[];
     const children = allChildren.filter((id) => id === childId);
     if (children.length === 0) {
       return -1;
@@ -636,11 +714,12 @@ export class Evees {
       if (!data) throw new Error(`data ${entityId} not found`);
 
       /** createOwnerPreservingEntity of children */
-      const children = this.behavior(data.object, 'children');
-
-      const getChildrenForks = children.map((link) => this.fork(link, remote, parentId));
-      const newChildren = await Promise.all(getChildrenForks);
-      const newObject = this.behavior(data.object, 'replaceChildren')(newChildren);
+      const getLinksForks = this.behaviorConcat(data.object, 'children').map((link) =>
+        this.fork(link, remote, parentId)
+      );
+      const newLinks = await Promise.all(getLinksForks);
+      // TODO how can replace children when matching multiple patterns?
+      const newObject = this.behaviorFirst(data.object, 'replaceChildren')(newLinks);
 
       return this.client.store.storeEntity({ object: newObject, remote });
     } else {
