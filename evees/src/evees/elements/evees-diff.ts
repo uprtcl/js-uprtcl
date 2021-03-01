@@ -1,10 +1,9 @@
 import { LitElement, property, html, css } from 'lit-element';
 
 import { Logger } from '../../utils/logger';
-import { PatternRecognizer } from '../../patterns/recognizer/pattern-recognizer';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { Update, HasDiffLenses, DiffLens } from '../interfaces/types';
+import { Update, DiffLens } from '../interfaces/types';
 import { Evees } from '../evees.service';
 
 const LOGINFO = true;
