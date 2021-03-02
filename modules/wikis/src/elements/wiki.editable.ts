@@ -205,14 +205,19 @@ export class EditableWiki extends servicesConnect(LitElement) {
       </div>
       <div class="wiki-content-with-nav">
         <div class="wiki-navbar">
-          <editable-page-list uref=${this.uref} ?editable=${this.canPropose}></editable-page-list>
+          <editable-page-list
+            first-uref=${this.uref}
+            ?editable=${this.canPropose}
+          ></editable-page-list>
         </div>
 
         <div class="wiki-content">
           ${this.selectedPageId !== undefined
             ? html`
                 <div class="page-container">
-                  <editable-document-editor uref=${this.selectedPageId}></editable-document-editor>
+                  <editable-document-editor
+                    first-uref=${this.selectedPageId}
+                  ></editable-document-editor>
                 </div>
               `
             : html` <div class="home-container">${this.renderHome()}</div> `}

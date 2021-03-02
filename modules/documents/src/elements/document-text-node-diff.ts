@@ -76,12 +76,8 @@ export class TextNodeDiff extends servicesConnect(LitElement) {
         text-align: left;
       }
       .document-container {
-        padding: 6px;
         border-radius: 3px;
         width: 100;
-      }
-      .editor-container {
-        border-radius: 3px;
       }
       .new-page {
         background-color: #abdaab;

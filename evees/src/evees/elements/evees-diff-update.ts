@@ -121,6 +121,7 @@ export class EveesDiffUpdate extends servicesConnect(LitElement) {
         font-size: 0.85rem;
       }
       .entity {
+        display: block;
         border-radius: 3px;
       }
       .green-background {

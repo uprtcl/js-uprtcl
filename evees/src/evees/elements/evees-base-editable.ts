@@ -1,4 +1,4 @@
-import { css, html, internalProperty } from 'lit-element';
+import { css, html, internalProperty, property } from 'lit-element';
 
 import { Logger } from '../../utils/logger';
 import { RemoteEvees } from '../interfaces/remote.evees';
@@ -9,6 +9,9 @@ import { EveesBaseElement } from './evees-base';
 export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   logger = new Logger('EVEES-INFO-Draft');
 
+  @property({ type: String, attribute: 'first-uref' })
+  firstRef!: string;
+
   @internalProperty()
   isDraft = false;
 
@@ -18,12 +21,11 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   @internalProperty()
   isLoggedEdit = false;
 
-  protected firstRef!: string;
   protected mineId: string | undefined = undefined;
   protected editRemote!: RemoteEvees;
 
   async firstUpdated() {
-    this.firstRef = this.uref;
+    this.uref = this.firstRef;
     this.remote = this.evees.remotes[0];
     this.editRemote = this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
     this.checkLoggedEdit();
@@ -39,6 +41,13 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     if (this.remote.events) {
       this.remote.events.on(RemoteLoggedEvents.logged_out, () => this.seeOfficial());
       this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.load());
+    }
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('firstRef') && changedProperties.get('firstRef')) {
+      this.uref = this.firstRef;
+      this.load();
     }
   }
 

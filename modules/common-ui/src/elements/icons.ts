@@ -210,8 +210,8 @@ export const icons = {
     enable-background="new 0 0 24 24"
     viewBox="0 0 24 24"
     fill="black"
-    width="18px"
-    height="18px"
+    width="24"
+    height="24"
   >
     <g><rect fill="none" height="24" width="24" /></g>
     <g>

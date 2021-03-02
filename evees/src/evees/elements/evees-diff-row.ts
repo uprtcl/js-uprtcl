@@ -34,7 +34,7 @@ export class EveesDiffRow extends LitElement {
   render() {
     return html`<div class="change-row">
       <div class=${'icon ' + `${this.color}-icon`}>${this.icon}</div>
-      <slot></slot>
+      <div class="element"><slot></slot></div>
     </div>`;
   }
 
@@ -50,6 +50,9 @@ export class EveesDiffRow extends LitElement {
         display: flex;
         align-items: center;
         margin-right: 14px;
+      }
+      .element {
+        flex: 1 0 auto;
       }
       .green-icon svg {
         fill: #abdaab;
