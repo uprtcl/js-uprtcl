@@ -22,6 +22,7 @@ import {
   CommitType,
   EveesInfoConfig,
   HasChildren,
+  Evees,
 } from '@uprtcl/evees';
 
 import { MenuConfig } from '@uprtcl/common-ui';
@@ -84,7 +85,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
-  client!: Client;
+  localEvees!: Evees;
 
   draftService = new EveesDraftsLocal();
 
@@ -96,8 +97,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       : [];
 
     /** overwrite evees sercive with provided client */
-    if (this.client) {
-      this.evees = this.evees.clone(this.client);
+    if (!this.localEvees) {
+      this.localEvees = this.evees.clone();
     }
 
     this.uref = this.firstRef;
@@ -142,7 +143,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async loadDoc() {
-    if (!this.evees.client) return;
+    if (!this.localEvees.client) return;
 
     if (LOGINFO) this.logger.log('loadDoc()', this.uref);
 
@@ -156,7 +157,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const node = await this.loadNode(uref, parent, ix);
 
-    const loadChildren = this.evees.behaviorConcat(node.draft, 'children').map(
+    const loadChildren = this.localEvees.behaviorConcat(node.draft, 'children').map(
       async (child, ix): Promise<DocNode> => {
         return child !== undefined && child !== ''
           ? await this.loadNodeRec(child, ix, node)
@@ -176,9 +177,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async refToNode(uref: string, parent?: DocNode, ix?: number) {
-    const entity = await this.evees.client.store.getEntity(uref);
+    const entity = await this.localEvees.client.store.getEntity(uref);
 
-    let entityType = this.evees.recognizer.recognizeType(entity.object);
+    let entityType = this.localEvees.recognizer.recognizeType(entity.object);
 
     let editable = false;
     let remoteId: string | undefined;
@@ -187,8 +188,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     let headId: string | undefined;
 
     if (entityType === PerspectiveType) {
-      const remote = await this.evees.getPerspectiveRemote(entity.id);
-      const { details } = await this.evees.client.getPerspective(uref, { levels: -1 });
+      const remote = await this.localEvees.getPerspectiveRemote(entity.id);
+      const { details } = await this.localEvees.client.getPerspective(uref, { levels: -1 });
       headId = details.headId;
       remoteId = remote.id;
 
@@ -202,7 +203,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         editable = false;
       }
 
-      const head = headId ? await this.evees.client.store.getEntity(headId) : undefined;
+      const head = headId ? await this.localEvees.client.store.getEntity(headId) : undefined;
       dataId = head ? head.object.payload.dataId : undefined;
     } else {
       if (entityType === CommitType) {
@@ -210,7 +211,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
         editable = parent.editable;
         remoteId = parent.remote;
-        const head = await this.evees.client.store.getEntity(uref);
+        const head = await this.localEvees.client.store.getEntity(uref);
         dataId = head ? head.object.payload.dataId : undefined;
         headId = uref;
       } else {
@@ -225,8 +226,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     if (!dataId || !entityType) throw Error(`data not loaded for uref ${this.uref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
-    const data = await this.evees.client.store.getEntity(dataId);
-    const dataType = this.evees.recognizer.recognizeType(data.object);
+    const data = await this.localEvees.client.store.getEntity(dataId);
+    const dataType = this.localEvees.recognizer.recognizeType(data.object);
     const canConvertTo = this.customBlocks
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];
@@ -349,7 +350,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     await this.preparePersistRec(this.doc, this.doc.remote, message);
     await this.persistRec(this.doc);
 
-    await this.evees.client.flush();
+    await this.localEvees.client.flush();
 
     /** reload doc from backend */
     await this.loadDoc();
@@ -365,7 +366,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     await Promise.all(prepareChildren);
 
     /** set the children with the children refs (which were created above) */
-    const object = this.evees.behaviorFirst(
+    const object = this.localEvees.behaviorFirst(
       node.draft,
       'replaceChildren'
     )(node.childrenNodes.map((node) => node.uref));
@@ -379,7 +380,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async derivePerspective(node: DocNode): Promise<Secured<Perspective>> {
-    const remote = await this.evees.getRemote(node.remote as string);
+    const remote = await this.localEvees.getRemote(node.remote as string);
     const creatorId = remote.userId ? remote.userId : '';
 
     const context = await hashObject({
@@ -442,7 +443,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         if (node.isPlaceholder) {
           if (!node.remote) throw new Error('remote not defined for node');
           const perspective = await this.derivePerspective(node);
-          const perspectiveId = await this.evees.createEvee({
+          const perspectiveId = await this.localEvees.createEvee({
             object: node.draft,
             remoteId: node.remote,
             guardianId: node.parent ? node.parent.uref : undefined,
@@ -480,9 +481,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     parentsIds?: string[],
     message?: string
   ): Promise<string> {
-    const dataId = await this.evees.client.store.storeEntity({ object: content, remote });
+    const dataId = await this.localEvees.client.store.storeEntity({ object: content, remote });
 
-    const commit = await this.evees.createCommit(
+    const commit = await this.localEvees.createCommit(
       {
         dataId,
         parentsIds,
@@ -497,7 +498,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const commitId = await this.createCommit(node.draft, node.remote);
 
-    await this.evees.updatePerspectiveData(node.uref, node.draft);
+    await this.localEvees.updatePerspectiveData(node.uref, node.draft);
 
     /** inform the external world if top element */
     if (this.doc && node.uref === this.doc.uref) {
@@ -512,7 +513,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   draftToPlaceholder(draft: any, parent?: DocNode, ix?: number): DocNode {
-    const dataType = this.evees.recognizer.recognizeType(draft);
+    const dataType = this.localEvees.recognizer.recognizeType(draft);
     const canConvertTo = this.customBlocks
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];
@@ -590,7 +591,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   ): Promise<DocNode[]> {
     if (LOGINFO) this.logger.log('spliceChildren()', { node, elements, index, count });
 
-    const currentChildren: string[] = this.evees.behaviorConcat(node.draft, 'children');
+    const currentChildren: string[] = this.localEvees.behaviorConcat(node.draft, 'children');
     index = index !== undefined ? index : currentChildren.length;
 
     /** create objects if elements is not an id */
@@ -625,7 +626,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       child.level = node.level + 1;
     });
 
-    const newDraft = this.evees.behaviorFirst(node.draft, 'replaceChildren')(newChildren);
+    const newDraft = this.localEvees.behaviorFirst(node.draft, 'replaceChildren')(newChildren);
     this.setNodeDraft(node, newDraft);
 
     return removed;
@@ -869,12 +870,15 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   async convertedTo(node: DocNode, type: string) {
     if (!node.draftType) throw new Error(`Draft type not defined for ${JSON.stringify(node)}`);
 
-    const newObject = await this.customBlocks[node.draftType].canConvertTo[type](node, this.client);
+    const newObject = await this.customBlocks[node.draftType].canConvertTo[type](
+      node,
+      this.localEvees.client
+    );
 
     /** update all the node properties */
     node = this.draftToPlaceholder(newObject, node.parent, node.ix);
 
-    const loadChildren = this.evees.behaviorConcat(node.draft, 'children').map(
+    const loadChildren = this.localEvees.behaviorConcat(node.draft, 'children').map(
       async (child, ix): Promise<DocNode> => {
         return child !== undefined && child !== ''
           ? await this.loadNodeRec(child, ix, node)
@@ -1090,7 +1094,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     if (LOGINFO) this.logger.log('renderTopRow()', { node });
     /** the uref to which the parent is pointing at */
 
-    const nodeLense = this.evees.behaviorFirst(node.draft, 'docNodeLenses')[0];
+    const nodeLense = this.localEvees.behaviorFirst(node.draft, 'docNodeLenses')[0];
     const hasIcon = this.hasChanges(node);
     const icon = node.uref === '' ? icons.add_box : icons.edit;
 
@@ -1190,7 +1194,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     }
 
     const renderHere = node.draft
-      ? this.evees.behaviorFirst(node.draft, 'docNodeLenses').length > 0
+      ? this.localEvees.behaviorFirst(node.draft, 'docNodeLenses').length > 0
       : false;
 
     return html`

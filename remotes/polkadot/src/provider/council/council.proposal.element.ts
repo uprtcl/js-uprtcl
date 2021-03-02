@@ -234,7 +234,11 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
             ></evees-author>
             current block: ${this.proposalStatusUI.summary.block}
           </div>
-          <evees-update-diff .localEvees=${this.eveesWorkspace}> </evees-update-diff>
+          <evees-update-diff
+            .localEvees=${this.eveesWorkspace}
+            perspective-id=${this.proposalManifest.toPerspectiveId}
+          >
+          </evees-update-diff>
           <div class="column">
             ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
             ${this.renderProposalStatus()}

@@ -12,7 +12,7 @@ export class EveesDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: String, attribute: 'perspective-id' })
-  rootPerspective!: string;
+  rootPerspective: string | undefined;
 
   @property({ type: Boolean })
   summary = false;
@@ -40,6 +40,10 @@ export class EveesDiff extends servicesConnect(LitElement) {
   async loadUpdates() {
     if (!this.localEvees) {
       return;
+    }
+
+    if (!this.rootPerspective) {
+      throw new Error('rootPerspective undefined');
     }
 
     this.loading = true;

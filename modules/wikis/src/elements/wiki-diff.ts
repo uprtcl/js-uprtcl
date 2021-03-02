@@ -46,17 +46,11 @@ export class WikiDiff extends servicesConnect(LitElement) {
     const oldPages = this.oldData ? this.oldData.pages : [];
     this.oldTitle = this.oldData ? this.oldData.title : '';
 
-    this.newPages = await Promise.all(
-      this.newData.pages
-        .filter((page) => (this.oldData ? !oldPages.includes(page) : true))
-        .map((page) => this.getTitle(page))
+    this.newPages = this.newData.pages.filter((page) =>
+      this.oldData ? !oldPages.includes(page) : true
     );
 
-    this.deletedPages = await Promise.all(
-      oldPages
-        .filter((page) => !this.newData.pages.includes(page))
-        .map((page) => this.getTitle(page))
-    );
+    this.deletedPages = oldPages.filter((page) => !this.newData.pages.includes(page));
 
     this.loading = false;
   }
@@ -67,7 +61,17 @@ export class WikiDiff extends servicesConnect(LitElement) {
   }
 
   renderPage(title: string, classes: string[]) {
-    return html` <div class=${['page-row'].concat(classes).join(' ')}>${title}</div> `;
+    return html`
+      <div class=${['page-row'].concat(classes).join(' ')}>
+        <uprtcl-expandable>
+          <documents-editor
+            uref=${title}
+            read-only
+            .localEvees=${this.localEvees}
+          ></documents-editor>
+        </uprtcl-expandable>
+      </div>
+    `;
   }
 
   renderTitleChange(title: string, classes: string[]) {
@@ -109,7 +113,7 @@ export class WikiDiff extends servicesConnect(LitElement) {
         ? html`
             <div class="pages-list">
               <div class="page-list-title">Pages Added</div>
-              ${newPages.map((title) => this.renderPage(title, ['green-background']))}
+              ${newPages.map((page) => this.renderPage(page, ['green-background']))}
             </div>
           `
         : ''}
@@ -117,7 +121,7 @@ export class WikiDiff extends servicesConnect(LitElement) {
         ? html`
             <div class="pages-list">
               <div class="page-list-title">Pages Removed</div>
-              ${deletedPages.map((title) => this.renderPage(title, ['red-background']))}
+              ${deletedPages.map((page) => this.renderPage(page, ['red-background']))}
             </div>
           `
         : ''}

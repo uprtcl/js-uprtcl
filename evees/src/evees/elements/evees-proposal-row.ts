@@ -68,6 +68,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     const proposal = await this.evees.client.store.getEntity(this.proposalId);
     const remote = this.evees.getRemote(proposal.object.remote);
+
     if (!remote.proposals) {
       throw new Error('Proposals not defined');
     }
@@ -165,7 +166,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     await this.updateComplete;
 
     this.eveesDiffEl.localEvees = localEvees;
-    await this.eveesDiffEl.loadUpdates();
+    this.eveesDiffEl.rootPerspective = this.proposal.toPerspectiveId;
 
     this.updatesDialogEl.options = options;
 

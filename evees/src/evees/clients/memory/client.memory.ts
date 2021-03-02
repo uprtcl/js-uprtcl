@@ -117,6 +117,7 @@ export class ClientOnMemory implements Client {
             ...newPerspective.update.details,
             canUpdate: true,
           },
+          levels: -1, // new perspectives are assumed to be fully on the cache
         });
       })
     );
