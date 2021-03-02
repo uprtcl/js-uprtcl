@@ -3,7 +3,7 @@ import { html, css, LitElement, property, internalProperty, query } from 'lit-el
 import {
   ClientEvents,
   Evees,
-  EveesDiff,
+  EveesDiffExplorer,
   Logger,
   Proposal,
   RecursiveContextMergeStrategy,
@@ -19,8 +19,8 @@ export class EditableWiki extends servicesConnect(LitElement) {
   @property({ type: String })
   uref!: string;
 
-  @query('#evees-update-diff')
-  eveesDiff!: EveesDiff;
+  @query('#evees-diff-explorer')
+  eveesDiff!: EveesDiffExplorer;
 
   @query('#proposals-popper')
   proposalsPopper!: UprtclPopper;
@@ -84,7 +84,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
     this.logger.log('CheckChanges()');
     const forks = await this.evees.client.searchEngine.forks(this.uref);
     if (forks.length > 0) {
-      this.mergeEvees = this.evees.clone();
+      this.mergeEvees = this.evees.clone('WikiMergeClient');
       const merger = new RecursiveContextMergeStrategy(this.mergeEvees);
       await merger.mergePerspectivesExternal(this.uref, forks[0], { forceOwner: true });
       const diff = await this.mergeEvees.client.diff();
@@ -224,10 +224,10 @@ export class EditableWiki extends servicesConnect(LitElement) {
             .options=${updateDialogOptions}
             @option-selected=${this.dialogOptionSelected}
           >
-            <evees-update-diff
-              id="evees-update-diff"
+            <evees-diff-explorer
+              id="evees-diff-explorer"
               perspective-id=${this.uref}
-            ></evees-update-diff>
+            ></evees-diff-explorer>
           </uprtcl-dialog>`
         : ''}
     `;

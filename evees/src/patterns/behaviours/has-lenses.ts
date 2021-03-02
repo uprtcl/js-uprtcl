@@ -1,12 +1,14 @@
 import { TemplateResult } from 'lit-element';
+
+import { Evees } from '../../evees/evees.service';
 import { Behaviour } from '../interfaces/behaviour';
 
-export interface Lens {
+export interface Lens<T = string> {
   name: string;
-  render: (entity: any, context?: any) => TemplateResult;
   type?: string;
+  render: (input: T, evees?: Evees) => TemplateResult;
 }
 
-export interface HasLenses<O> extends Behaviour<O> {
-  lenses: (object: O) => Lens[];
+export interface HasLenses<O, I = string> extends Behaviour<O> {
+  lenses: (object: O) => Lens<I>[];
 }

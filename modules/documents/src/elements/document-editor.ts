@@ -98,7 +98,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     /** overwrite evees sercive with provided client */
     if (!this.localEvees) {
-      this.localEvees = this.evees.clone();
+      this.localEvees = this.evees.clone('EditorClient');
     }
 
     this.uref = this.firstRef;
@@ -1087,7 +1087,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   renderWithCortex(node: DocNode) {
-    return html` <cortex-entity hash=${node.uref}></cortex-entity> `;
+    return html` <uprtcl-entity uref=${node.uref}></uprtcl-entity> `;
   }
 
   renderTopRow(node: DocNode) {
@@ -1142,7 +1142,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
                       .eveesInfoConfig=${this.eveesInfoConfig}
                     ></evees-info-popper></div>
                   `
-          : html` <div class="empty-evees-info"></div> `}
+          : html``}
         <div class="node-content">
           ${nodeLense.render(node, {
             focus: () => this.focused(node),
@@ -1229,29 +1229,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       },
     };
     return html`
-      <!-- <div class="doc-topbar">
-        ${
-          this.docHasChanges && !this.showCommitMessage
-            ? html`
-                <uprtcl-button-loading
-                  icon="unarchive"
-                  @click=${() => this.persistAll()}
-                  ?loading=${this.persistingAll}
-                >
-                  push
-                </uprtcl-button-loading>
-                <uprtcl-help>
-                  <span>
-                    Your current changes are safely stored on this device and won't be lost.<br /><br />
-                    "Push" them if<br /><br />
-                    <li>You are about to propose a merge.</li>
-                    <br />
-                    <li>This draft is public and you want them to be visible to others.</li>
-                  </span>
-                </uprtcl-help>
-              `
-            : ''
-        } -->
         ${
           this.showCommitMessage
             ? html`

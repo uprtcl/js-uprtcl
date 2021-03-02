@@ -83,7 +83,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
     this.proposalManifest = perspective.object.payload.meta.proposal;
 
     // apply the changes in the proposal on a new Evees workspace
-    this.eveesWorkspace = this.evees.clone();
+    this.eveesWorkspace = this.evees.clone('CouncilProposalClient');
     this.eveesWorkspace.client.update(this.proposalManifest.mutation);
   }
 
@@ -234,11 +234,11 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
             ></evees-author>
             current block: ${this.proposalStatusUI.summary.block}
           </div>
-          <evees-update-diff
+          <evees-diff-explorer
             .localEvees=${this.eveesWorkspace}
             perspective-id=${this.proposalManifest.toPerspectiveId}
           >
-          </evees-update-diff>
+          </evees-diff-explorer>
           <div class="column">
             ${this.proposalStatusUI.isCouncilMember ? this.renderCouncilMember() : ''}
             ${this.renderProposalStatus()}
@@ -323,7 +323,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
         display: flex;
         flex-direction: column;
       }
-      evees-update-diff {
+      evees-diff-explorer {
         overflow: auto;
         margin: 10px 0px;
       }

@@ -24,6 +24,7 @@ import { RemoteEvees } from './interfaces/remote.evees';
 import { getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
 import { CASOnMemory } from 'src/cas/stores/cas.memory';
+import { arrayDiff } from './merge/utils';
 
 export interface CreateCommit {
   dataId: string;
@@ -56,9 +57,9 @@ export class Evees {
 
   /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
-  clone(client?: Client): Evees {
+  clone(name: string = 'NewClient', client?: Client): Evees {
     const store = new CASOnMemory(this.client.store);
-    client = client || new ClientOnMemory(this.client, store);
+    client = client || new ClientOnMemory(this.client, store, undefined, name);
     return new Evees(client, this.recognizer, this.remotes, this.config, this.modules);
   }
 
@@ -168,6 +169,11 @@ export class Evees {
     });
   }
 
+  async perspectiveBehaviorFirst(uref: string, behavior: string) {
+    const data = await this.getPerspectiveData(uref);
+    return this.behaviorFirst(data.object, behavior);
+  }
+
   private hasBehavior(object: object, behaviorName: string) {
     try {
       this.behavior(object, behaviorName);
@@ -253,29 +259,13 @@ export class Evees {
           oldChildren = oldHas ? this.behaviorConcat(oldData.object, patternName) : [];
         }
 
-        let addedChildren: string[] = [];
-        let removedChildren: string[] = [];
-
-        // identify added and removed children
-        const difference = oldChildren
-          .filter((oldChild: string) => !children.includes(oldChild))
-          .concat(children.filter((newChild: string) => !oldChildren.includes(newChild)));
-
-        difference.map((child) => {
-          if (oldChildren.includes(child)) {
-            removedChildren.push(child);
-          }
-
-          if (children.includes(child)) {
-            addedChildren.push(child);
-          }
-        });
+        const { added, removed } = arrayDiff(oldChildren, children);
 
         /** set the details */
         update.linkChanges = {
           [patternName]: {
-            added: addedChildren,
-            removed: removedChildren,
+            added,
+            removed,
           },
         };
       }

@@ -42,7 +42,7 @@ export { SimpleMergeStrategy } from './evees/merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './evees/merge/recursive-context.merge-strategy';
 export { HasMerge, MergingBehaviorNames } from './evees/merge/merge.behaviour';
 
-export { mergeStrings, mergeResult, mergeArrays } from './evees/merge/utils';
+export { mergeStrings, mergeResult, mergeArrays, arrayDiff } from './evees/merge/utils';
 
 /** Elements */
 export { EveesPerspectivesList } from './evees/elements/evees-perspectives-list';
@@ -62,7 +62,7 @@ export {
   CONTENT_UPDATED_TAG,
   PROPOSAL_CREATED_TAG,
 } from './evees/elements/events';
-export { EveesDiff } from './evees/elements/evees-diff';
+export { EveesDiffExplorer } from './evees/elements/evees-diff-explorer';
 
 /** UI support components */
 export { prettyAddress } from './evees/elements/support';
@@ -102,6 +102,7 @@ export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
 /** Patterns */
 export { HasChildren, HasLinks, LinkingBehaviorNames } from './patterns/behaviours/has-links';
 export { HasLenses, Lens } from './patterns/behaviours/has-lenses';
+export { RenderEntityInput } from './patterns/elements/uprtcl-entity';
 export { HasTitle } from './patterns/behaviours/has-title';
 export { HasEmpty } from './patterns/behaviours/has-empty';
 export { PatternRecognizer } from './patterns/recognizer/pattern-recognizer';

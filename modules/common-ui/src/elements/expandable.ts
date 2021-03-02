@@ -1,12 +1,16 @@
-import { LitElement, html, css, property } from 'lit-element';
-import { icons } from './icons';
+import { LitElement, html, css, property, query } from 'lit-element';
 
 export class UprtclExpandable extends LitElement {
   @property({ type: Boolean })
   collapsed: boolean = true;
 
+  @query('#slot')
+  localSlot!: HTMLSlotElement;
+
   render() {
     const classes = ['container'];
+
+    console.log(this.localSlot);
 
     if (this.collapsed) {
       classes.push('collapsed');
@@ -14,7 +18,7 @@ export class UprtclExpandable extends LitElement {
       classes.push('expanded');
     }
 
-    return html`<div class=${classes.join(' ')}><slot></slot></div>
+    return html`<div class=${classes.join(' ')}><slot id="slot"></slot></div>
       <uprtcl-button
         @click=${() => (this.collapsed = !this.collapsed)}
         skinny

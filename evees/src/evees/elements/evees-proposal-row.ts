@@ -2,11 +2,10 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
-import { Entity } from '../../cas/interfaces/entity';
 import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { EveesDiff } from './evees-diff';
+import { EveesDiffExplorer } from './evees-diff-explorer';
 import { ContentUpdatedEvent } from './events';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 import { Proposal } from '../proposals/types';
@@ -42,8 +41,8 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
 
-  @query('#evees-update-diff')
-  eveesDiffEl!: EveesDiff;
+  @query('#evees-diff-explorer')
+  eveesDiffEl!: EveesDiffExplorer;
 
   proposal!: Proposal;
   executed = false;
@@ -134,7 +133,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   }
 
   async showProposalChanges() {
-    const localEvees = this.evees.clone();
+    const localEvees = this.evees.clone('ProposalClient');
     await localEvees.client.update(this.proposal.mutation);
 
     this.showDiff = true;
@@ -205,7 +204,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   renderDiff() {
     return html`
       <uprtcl-dialog id="updates-dialog">
-        <evees-update-diff id="evees-update-diff"> </evees-update-diff>
+        <evees-diff-explorer id="evees-diff-explorer"> </evees-diff-explorer>
       </uprtcl-dialog>
     `;
   }

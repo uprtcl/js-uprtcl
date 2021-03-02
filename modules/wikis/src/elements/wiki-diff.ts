@@ -1,14 +1,9 @@
-import { Client, Evees, Logger, servicesConnect } from '@uprtcl/evees';
-import { LitElement, property, html, css } from 'lit-element';
+import { Evees, Logger, servicesConnect } from '@uprtcl/evees';
+import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
 import { Wiki } from '../types';
 
 const LOGINFO = true;
-
-interface PageDetails {
-  uref: string;
-  title: string;
-}
 
 export class WikiDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
@@ -16,19 +11,17 @@ export class WikiDiff extends servicesConnect(LitElement) {
   @property({ type: Boolean })
   summary = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   newData!: Wiki;
 
-  @property({ attribute: false })
+  @internalProperty()
   oldData!: Wiki;
 
-  @property({ attribute: false })
+  @internalProperty()
   loading = true;
 
   localEvees!: Evees;
 
-  newPages!: string[];
-  deletedPages!: string[];
   oldTitle = '';
 
   async firstUpdated() {
@@ -42,36 +35,13 @@ export class WikiDiff extends servicesConnect(LitElement) {
 
   async loadChanges() {
     this.loading = true;
-
-    const oldPages = this.oldData ? this.oldData.pages : [];
     this.oldTitle = this.oldData ? this.oldData.title : '';
-
-    this.newPages = this.newData.pages.filter((page) =>
-      this.oldData ? !oldPages.includes(page) : true
-    );
-
-    this.deletedPages = oldPages.filter((page) => !this.newData.pages.includes(page));
-
     this.loading = false;
   }
 
   async getTitle(uref: string): Promise<string> {
     const data = await this.localEvees.getPerspectiveData(uref);
     return this.localEvees.behaviorFirst(data.object, 'title');
-  }
-
-  renderPage(title: string, classes: string[]) {
-    return html`
-      <div class=${['page-row'].concat(classes).join(' ')}>
-        <uprtcl-expandable>
-          <documents-editor
-            uref=${title}
-            read-only
-            .localEvees=${this.localEvees}
-          ></documents-editor>
-        </uprtcl-expandable>
-      </div>
-    `;
   }
 
   renderTitleChange(title: string, classes: string[]) {
@@ -89,40 +59,14 @@ export class WikiDiff extends servicesConnect(LitElement) {
 
     const titleChanged = this.newData.title !== this.oldTitle;
 
-    const newPages = this.newPages !== undefined ? this.newPages : [];
-    const deletedPages = this.deletedPages !== undefined ? this.deletedPages : [];
-
-    if (this.summary) {
-      return html`
-        ${newPages.length ? html` <span>${newPages.length} new pages added,</span> ` : ''}
-        ${deletedPages.length ? html` <span>${deletedPages.length} pages deleted.</span> ` : ''}
-      `;
-    }
-
     return html`
       ${titleChanged
         ? html`
-            <div class="pages-list">
-              <div class="page-list-title">New Title</div>
+            <evees-diff-row type="edit"
+              ><div class="page-list-title">New Title</div>
               ${this.renderTitleChange(this.newData.title, ['green-background'])}
               ${this.renderTitleChange(this.oldTitle, ['red-background'])}
-            </div>
-          `
-        : ''}
-      ${newPages.length > 0
-        ? html`
-            <div class="pages-list">
-              <div class="page-list-title">Pages Added</div>
-              ${newPages.map((page) => this.renderPage(page, ['green-background']))}
-            </div>
-          `
-        : ''}
-      ${deletedPages.length > 0
-        ? html`
-            <div class="pages-list">
-              <div class="page-list-title">Pages Removed</div>
-              ${deletedPages.map((page) => this.renderPage(page, ['red-background']))}
-            </div>
+            </evees-diff-row>
           `
         : ''}
     `;

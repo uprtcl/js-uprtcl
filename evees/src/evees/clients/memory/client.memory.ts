@@ -38,7 +38,12 @@ export class ClientOnMemory implements Client {
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
 
-  constructor(protected base: Client, public store: CASStore, mutation?: EveesMutation) {
+  constructor(
+    protected base: Client,
+    public store: CASStore,
+    mutation?: EveesMutation,
+    readonly name: string = 'OnMemoryClient'
+  ) {
     this.events = new EventEmitter();
 
     if (mutation) {

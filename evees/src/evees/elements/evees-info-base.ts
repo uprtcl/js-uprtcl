@@ -12,12 +12,12 @@ import { servicesConnect } from '../../container/multi-connect.mixin';
 import { Perspective, PerspectiveDetails, Commit } from '../interfaces/types';
 import { RemoteEvees } from '../interfaces/remote.evees';
 
-import { EveesDiff } from './evees-diff';
 import { ProposalCreatedEvent } from './events';
 import { Proposal } from '../proposals/types';
 import { RecursiveContextMergeStrategy } from '../merge/recursive-context.merge-strategy';
 import { Evees } from '../evees.service';
 import { MergeConfig } from '../merge/merge-strategy';
+import { EveesDiffExplorer } from './evees-diff-explorer';
 
 interface PerspectiveData {
   id?: string;
@@ -87,8 +87,8 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
 
-  @query('#evees-update-diff')
-  eveesDiffEl!: EveesDiff;
+  @query('#evees-diff-explorer')
+  eveesDiffEl!: EveesDiffExplorer;
 
   @property({ attribute: false })
   eveesDiffInfoMessage!: TemplateResult;
@@ -185,7 +185,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
       guardianId: this.uref,
     };
 
-    this.eveesPull = this.evees.clone();
+    this.eveesPull = this.evees.clone('PullClient');
     const merger = new RecursiveContextMergeStrategy(this.eveesPull);
 
     await merger.mergePerspectivesExternal(this.uref, fromUref, {
@@ -221,7 +221,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     const { details: toDetails } = await this.evees.client.getPerspective(toPerspectiveId);
     const { details: fromDetails } = await this.evees.client.getPerspective(fromPerspectiveId);
 
-    const eveesMerge = this.evees.clone();
+    const eveesMerge = this.evees.clone('MergeClient');
     const merger = new RecursiveContextMergeStrategy(eveesMerge);
     await merger.mergePerspectivesExternal(toPerspectiveId, fromPerspectiveId, config);
 
@@ -380,7 +380,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     return html`
       <uprtcl-dialog id="updates-dialog">
         <div>${this.eveesDiffInfoMessage}</div>
-        <evees-update-diff id="evees-update-diff"></evees-update-diff>
+        <evees-diff-explorer id="evees-diff-explorer"></evees-diff-explorer>
       </uprtcl-dialog>
     `;
   }
