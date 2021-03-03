@@ -46,6 +46,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
 
   updated(changedProperties) {
     if (changedProperties.has('firstRef') && changedProperties.get('firstRef')) {
+      this.isDraft = false;
       this.uref = this.firstRef;
       this.load();
     }
