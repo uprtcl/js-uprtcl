@@ -52,7 +52,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       details: { headId: newHead },
     };
 
-    this.evees.client.update({ updates: [request] });
+    await this.evees.updatePerspective(request);
     return toPerspectiveId;
   }
 

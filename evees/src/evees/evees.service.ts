@@ -256,6 +256,7 @@ export class Evees {
 
         /** set the details */
         update.linkChanges = {
+          ...update.linkChanges,
           [patternName]: {
             added: addedChildren,
             removed: removedChildren,

@@ -27,6 +27,16 @@ export class UprtclTextField extends LitElement {
     this.inputEl.focus();
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.addEventListener('keydown', ((event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        this.dispatchEvent(new CustomEvent('enter'));
+      }
+    }) as EventListener);
+  }
+
   render() {
     return html`<div class="container">
       ${this.focused && this.keepLabel ? html`<div class="label">${this.label}</div>` : ''}
