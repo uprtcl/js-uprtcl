@@ -42,6 +42,7 @@ export class SearchEngineRouter implements SearchEngine {
         entities: [],
         perspectives: [],
       },
+      ended: allResults[allResults.length - 1].ended,
     };
     allResults.forEach((result) => {
       combinedResult.perspectiveIds.push(...result.perspectiveIds);

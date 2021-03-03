@@ -1317,7 +1317,10 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         display: flex;
         flex-direction: column;
         text-align: left;
-        font-family: 'Roboto', sans-serif;
+      }
+
+      * {
+        font-family: 'Lora', serif;
       }
 
       .editor-container {
@@ -1358,7 +1361,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
       .doc-node-container {
         border-radius: 4px;
-        max-width: 900px;
+        max-width: 1280px;
         margin: auto;
       }
 
