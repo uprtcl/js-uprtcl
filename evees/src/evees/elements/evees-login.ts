@@ -101,7 +101,12 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
                   ></evees-author>
                   <hr />
                   <uprtcl-list
-                    ><uprtcl-list-item @click=${() => this.logoutAll()}
+                    ><uprtcl-list-item
+                      ><a href=${`${window.location.origin}/u/${remote.userId}`} target="_blank"
+                        >Public Profile</a
+                      ></uprtcl-list-item
+                    >
+                    <uprtcl-list-item @click=${() => this.logoutAll()}
                       >Log out</uprtcl-list-item
                     ></uprtcl-list
                   >
@@ -118,7 +123,13 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
         display: flex;
         align-items: center;
       }
-
+      a {
+        text-decoration: none;
+      }
+      a:visited {
+        text-decoration: none;
+        color: inherit;
+      }
       .account-list-title {
         text-align: center;
       }
