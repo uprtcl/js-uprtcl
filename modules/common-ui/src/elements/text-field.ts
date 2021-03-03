@@ -10,6 +10,12 @@ export class UprtclTextField extends LitElement {
   @property({ type: Boolean })
   disabled = false;
 
+  @property({ type: Boolean, attribute: 'show-border' })
+  showBorder = false;
+
+  @property({ type: Boolean, attribute: 'keep-label' })
+  keepLabel = false;
+
   @property({ attribute: false })
   focused = false;
 
@@ -23,8 +29,8 @@ export class UprtclTextField extends LitElement {
 
   render() {
     return html`<div class="container">
-      ${this.focused ? html`<div class="label">${this.label}</div>` : ''}
-      <div class="input-container">
+      ${this.focused && this.keepLabel ? html`<div class="label">${this.label}</div>` : ''}
+      <div class=${'input-container' + (this.showBorder ? ' input-container-border' : '')}>
         <input
           ?disabled=${this.disabled}
           id="input-element"
@@ -72,12 +78,14 @@ export class UprtclTextField extends LitElement {
           border-radius: 4px;
         }
         .input-container {
+          width: fit-content;
           caret-color: #2196f3;
+        }
+        .input-container-border {
           border-color: #2196f3 !important;
           border-radius: 4px;
           border-style: solid;
           border-width: 2px;
-          width: fit-content;
         }
       `,
     ];
