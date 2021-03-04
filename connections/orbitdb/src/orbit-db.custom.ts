@@ -5,7 +5,7 @@ import OrbitDBSet from '@tabcat/orbit-db-set';
 import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 
 import { Connection, ConnectionOptions, Logger } from '@uprtcl/evees';
-import { PinnedCacheDB } from '@uprtcl/ipfs-provider';
+import { PinnedCacheDB, PinnerConfig } from '@uprtcl/ipfs-provider';
 
 import { IdentitySource } from './identity.source';
 import { CustomStore } from './types';
@@ -35,7 +35,7 @@ const ENABLE_LOG = false;
 
 export class OrbitDBCustom extends Connection {
   public instance: any;
-  pinnedCache: PinnedCacheDB;
+  pinnedCache?: PinnedCacheDB;
   private storeQueue = {};
   public identity: null | any = null;
   readonly status: Status = {
@@ -50,8 +50,7 @@ export class OrbitDBCustom extends Connection {
     protected storeManifests: CustomStore[],
     protected acls: any[],
     protected identitySource: IdentitySource,
-    protected pinnerUrl?: string,
-    protected pinnerMultiaddr?: string,
+    protected pinnerConfig?: PinnerConfig,
     public ipfs?: any,
     options?: ConnectionOptions
   ) {
@@ -64,7 +63,9 @@ export class OrbitDBCustom extends Connection {
       }
     });
 
-    this.pinnedCache = new PinnedCacheDB(`pinned-at-${this.pinnerUrl}`);
+    this.pinnedCache = this.pinnerConfig
+      ? new PinnedCacheDB(`pinned-at-${this.pinnerConfig.url}`)
+      : undefined;
   }
 
   /**
@@ -156,12 +157,15 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async isPinned(address: string) {
-    const result = await fetch(`${this.pinnerUrl}/includes?address=${address}`, {
-      method: 'GET',
-    });
+    if (this.pinnerConfig) {
+      const result = await fetch(`${this.pinnerConfig.url}/includes?address=${address}`, {
+        method: 'GET',
+      });
 
-    const { includes } = await result.json();
-    return includes;
+      const { includes } = await result.json();
+      return includes;
+    }
+    return false;
   }
 
   private async openStore(address: string | any): Promise<any> {
@@ -225,13 +229,13 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async getAll(address: string) {
-    if (this.pinnerUrl) {
+    if (this.pinnerConfig) {
       const addr = address.toString();
 
       if (ENABLE_LOG) {
         this.logger.log('getting from', addr);
       }
-      const result = await fetch(`${this.pinnerUrl}/getAll?address=${addr}`, {
+      const result = await fetch(`${this.pinnerConfig.url}/getAll?address=${addr}`, {
         method: 'GET',
       });
 
@@ -240,13 +244,13 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async getEntity(hash: string) {
-    if (this.pinnerUrl) {
+    if (this.pinnerConfig) {
       const addr = hash.toString();
 
       if (ENABLE_LOG) {
         this.logger.log('getting from', addr);
       }
-      const result = await fetch(`${this.pinnerUrl}/getEntity?cid=${addr}`, {
+      const result = await fetch(`${this.pinnerConfig.url}/getEntity?cid=${addr}`, {
         method: 'GET',
       });
 
@@ -262,17 +266,17 @@ export class OrbitDBCustom extends Connection {
   }
 
   public async pin(address: string) {
-    if (this.pinnerUrl) {
+    if (this.pinnerConfig && this.pinnedCache) {
       const addr = address.toString();
       const pinned = await this.pinnedCache.pinned.get(addr);
       if (!pinned) {
         if (ENABLE_LOG) {
           this.logger.log('pinning', addr);
         }
-        fetch(`${this.pinnerUrl}/pin?address=${addr}`, {
+        fetch(`${this.pinnerConfig.url}/pin?address=${addr}`, {
           method: 'GET',
         }).then((response) => {
-          this.pinnedCache.pinned.put({ id: addr });
+          (this.pinnedCache as PinnedCacheDB).pinned.put({ id: addr });
         });
       }
     }

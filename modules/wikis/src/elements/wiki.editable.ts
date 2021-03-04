@@ -166,6 +166,43 @@ export class EditableWiki extends servicesConnect(LitElement) {
     `;
   }
 
+  renderTopBar() {
+    return html`<div class="top-bar">
+      <div class="proposals-container">
+        <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
+          <uprtcl-button
+            slot="icon"
+            class="proposals-button"
+            icon="arrow_drop_down"
+            skinny
+            transition
+          >
+            proposals
+          </uprtcl-button>
+          ${this.renderProposals()}
+        </uprtcl-popper>
+      </div>
+      <div class="propose-container">
+        ${this.hasChanges && this.canPropose
+          ? html`<uprtcl-button @click=${() => this.showMergeDialog()}
+              >propose changes</uprtcl-button
+            >`
+          : ''}${this.isLogged && !this.canPropose
+          ? html`<span>can't make proposals :(</span>`
+          : ``}
+      </div>
+      <div class="login-container">
+        ${!this.isLogged
+          ? html`<uprtcl-button @click=${() => this.loginClicked()}>login</uprtcl-button>`
+          : html`<evees-author user-id=${this.remote.userId as string}></evees-author>`}
+      </div>
+
+      <div class="snackbar-container">
+        ${this.creatingProposal ? html`<uprtcl-loading></uprtcl-loading>` : ''}
+      </div>
+    </div>`;
+  }
+
   render() {
     this.logger.log('rendering wiki after loading');
 
@@ -179,30 +216,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
       },
     };
     return html`
-      <div class="top-bar">
-        <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
-          <uprtcl-button
-            slot="icon"
-            class="proposals-button"
-            icon="arrow_drop_down"
-            skinny
-            transition
-          >
-            proposals
-          </uprtcl-button>
-          ${this.renderProposals()}
-        </uprtcl-popper>
-        <uprtcl-button @click=${() => this.loginClicked()}
-          >${this.isLogged ? 'logout' : 'login'}</uprtcl-button
-        >
-        ${this.isLogged && !this.canPropose ? html`<span>can't make proposals :(</span>` : ``}
-        ${this.hasChanges && this.canPropose
-          ? html`<uprtcl-button @click=${() => this.showMergeDialog()}
-              >propose changes</uprtcl-button
-            >`
-          : ''}
-        ${this.creatingProposal ? html`<uprtcl-loading></uprtcl-loading>` : ''}
-      </div>
+      ${this.renderTopBar()}
       <div class="wiki-content-with-nav">
         <div class="wiki-navbar">
           <editable-page-list
@@ -249,12 +263,24 @@ export class EditableWiki extends servicesConnect(LitElement) {
         }
         .top-bar {
           flex: 0 0 auto;
+          display: flex;
           height: 70px;
           box-shadow: 1px 0px 10px rgba(0, 0, 0, 0.1);
-          display: flex;
           align-items: center;
           padding: 0rem 2rem;
         }
+        .proposals-container {
+          flex: 0 0 auto;
+        }
+
+        .propose-container {
+          flex: 1 0 auto;
+        }
+
+        .login-container {
+          flex: 0 0 auto;
+        }
+
         .wiki-content-with-nav {
           flex: 1 1 auto;
           display: flex;

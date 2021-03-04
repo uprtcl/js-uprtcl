@@ -13,7 +13,7 @@ import {
   hashObject,
 } from '@uprtcl/evees';
 
-import { IpfsConnectionOptions } from './types';
+import { IpfsConnectionOptions, PinnerConfig } from './types';
 import { PinnedCacheDB } from './pinner.cache';
 
 export interface PutConfig {
@@ -45,18 +45,20 @@ const promiseWithTimeout = (promise: Promise<any>, timeout: number): Promise<any
 
 export class IpfsStore extends Connection implements CASRemote {
   logger = new Logger('IpfsStore');
-  pinnedCache: PinnedCacheDB;
+  pinnedCache?: PinnedCacheDB;
 
   casID = 'ipfs';
 
   constructor(
     public cidConfig: CidConfig = defaultCidConfig,
     protected client?: any,
-    protected pinnerUrl?: string,
+    protected pinnerConfig?: PinnerConfig,
     connectionOptions: ConnectionOptions = {}
   ) {
     super(connectionOptions);
-    this.pinnedCache = new PinnedCacheDB(`pinned-at-${this.pinnerUrl}`);
+    this.pinnedCache = this.pinnerConfig
+      ? new PinnedCacheDB(`pinned-at-${this.pinnerConfig.url}`)
+      : undefined;
   }
 
   /**
@@ -94,14 +96,17 @@ export class IpfsStore extends Connection implements CASRemote {
         hashString,
       });
     }
-    if (this.pinnerUrl) {
+    if (this.pinnedCache) {
+      const config = this.pinnerConfig as PinnerConfig;
+      const cache = this.pinnedCache as PinnedCacheDB;
+
       this.pinnedCache.pinned.get(hashString).then((pinned) => {
         if (!pinned) {
           if (ENABLE_LOG) {
             this.logger.log(`pinning`, hashString);
           }
-          fetch(`${this.pinnerUrl}/pin_hash?cid=${hashString}`).then((response) => {
-            this.pinnedCache.pinned.put({ id: hashString });
+          fetch(`${config.url}/pin_hash?cid=${hashString}`).then((response) => {
+            cache.pinned.put({ id: hashString });
           });
         }
       });
