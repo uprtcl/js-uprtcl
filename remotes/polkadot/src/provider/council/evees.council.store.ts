@@ -43,6 +43,7 @@ export class PolkadotCouncilEveesStorage {
     protected casID: string
   ) {
     this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
 
     if (this.connection.events) {
       this.connection.events.on(ConnectionEvents.newBlock, (block) => {

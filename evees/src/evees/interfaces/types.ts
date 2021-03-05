@@ -155,6 +155,10 @@ export interface SearchOptions {
   };
 }
 
+export interface SearchForkOptions {
+  leves?: number;
+}
+
 export interface SearchResult {
   perspectiveIds: string[];
   ended?: boolean;

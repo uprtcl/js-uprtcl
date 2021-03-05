@@ -95,6 +95,7 @@ export class PolkadotConnection extends Connection {
     }
     this.connectionDetails = connections[connectionName];
     this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
   }
 
   public async connect(): Promise<void> {

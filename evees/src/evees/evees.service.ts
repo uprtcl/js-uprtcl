@@ -57,9 +57,9 @@ export class Evees {
 
   /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
-  clone(name: string = 'NewClient', client?: Client): Evees {
-    const store = new CASOnMemory(this.client.store);
-    client = client || new ClientOnMemory(this.client, store, undefined, name);
+  clone(name: string = 'NewClient', client?: Client, mutation?: EveesMutation): Evees {
+    const store = client ? client.store : new CASOnMemory(this.client.store);
+    client = client || new ClientOnMemory(this.client, store, mutation, name);
     return new Evees(client, this.recognizer, this.remotes, this.config, this.modules);
   }
 

@@ -44,7 +44,9 @@ export class EveesPolkadotCouncil implements RemoteEvees {
     this.accessControl = new EveesAccessControlFixedOwner();
     this.councilStorage = new PolkadotCouncilEveesStorage(connection, config, this.casID);
     this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, this.id, config);
+
     this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
 
     if (this.councilStorage.events) {
       this.councilStorage.events.on(CouncilStoreEvents.perspectivesUpdated, (perpectiveIds) => {

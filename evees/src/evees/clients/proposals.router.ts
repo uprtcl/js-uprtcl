@@ -13,6 +13,7 @@ export class ProposalsRouter extends BaseRouter implements Proposals {
     super(remotes, store);
 
     this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
 
     // forward proposal created events
     remotes.forEach((remote) => {

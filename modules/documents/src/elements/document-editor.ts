@@ -1142,7 +1142,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
                       .eveesInfoConfig=${this.eveesInfoConfig}
                     ></evees-info-popper></div>
                   `
-          : html``}
+          : html`<div class="empty-evees-info"></div>`}
         <div class="node-content">
           ${nodeLense.render(node, {
             focus: () => this.focused(node),
@@ -1382,7 +1382,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       }
 
       .empty-evees-info {
-        width: 30px;
+        width: 10px;
         height: 10px;
       }
 

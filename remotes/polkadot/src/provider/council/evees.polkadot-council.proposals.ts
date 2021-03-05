@@ -24,6 +24,8 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
     public config: ProposalConfig
   ) {
     this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
+
     if (this.councilStore.events) {
       this.councilStore.events.on(CouncilStoreEvents.proposalStatusChanged, (proposalStatus) => {
         this.logger.log('Proposal Status Changed', proposalStatus);

@@ -26,6 +26,7 @@ export class RemoteRouter extends BaseRouter implements Client {
     this.searchEngine = new SearchEngineRouter(remotes, store);
     this.proposals = new ProposalsRouter(remotes, store);
     this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
 
     /** forward events */
 

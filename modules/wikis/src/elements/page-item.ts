@@ -3,6 +3,8 @@ import { html, css, internalProperty, property } from 'lit-element';
 import { MenuConfig, styles } from '@uprtcl/common-ui';
 import { EveesBaseElement } from '@uprtcl/evees';
 import { TextNode } from '@uprtcl/documents';
+import { SELECT_PAGE_EVENT_NAME } from './wiki.editable';
+import { REMOVE_PAGE_EVENT_NAME } from './page-list-editable';
 
 export class PageItemElement extends EveesBaseElement<TextNode> {
   @property({ type: Boolean })
@@ -17,7 +19,11 @@ export class PageItemElement extends EveesBaseElement<TextNode> {
 
   selectPage() {
     this.dispatchEvent(
-      new CustomEvent('select-page', { bubbles: true, composed: true, detail: { uref: this.uref } })
+      new CustomEvent(SELECT_PAGE_EVENT_NAME, {
+        bubbles: true,
+        composed: true,
+        detail: { uref: this.uref },
+      })
     );
   }
 
@@ -25,7 +31,7 @@ export class PageItemElement extends EveesBaseElement<TextNode> {
     switch (e.detail.key) {
       case 'remove':
         this.dispatchEvent(
-          new CustomEvent('remove-page', {
+          new CustomEvent(REMOVE_PAGE_EVENT_NAME, {
             bubbles: true,
             composed: true,
             detail: { uref: this.uref },

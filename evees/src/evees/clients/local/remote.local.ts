@@ -17,6 +17,7 @@ import {
   Update,
   EveesMutation,
   PerspectiveDetails,
+  LinkChanges,
 } from '../../interfaces/types';
 import { EveesDB } from './remote.local.db';
 import { LocalSearchEngine } from './search.engine.local';
@@ -50,17 +51,20 @@ export class RemoteEveesLocal implements RemoteEvees {
     this.searchEngine = new LocalSearchEngine(this);
     this.db = new EveesDB();
     this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
   }
 
   setStore(store: CASStore) {
     this.store = store;
   }
+
   snapPerspective(
     perspective: PartialPerspective,
     guardianId?: string
   ): Promise<Secured<Perspective>> {
     return snapDefaultPerspective(this, perspective);
   }
+
   async getPerspective(
     perspectiveId: string,
     options?: GetPerspectiveOptions
@@ -89,45 +93,102 @@ export class RemoteEveesLocal implements RemoteEvees {
       );
     }
   }
+
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     await this.db.perspectives.put({
       id: newPerspective.perspective.id,
       context: newPerspective.perspective.object.payload.context,
-      details: newPerspective.update.details,
+      details: {},
     });
+
+    return this.updatePerspective(newPerspective.update);
   }
+
   async deletePerspective(perspectiveId: string): Promise<void> {
     await this.db.perspectives.delete(perspectiveId);
   }
+
   async updatePerspective(update: Update): Promise<void> {
-    const currentLocal = await this.db.perspectives.get(update.perspectiveId);
-    if (!currentLocal) throw new Error(`Perspective not found locally ${update.perspectiveId}`);
-    const currentDetails = currentLocal.details;
+    const perspective = await this.db.perspectives.get(update.perspectiveId);
+    if (!perspective) throw new Error(`Perspective not found locally ${update.perspectiveId}`);
+
+    /** update details */
     const details: PerspectiveDetails = {
-      ...currentDetails,
+      ...perspective.details,
       ...update.details,
     };
+
+    let newChildren = perspective.children ? perspective.children : [];
+    if (update.linkChanges && update.linkChanges.children) {
+      newChildren.push(...update.linkChanges.children.added);
+      newChildren = newChildren.filter(
+        (child) => !(update as any).linkChanges.children.removed.includes(child)
+      );
+    }
+
+    let newLinksTo = perspective.linksTo ? perspective.linksTo : [];
+    if (update.linkChanges && update.linkChanges.linksTo) {
+      newLinksTo.push(...update.linkChanges.linksTo.added);
+      newLinksTo = newLinksTo.filter(
+        (link) => !(update as any).linkChanges.linksTo.removed.includes(link)
+      );
+    }
+
+    const newText = update.text !== undefined ? update.text : perspective.text;
+
     await this.db.perspectives.put({
       id: update.perspectiveId,
-      context: currentLocal.context,
+      context: perspective.context,
       details: details,
+      children: newChildren,
+      linksTo: newLinksTo,
+      text: newText,
     });
+
+    if (update.linkChanges && update.linkChanges.children) {
+      /** update ecosystem links */
+      await this.updateEcosystem(update.perspectiveId, update.linkChanges.children);
+    }
   }
+
+  async updateEcosystem(perspectiveId: string, children: { added: string[]; removed: string[] }) {
+    const perspective = await this.db.perspectives.get(perspectiveId);
+    if (!perspective) throw new Error(`Perspective not found locally ${perspectiveId}`);
+
+    children.added.map(
+      async (childId): Promise<void> => {
+        const child = await this.db.perspectives.get(childId);
+
+        if (!child) {
+          return;
+        }
+
+        /** append child ecosystem to the perspective and to all its reverese ecosystem */
+        const newEcosystem = perspective.ecosystem ? perspective.ecosystem : [];
+      }
+    );
+  }
+
   diff(): Promise<EveesMutation> {
     throw new Error('Method not implemented.');
   }
+
   flush(): Promise<void> {
     throw new Error('Method not implemented.');
   }
+
   refresh(): Promise<void> {
     throw new Error('Method not implemented.');
   }
+
   getUserPerspectives(perspectiveId: string): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
+
   async canUpdate(perspectiveId: string, userId?: string) {
     return true;
   }
+
   async ready(): Promise<void> {}
   async connect(): Promise<void> {}
   async isConnected() {

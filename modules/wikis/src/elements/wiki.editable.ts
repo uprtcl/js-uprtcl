@@ -2,6 +2,7 @@ import { html, css, LitElement, property, internalProperty, query } from 'lit-el
 
 import {
   ClientEvents,
+  combineMutations,
   Evees,
   EveesDiffExplorer,
   Logger,
@@ -12,6 +13,9 @@ import {
   servicesConnect,
 } from '@uprtcl/evees';
 import { MenuConfig, styles, UprtclPopper } from '@uprtcl/common-ui';
+import { REMOVE_PAGE_EVENT_NAME } from './page-list-editable';
+
+export const SELECT_PAGE_EVENT_NAME = 'select-page';
 
 export class EditableWiki extends servicesConnect(LitElement) {
   logger = new Logger('DAO-WIKI');
@@ -26,7 +30,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
   proposalsPopper!: UprtclPopper;
 
   @internalProperty()
-  selectedPageId!: string;
+  selectedPageId: string | undefined;
 
   @internalProperty()
   isLogged = false;
@@ -63,9 +67,14 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-    this.addEventListener<any>('select-page', (e: CustomEvent) => {
-      e.stopPropagation();
+    this.addEventListener<any>(SELECT_PAGE_EVENT_NAME, (e: CustomEvent) => {
       this.selectedPageId = e.detail.uref;
+    });
+
+    this.addEventListener<any>(REMOVE_PAGE_EVENT_NAME, (e: CustomEvent) => {
+      if (this.selectedPageId === e.detail.uref) {
+        this.selectedPageId = undefined;
+      }
     });
   }
 
@@ -82,13 +91,24 @@ export class EditableWiki extends servicesConnect(LitElement) {
     }
 
     this.logger.log('CheckChanges()');
-    const forks = await this.evees.client.searchEngine.forks(this.uref);
+
+    const forks = await this.evees.client.searchEngine.forks(this.uref, { levels: -1 });
+
     if (forks.length > 0) {
-      this.mergeEvees = this.evees.clone('WikiMergeClient');
-      const merger = new RecursiveContextMergeStrategy(this.mergeEvees);
-      await merger.mergePerspectivesExternal(this.uref, forks[0], { forceOwner: true });
-      const diff = await this.mergeEvees.client.diff();
-      this.hasChanges = diff.updates.length > 0;
+      // build
+      const mutations = await Promise.all(
+        forks.map(async (forkId) => {
+          const mergeEvees = this.evees.clone(`TempMergeClientFor-${forkId}`);
+          const merger = new RecursiveContextMergeStrategy(mergeEvees);
+          await merger.mergePerspectivesExternal(this.uref, forkId, { forceOwner: true });
+          return mergeEvees.client.diff();
+        })
+      );
+
+      const mutation = combineMutations(mutations);
+
+      this.mergeEvees = this.evees.clone('WikiMergeClient', undefined, mutation);
+      this.hasChanges = mutation.updates.length > 0;
     }
   }
 
@@ -170,15 +190,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
     return html`<div class="top-bar">
       <div class="proposals-container">
         <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
-          <uprtcl-button
-            slot="icon"
-            class="proposals-button"
-            icon="arrow_drop_down"
-            skinny
-            transition
-          >
-            proposals
-          </uprtcl-button>
+          <uprtcl-button slot="icon" class="proposals-button"> open proposals </uprtcl-button>
           ${this.renderProposals()}
         </uprtcl-popper>
       </div>
@@ -204,8 +216,6 @@ export class EditableWiki extends servicesConnect(LitElement) {
   }
 
   render() {
-    this.logger.log('rendering wiki after loading');
-
     const updateDialogOptions: MenuConfig = {
       propose: {
         text: 'Propose',
@@ -275,6 +285,12 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
         .propose-container {
           flex: 1 0 auto;
+          display: flex;
+          justify-content: center;
+        }
+
+        .propose-container uprtcl-button {
+          width: 200px;
         }
 
         .login-container {

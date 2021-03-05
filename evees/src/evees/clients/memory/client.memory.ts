@@ -45,6 +45,7 @@ export class ClientOnMemory implements Client {
     readonly name: string = 'OnMemoryClient'
   ) {
     this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
 
     if (mutation) {
       this.update(mutation);

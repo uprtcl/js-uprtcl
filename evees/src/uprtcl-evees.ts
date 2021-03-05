@@ -42,12 +42,18 @@ export { SimpleMergeStrategy } from './evees/merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './evees/merge/recursive-context.merge-strategy';
 export { HasMerge, MergingBehaviorNames } from './evees/merge/merge.behaviour';
 
-export { mergeStrings, mergeResult, mergeArrays, arrayDiff } from './evees/merge/utils';
+export {
+  mergeStrings,
+  mergeResult,
+  mergeArrays,
+  arrayDiff,
+  combineMutations,
+} from './evees/merge/utils';
 
 /** Elements */
 export { EveesPerspectivesList } from './evees/elements/evees-perspectives-list';
 export { EveesBaseElement } from './evees/elements/evees-base';
-export { EveesBaseEditable } from './evees/elements/evees-base-editable';
+export { EveesBaseEditable, EditableCase } from './evees/elements/evees-base-editable';
 export { EveesInfoPopper, EveesInfoConfig } from './evees/elements/evees-info-popper';
 export { EveesInfoBase } from './evees/elements/evees-info-base';
 export { ProposalsList } from './evees/elements/evees-proposals-list';

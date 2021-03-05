@@ -1,6 +1,12 @@
 import { Signed } from '../../../patterns/interfaces/signable';
 import { SearchEngine } from '../../interfaces/search.engine';
-import { SearchOptions, ParentAndChild, Perspective, SearchResult } from '../../interfaces/types';
+import {
+  SearchOptions,
+  ParentAndChild,
+  Perspective,
+  SearchResult,
+  SearchForkOptions,
+} from '../../interfaces/types';
 import { RemoteEveesLocal } from './remote.local';
 
 export class LocalSearchEngine implements SearchEngine {
@@ -12,15 +18,19 @@ export class LocalSearchEngine implements SearchEngine {
   locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
     throw new Error('Method not implemented.');
   }
-  async forks(perspectiveId: string): Promise<string[]> {
+  async forks(perspectiveId: string, options: SearchForkOptions): Promise<string[]> {
     const perspective = await this.remote.store.getEntity<Signed<Perspective>>(perspectiveId);
+
     const others = await this.remote.db.perspectives
       .where('context')
       .equals(perspective.object.payload.context)
       .toArray();
+
+    // search independent perspectives
+    const perspectiveInDb = await this.remote.db.perspectives.get(perspectiveId);
+
+    perspectiveInDb.children.map();
+
     return others.map((other) => other.id);
-  }
-  proposals(perspectiveId: string): Promise<string[]> {
-    throw new Error('Method not implemented.');
   }
 }
