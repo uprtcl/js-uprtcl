@@ -156,7 +156,7 @@ export interface SearchOptions {
 }
 
 export interface SearchForkOptions {
-  leves?: number;
+  levels?: number;
 }
 
 export interface SearchResult {

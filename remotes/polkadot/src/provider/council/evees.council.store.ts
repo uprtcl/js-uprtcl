@@ -345,11 +345,14 @@ export class PolkadotCouncilEveesStorage {
 
   async getContextPerspectives(context: string) {
     await this.ready();
-    const perspectives = await this.db.perspectives.where('context').equals(context).toArray();
+    const perspectiveIds = await this.db.perspectives
+      .where('context')
+      .equals(context)
+      .primaryKeys();
 
-    if (LOG_ENABLED) this.logger.log(`getting context perspectives ${context}`, perspectives);
+    if (LOG_ENABLED) this.logger.log(`getting context perspectives ${context}`, perspectiveIds);
 
-    return perspectives.map((e) => e.id);
+    return perspectiveIds;
   }
 
   async addProposalToCouncilData(councilProposal: CouncilProposal, at?: number) {

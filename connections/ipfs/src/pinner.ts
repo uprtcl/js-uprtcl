@@ -61,24 +61,25 @@ export class PinnerCached {
       this.logger.log(`${n} objects not pinned pinned`);
     }
 
-    const unpinnedHashed = await unpinned
+    const unpinnedHashes = await unpinned
       .clone()
       .and((o: EntityStatus) => !o.id.startsWith('/orbitdb/'))
-      .toArray();
+      .primaryKeys();
+
     const unpinnedDB = await unpinned
       .clone()
       .and((o) => o.id.startsWith('/orbitdb/'))
-      .toArray();
+      .primaryKeys();
 
-    if (unpinnedHashed.length > 0) {
-      this.logger.log('pinning entities', unpinnedHashed);
+    if (unpinnedHashes.length > 0) {
+      this.logger.log('pinning entities', unpinnedHashes);
       await fetch(`${this.url}/pin_hash`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ cids: unpinnedHashed.map((e) => e.id) }),
+        body: JSON.stringify({ cids: unpinnedHashes }),
       });
       this.logger.log('pinning entities - done');
     }
@@ -90,15 +91,12 @@ export class PinnerCached {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ addresses: unpinnedDB.map((e) => e.id) }),
+        body: JSON.stringify({ addresses: unpinnedDB }),
       });
       this.logger.log('pinning addresses - done');
     }
 
-    const nPinned = await this.cache.entities
-      .where('pinned')
-      .equals(0)
-      .modify({ pinned: 1 });
+    const nPinned = await this.cache.entities.where('pinned').equals(0).modify({ pinned: 1 });
 
     if (nPinned > 0) {
       this.logger.log('marked as pinned', nPinned);

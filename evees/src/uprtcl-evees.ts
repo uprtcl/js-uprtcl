@@ -79,6 +79,7 @@ export { isAncestorOf } from './evees/merge/ancestor';
 export { Connection, ConnectionOptions } from './utils/connection';
 export { Ready } from './utils/ready';
 export { ConnectionLogged } from './utils/connection.logged';
+export { filterAsync, mapAsync } from './utils/async';
 
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
