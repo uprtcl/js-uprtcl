@@ -6,6 +6,7 @@ import { Entity } from '../../cas/interfaces/entity';
 
 import { Client } from './client';
 import { RemoteEvees } from './remote.evees';
+import { Evees } from '../evees.service';
 
 /** Core perspective format. A perspective is like a URL, it includes the coordinates to reach a current head.
  * The hash of the perspective is the perspective id. */
@@ -45,6 +46,7 @@ export interface Update {
   perspectiveId: string;
   details: PerspectiveDetails;
   linkChanges?: LinkChanges;
+  text?: string;
   oldDetails?: PerspectiveDetails;
   fromPerspectiveId?: string;
 }
@@ -128,17 +130,30 @@ export interface EveesMutationCreate {
   deletedPerspectives?: string[];
 }
 
-export interface Join {
-  type: 'AND' | 'OR' | 'XOR';
-  negation: boolean;
+export interface SearchOptionsJoin {
+  type?: 'AND' | 'OR' | 'XOR';
+  negation?: boolean;
   id: string;
 }
 
 export interface SearchOptions {
-  under: Join[];
-  linksTo: Join[];
-  query: string;
-  orderBy: string;
+  under?: SearchOptionsJoin[];
+  linksTo?: SearchOptionsJoin[];
+  text?: {
+    value: string;
+    levels?: number;
+  };
+  orderBy?: string;
+  pagination?: {
+    first: number;
+    offset: number;
+  };
+}
+
+export interface SearchResult {
+  perspectiveIds: string[];
+  ended?: boolean;
+  slice?: Slice;
 }
 
 export interface ParentAndChild {
@@ -148,7 +163,12 @@ export interface ParentAndChild {
 
 export interface DiffLens {
   name: string;
-  render: (client: Client, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;
+  render: (
+    evees: Evees,
+    newEntity: any,
+    oldEntity: any,
+    summary: boolean
+  ) => TemplateResult;
   type?: string;
 }
 

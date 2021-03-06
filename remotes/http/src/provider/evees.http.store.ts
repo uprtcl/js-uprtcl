@@ -3,7 +3,7 @@ import {
   CASRemote,
   CidConfig,
   Entity,
-  ObjectOnRemote,
+  ObjectOn,
   EntityGetResult,
   hashObject,
 } from '@uprtcl/evees';
@@ -48,7 +48,7 @@ export class HttpStore implements CASRemote {
     throw new Error('Method not implemented.');
   }
 
-  async storeEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+  async storeEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
     throw new Error('Use storeObjects on CASRemotes');
   }
 
@@ -64,7 +64,7 @@ export class HttpStore implements CASRemote {
     return result.entities;
   }
 
-  hashEntities(objects: ObjectOnRemote[]): Promise<Entity<any>[]> {
+  hashEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
     return Promise.all(objects.map((object) => this.hash(object.object)));
   }
 
@@ -80,12 +80,12 @@ export class HttpStore implements CASRemote {
     return entities[0];
   }
 
-  async storeEntity(object: ObjectOnRemote): Promise<string> {
+  async storeEntity(object: ObjectOn): Promise<string> {
     const entities = await this.storeEntities([object]);
     return entities[0].id;
   }
 
-  async hashEntity(object: ObjectOnRemote): Promise<string> {
+  async hashEntity(object: ObjectOn): Promise<string> {
     const entities = await this.hashEntities([object]);
     return entities[0].id;
   }

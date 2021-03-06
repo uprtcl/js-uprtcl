@@ -156,7 +156,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const node = await this.loadNode(uref, parent, ix);
 
-    const loadChildren = this.evees.behavior(node.draft, 'children').map(
+    const loadChildren = this.evees.behaviorConcat(node.draft, 'children').map(
       async (child, ix): Promise<DocNode> => {
         return child !== undefined && child !== ''
           ? await this.loadNodeRec(child, ix, node)
@@ -365,7 +365,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     await Promise.all(prepareChildren);
 
     /** set the children with the children refs (which were created above) */
-    const object = this.evees.behavior(
+    const object = this.evees.behaviorFirst(
       node.draft,
       'replaceChildren'
     )(node.childrenNodes.map((node) => node.uref));
@@ -590,7 +590,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   ): Promise<DocNode[]> {
     if (LOGINFO) this.logger.log('spliceChildren()', { node, elements, index, count });
 
-    const currentChildren: string[] = this.evees.behavior(node.draft, 'children');
+    const currentChildren: string[] = this.evees.behaviorConcat(node.draft, 'children');
     index = index !== undefined ? index : currentChildren.length;
 
     /** create objects if elements is not an id */
@@ -625,7 +625,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       child.level = node.level + 1;
     });
 
-    const newDraft = this.evees.behavior(node.draft, 'replaceChildren')(newChildren);
+    const newDraft = this.evees.behaviorFirst(node.draft, 'replaceChildren')(newChildren);
     this.setNodeDraft(node, newDraft);
 
     return removed;
@@ -874,7 +874,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     /** update all the node properties */
     node = this.draftToPlaceholder(newObject, node.parent, node.ix);
 
-    const loadChildren = this.evees.behavior(node.draft, 'children').map(
+    const loadChildren = this.evees.behaviorConcat(node.draft, 'children').map(
       async (child, ix): Promise<DocNode> => {
         return child !== undefined && child !== ''
           ? await this.loadNodeRec(child, ix, node)
@@ -1090,7 +1090,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     if (LOGINFO) this.logger.log('renderTopRow()', { node });
     /** the uref to which the parent is pointing at */
 
-    const nodeLense = this.evees.behavior(node.draft, 'docNodeLenses')[0];
+    const nodeLense = this.evees.behaviorFirst(node.draft, 'docNodeLenses')[0];
     const hasIcon = this.hasChanges(node);
     const icon = node.uref === '' ? icons.add_box : icons.edit;
 
@@ -1190,7 +1190,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     }
 
     const renderHere = node.draft
-      ? this.evees.behavior(node.draft, 'docNodeLenses').length > 0
+      ? this.evees.behaviorFirst(node.draft, 'docNodeLenses').length > 0
       : false;
 
     return html`
@@ -1317,7 +1317,10 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         display: flex;
         flex-direction: column;
         text-align: left;
-        font-family: 'Roboto', sans-serif;
+      }
+
+      * {
+        font-family: 'Lora', serif;
       }
 
       .editor-container {
@@ -1358,7 +1361,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
       .doc-node-container {
         border-radius: 4px;
-        max-width: 900px;
+        max-width: 1280px;
         margin: auto;
       }
 

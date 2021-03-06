@@ -1,5 +1,6 @@
 import { PerspectiveType } from '../patterns/perspective.pattern';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
+import { mergeArrays } from './utils';
 
 export interface FromTo {
   to?: string;
@@ -42,7 +43,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     /** read children recursively */
     const data = await this.evees.getPerspectiveData(perspectiveId);
-    const children = this.evees.behavior(data.object, 'children');
+    const children = this.evees.behaviorConcat(data.object, 'children');
 
     const promises = children.map(async (child) => {
       const isPerspective = await this.isPattern(child, PerspectiveType);
@@ -89,7 +90,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     }
   }
 
-  async mergeLinks(
+  async mergeChildren(
     originalLinks: string[],
     modificationsLinks: string[][],
     config: any
@@ -108,7 +109,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
       modificationsPromises.map((promises) => Promise.all(promises))
     );
 
-    const mergedLinks = await super.mergeLinks(originalMergeIds, modificationsMergeIds, config);
+    const mergedLinks = mergeArrays(originalMergeIds, modificationsMergeIds);
 
     const dictionary = this.perspectivesByContext;
 

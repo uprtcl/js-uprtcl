@@ -1,3 +1,4 @@
+import { EveesMutation, Update } from '@uprtcl/evees';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
 
 export interface Vote {
@@ -13,11 +14,11 @@ export interface CouncilData {
 
 export interface ProposalManifest {
   toPerspectiveId: string;
-  fromPerspectiveId: string;
+  fromPerspectiveId?: string;
   creatorId?: string;
   toHeadId?: string;
   fromHeadId?: string;
-  updates: Update[];
+  mutation: EveesMutation;
   block: number;
   config: ProposalConfig;
 }
@@ -38,7 +39,7 @@ export interface CouncilProposal {
 export interface LocalProposal {
   id: string;
   toPerspectiveId: string;
-  updates: Update[]; // not indexed
+  mutation: EveesMutation; // not indexed
   status: ProposalStatus; // not indexed
   endBlock: number; // not indexed, for sorting
 }
@@ -46,7 +47,7 @@ export interface LocalProposal {
 export interface LocalPerspective {
   id: string;
   context: string;
-  headId: string;
+  headId?: string;
 }
 
 export interface LocalVote {

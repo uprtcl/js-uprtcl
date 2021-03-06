@@ -1,6 +1,5 @@
 import { CustomStore } from '@uprtcl/orbitdb-provider';
-
-import { ProposalManifest } from '../provider/proposals.orbit-db';
+import { Perspective, Secured } from '@uprtcl/evees';
 
 export enum EveesOrbitDBEntities {
   Perspective = 'PERSPECTIVE',
@@ -28,18 +27,6 @@ export const context: CustomStore = {
   options: (entity) => {
     return {
       accessController: { type: 'context', write: ['*'] },
-    };
-  },
-};
-
-export const proposal: CustomStore = {
-  customType: EveesOrbitDBEntities.Proposal,
-  type: 'eventlog',
-  name: (proposal: Entity<ProposalManifest>) => `proposal-store/${proposal.id}`,
-  options: (proposal: Entity<ProposalManifest>) => {
-    return {
-      accessController: { type: 'ipfs', write: proposal.object.owners },
-      meta: { timestamp: proposal.object.timestamp },
     };
   },
 };

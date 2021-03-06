@@ -1,4 +1,5 @@
 import { Secured } from '../cas/utils/cid-hash';
+import { deriveSecured } from 'src/cas/utils/signed';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { PartialPerspective, Perspective } from './interfaces/types';
 
@@ -79,4 +80,16 @@ export const getHome = async (
     id: hash,
     object: secured,
   };
+};
+
+export const getConceptPerspective = async (concept: string): Promise<Secured<Perspective>> => {
+  const perspective: Perspective = {
+    remote: '',
+    path: '',
+    context: concept,
+    creatorId: '',
+    timestamp: 0,
+  };
+
+  return deriveSecured(perspective);
 };

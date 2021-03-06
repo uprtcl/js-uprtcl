@@ -4,6 +4,8 @@ import { AuthTokenStorage } from './auth/http.token.store';
 import { HttpAuthenticatedConnection } from './http.auth.connection.if';
 import { GetResult, PostResult } from './http.connection';
 
+const LOG = false;
+
 /** Exposes wrappers to FETCH methods, and injects the header authentication
  * credentials (provided by HttpAuthentication service) */
 export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnection {
@@ -70,7 +72,7 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
   }
 
   public async get<T>(url: string): Promise<T> {
-    this.logger.log('[HTTP GET]: ', url);
+    if (LOG) this.logger.log('[HTTP GET]: ', url);
 
     return fetch(this.host + url, {
       method: 'GET',
@@ -83,7 +85,7 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
         return response.json() as Promise<GetResult<T>>;
       })
       .then((getResult) => {
-        // this.logger.log('[HTTP GET RESULT] ', url, getResult);
+        if (LOG) this.logger.log('[HTTP GET RESULT] ', url, getResult);
         if (getResult.result === 'error') {
           throw new Error(`Error fetching url: ${url}`);
         }
@@ -92,7 +94,7 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
   }
 
   public async getWithPut<T>(url: string, body: any): Promise<T> {
-    this.logger.log('PUT: ', url);
+    if (LOG) this.logger.log('PUT: ', url);
 
     return fetch(this.host + url, {
       method: 'PUT',
@@ -106,7 +108,7 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
         return response.json() as Promise<{ data: T }>;
       })
       .then((data) => {
-        this.logger.log('[HTTP PUT RESULT] ', url, data);
+        if (LOG) this.logger.log('[HTTP PUT RESULT] ', url, data);
         return data.data;
       });
   }
@@ -120,7 +122,7 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
   }
 
   public async delete(url: string): Promise<PostResult> {
-    this.logger.log('[HTTP DELETE]', this.host + url);
+    if (LOG) this.logger.log('[HTTP DELETE]', this.host + url);
     return fetch(url, {
       method: 'DELETE',
       headers: {
@@ -132,13 +134,13 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
         return response.json() as Promise<PostResult>;
       })
       .then((data) => {
-        this.logger.log('[HTTP POST RESULT]', url, data);
+        if (LOG) this.logger.log('[HTTP POST RESULT]', url, data);
         return (data as unknown) as PostResult;
       });
   }
 
   public async putOrPost(url: string, body: any, method: string): Promise<PostResult> {
-    this.logger.log(`[HTTP ${method}]`, url, body);
+    if (LOG) this.logger.log(`[HTTP ${method}]`, url, body);
     return fetch(this.host + url, {
       method: method,
       headers: {
@@ -151,7 +153,7 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
         return response.json() as Promise<PostResult>;
       })
       .then((data) => {
-        this.logger.log('[HTTP POST RESULT]', url, body, data);
+        if (LOG) this.logger.log('[HTTP POST RESULT]', url, body, data);
         return (data as unknown) as PostResult;
       });
   }
