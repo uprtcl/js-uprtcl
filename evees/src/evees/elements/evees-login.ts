@@ -102,7 +102,7 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
                   <hr />
                   <uprtcl-list
                     ><uprtcl-list-item
-                      ><a href=${`${window.location.origin}/u/${remote.userId}`} target="_blank"
+                      ><a href=${`${window.location.origin}/user/${remote.userId}`} target="_blank"
                         >Public Profile</a
                       ></uprtcl-list-item
                     >
