@@ -26,6 +26,8 @@ export class ClientOnMemory implements Client {
   /** a map with the updates for each perspective. There might be more than on update ordered as they arrive */
   private updates = new Map<string, Update[]>();
 
+  private deletedPerspectives = new Set<string>();
+
   /** TBD */
   private canUpdates = new Map<string, boolean>();
   private userPerspectives = new Map<string, string[]>();
@@ -154,12 +156,36 @@ export class ClientOnMemory implements Client {
     );
   }
 
+  async deletePerspectives(perspectiveIds: string[]): Promise<void> {
+    /** store perspective details */
+    await Promise.all(
+      perspectiveIds.map(async (perspectiveId) => {
+        this.deletedPerspectives.add(perspectiveId);
+        /** set the current known details of that perspective, can update is set to true */
+
+        if (this.newPerspectives.get(perspectiveId)) {
+          this.newPerspectives.delete(perspectiveId);
+        }
+
+        if (this.cachedPerspectives.get(perspectiveId)) {
+          this.cachedPerspectives.delete(perspectiveId);
+        }
+      })
+    );
+  }
+
   async update(mutation: EveesMutationCreate): Promise<void> {
-    const create = mutation.newPerspectives
-      ? this.createPerspectives(mutation.newPerspectives)
-      : Promise.resolve();
-    const update = mutation.updates ? this.updatePerspectives(mutation.updates) : Promise.resolve();
-    await Promise.all([create, update]);
+    if (mutation.newPerspectives) {
+      await this.createPerspectives(mutation.newPerspectives);
+    }
+
+    if (mutation.updates) {
+      await this.updatePerspectives(mutation.updates);
+    }
+
+    if (mutation.deletedPerspectives) {
+      await this.deletePerspectives(mutation.deletedPerspectives);
+    }
   }
 
   newPerspective(newPerspective: NewPerspective): Promise<void> {
@@ -181,16 +207,19 @@ export class ClientOnMemory implements Client {
 
     const newPerspectives = Array.from(this.newPerspectives.values());
     const updates = Array.prototype.concat.apply([], Array.from(this.updates.values()));
+    const deletedPerspectives = Array.from(this.deletedPerspectives.values());
 
     await this.base.update({
       newPerspectives,
       updates,
+      deletedPerspectives,
     });
 
     await this.base.flush();
 
     this.newPerspectives.clear();
     this.updates.clear();
+    this.deletedPerspectives.clear();
   }
 
   async canUpdate(userId: string, perspectiveId: string): Promise<boolean> {
@@ -207,7 +236,7 @@ export class ClientOnMemory implements Client {
     return {
       newPerspectives: Array.from(this.newPerspectives.values()),
       updates: Array.prototype.concat.apply([], [...Array.from(this.updates.values())]),
-      deletedPerspectives: [],
+      deletedPerspectives: Array.from(this.deletedPerspectives.values()),
     };
   }
 

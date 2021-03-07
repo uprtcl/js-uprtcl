@@ -24,6 +24,7 @@ import { HttpAuthenticatedConnection } from '@uprtcl/http-provider';
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
 import { EveesHttpSearchEngine } from './evees.search-engine.http';
+import { PostResult } from '@uprtcl/http-provider/dist/types/http.connection';
 
 const evees_api = 'evees-v1';
 
@@ -77,13 +78,11 @@ export class EveesHttp implements RemoteEvees {
     }
 
     if (mutation.deletedPerspectives) {
-      await Promise.all(
-        mutation.deletedPerspectives.map((delPer) => this.deletePerspective(delPer))
-      );
+      await this.deletePerspectives(mutation.deletedPerspectives);
     }
 
     if (mutation.updates) {
-      await Promise.all(mutation.updates.map((update) => this.updatePerspective(update)));
+      await this.updatePerspectives(mutation.updates);
     }
   }
   diff(): Promise<EveesMutation> {
@@ -117,9 +116,19 @@ export class EveesHttp implements RemoteEvees {
     await Promise.all(promises);
   }
 
-  async updatePerspective(update: Update): Promise<void> {
+  async updatePerspectives(updates: Update[]): Promise<void> {
     await this.connection.put('/persp/update', {
-      updates: [update],
+      updates,
+    });
+  }
+
+  async updatePerspective(update: Update): Promise<void> {
+    return this.updatePerspectives([update]);
+  }
+
+  async deletePerspectives(perspectiveIds: string[]): Promise<PostResult> {
+    return this.connection.put('/persp/delete', {
+      perspectiveIds,
     });
   }
 
@@ -176,6 +185,7 @@ export class EveesHttp implements RemoteEvees {
   logout() {
     return this.connection.logout();
   }
+
   icon(path?: string) {
     if (path) {
       const url = new URL(path);
@@ -185,6 +195,7 @@ export class EveesHttp implements RemoteEvees {
       <uprtcl-icon-and-name name=${path ? path : 'unknown'} show-name></uprtcl-icon-and-name>
     `;
   }
+
   avatar(userId: string, config: any = { showName: true }) {
     return html`
       <uprtcl-icon-and-name ?show-name=${config.showName} name=${userId}></uprtcl-icon-and-name>

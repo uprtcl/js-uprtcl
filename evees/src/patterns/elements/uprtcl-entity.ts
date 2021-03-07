@@ -1,7 +1,7 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
-import { Evees } from 'src/evees/evees.service.js';
 
 import { servicesConnect } from '../../container/multi-connect.mixin.js';
+import { Evees } from '../../evees/evees.service.js';
 import { Logger } from '../../utils/logger.js';
 import { Lens } from '../behaviours/has-lenses.js';
 
