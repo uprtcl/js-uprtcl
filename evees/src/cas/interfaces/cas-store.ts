@@ -1,25 +1,26 @@
 import { Slice } from '../../evees/interfaces/types';
-import { Entity, ObjectOn } from './entity';
+import { Entity, EntityCreate, EntityOn, ObjectOn } from './entity';
 
 export interface EntityGetResult {
-  entities: Entity<any>[];
+  entities: Entity[];
   slice?: Slice;
 }
 
 /**
  */
 export interface CASStore {
-  /** an external entry point to cached entities */
-  cacheEntities(entities: Entity<any>[]): Promise<void>;
+  /** an external entry point to cache entities, the entities are not considered new and are thus not
+   * sent to the base layer */
+  cacheEntities(entities: Entity[]): Promise<void>;
 
-  /** store hashed objects
+  /** store already-hashed objects
    * must include the remote in which the entities should be ultimately stored */
-  storeEntities(objects: ObjectOn[]): Promise<Entity<any>[]>;
+  storeEntities(entities: EntityCreate[]): Promise<Entity[]>;
 
   /** an interface to hash objects without storing them
    * (this way they are hashed with the correct CIDConfig and can be considered valid
    * even if they have not been stored) */
-  hashEntities(objects: ObjectOn[]): Promise<Entity<any>[]>;
+  hashEntities(entities: EntityCreate[]): Promise<Entity[]>;
 
   /** get hashed entities */
   getEntities(hashes: string[]): Promise<EntityGetResult>;
@@ -27,8 +28,11 @@ export interface CASStore {
   /** persist all the entities on the base layer */
   flush(): Promise<void>;
 
-  /** a couple of handy endpoints to just get or store one entity and not have to filter EntityGetResult */
+  /** list all the new entities created relative to this store base store */
+  diff(): Promise<Entity[]>;
+
+  /** a few handy endpoints to just get or store one entity and not have to filter EntityGetResult */
   getEntity<T = any>(hash: string): Promise<Entity<T>>;
-  storeEntity(object: ObjectOn): Promise<string>;
-  hashEntity<T = any>(object: ObjectOn): Promise<Entity<T>>;
+  storeEntity(entity: EntityCreate): Promise<Entity>;
+  hashEntity<T = any>(entity: EntityCreate): Promise<Entity<T>>;
 }

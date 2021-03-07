@@ -10,7 +10,7 @@ import {
   EveesMutationCreate,
 } from '../../interfaces/types';
 import { CASStore } from '../../../cas/interfaces/cas-store';
-import { Entity, ObjectOn } from '../../../cas/interfaces/entity';
+import { Entity, EntityCreate } from '../../../cas/interfaces/entity';
 
 import { Client, ClientEvents } from '../../interfaces/client';
 
@@ -172,8 +172,8 @@ export class ClientOnMemory implements Client {
     return this.update({ updates: [update] });
   }
 
-  async hashEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
-    return this.store.hashEntities(objects);
+  async hashEntities(entities: EntityCreate[]): Promise<Entity<any>[]> {
+    return this.store.hashEntities(entities);
   }
 
   async flush(): Promise<void> {
@@ -208,6 +208,7 @@ export class ClientOnMemory implements Client {
       newPerspectives: Array.from(this.newPerspectives.values()),
       updates: Array.prototype.concat.apply([], [...Array.from(this.updates.values())]),
       deletedPerspectives: [],
+      entities: await this.store.diff(),
     };
   }
 

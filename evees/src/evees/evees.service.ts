@@ -332,7 +332,7 @@ export class Evees {
 
       const head = await this.createCommit(
         {
-          dataId,
+          dataId: dataId.id,
         },
         remoteId
       );
@@ -384,14 +384,14 @@ export class Evees {
     guardianId?: string
   ) {
     const remote = await this.getPerspectiveRemote(perspectiveId);
-    const dataId = await this.client.store.storeEntity({ object, remote: remote.id });
+    const data = await this.client.store.storeEntity({ object, remote: remote.id });
     if (!onHeadId) {
       const { details } = await this.client.getPerspective(perspectiveId);
       onHeadId = details.headId;
     }
     const head = await this.createCommit(
       {
-        dataId,
+        dataId: data.id,
         parentsIds: onHeadId ? [onHeadId] : undefined,
       },
       remote.id
@@ -568,11 +568,7 @@ export class Evees {
     };
 
     const commitObject = signObject(commitData);
-    const hash = await this.client.store.storeEntity({ object: commitObject, remote });
-    return {
-      id: hash,
-      object: commitObject,
-    };
+    return this.client.store.storeEntity({ object: commitObject, remote });
   }
 
   async isAncestorCommit(perspectiveId: string, commitId: string, stopAt?: string) {
@@ -692,7 +688,8 @@ export class Evees {
     };
     const signedCommit = signObject(newCommit);
 
-    return this.client.store.storeEntity({ object: signedCommit, remote });
+    const entity = await this.client.store.storeEntity({ object: signedCommit, remote });
+    return entity.id;
   }
 
   async forkEntity(
@@ -713,7 +710,8 @@ export class Evees {
       // TODO how can replace children when matching multiple patterns?
       const newObject = this.behaviorFirst(data.object, 'replaceChildren')(newLinks);
 
-      return this.client.store.storeEntity({ object: newObject, remote });
+      const entity = await this.client.store.storeEntity({ object: newObject, remote });
+      return entity.id;
     } else {
       return entityId;
     }

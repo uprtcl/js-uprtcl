@@ -1,16 +1,12 @@
-export interface Entity<T> {
+export interface Entity<T = any> {
   id: string;
   object: T;
+  casID: string;
 }
 
-export interface ObjectOn {
-  object: object;
-  remote?: string;
+export interface EntityCreate<T = any> {
+  id?: string;
+  object: T;
   casID?: string;
-}
-
-export interface EntityOn {
-  entity: Entity<any>;
   remote?: string;
-  casID?: string;
 }

@@ -31,6 +31,7 @@ export class BaseRouter {
                   deletedPerspectives: [],
                   newPerspectives: [],
                   updates: [],
+                  entities: [],
                 };
                 mutationPerRemote.set(remote.id, mutation);
               }
@@ -51,6 +52,7 @@ export class BaseRouter {
                   deletedPerspectives: [],
                   newPerspectives: [],
                   updates: [],
+                  entities: [],
                 };
                 mutationPerRemote.set(remote.id, mutation);
               }
@@ -71,6 +73,7 @@ export class BaseRouter {
                   deletedPerspectives: [],
                   newPerspectives: [],
                   updates: [],
+                  entities: [],
                 };
                 mutationPerRemote.set(remote.id, mutation);
               }

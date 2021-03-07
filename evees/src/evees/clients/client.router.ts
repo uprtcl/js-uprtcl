@@ -68,6 +68,7 @@ export class RemoteRouter extends BaseRouter implements Client {
       deletedPerspectives: [],
       newPerspectives: [],
       updates: [],
+      entities: [],
     };
   }
 

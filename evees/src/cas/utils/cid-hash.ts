@@ -4,7 +4,7 @@ import CID from 'cids';
 
 import { CidConfig, defaultCidConfig } from '../../cas/interfaces/cid-config';
 import { Signed } from '../../patterns/interfaces/signable';
-import { Entity } from '../interfaces/entity';
+import { Entity, EntityCreate } from '../interfaces/entity';
 
 export function sortObject(object: object): object {
   if (typeof object !== 'object' || object instanceof Array || object === null) {
@@ -37,11 +37,13 @@ export type Secured<T> = Entity<Signed<T>>;
 
 export async function deriveEntity<O extends object>(
   object: O,
-  config: CidConfig = defaultCidConfig
+  config: CidConfig = defaultCidConfig,
+  casID: string
 ): Promise<Entity<O>> {
   const hash = await hashObject(object, config);
   return {
     id: hash,
     object,
+    casID,
   };
 }
