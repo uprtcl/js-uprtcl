@@ -2,9 +2,8 @@ import { LitElement, property, html, css, query } from 'lit-element';
 import { servicesConnect } from 'src/container/multi-connect.mixin';
 
 import { Logger } from '../../utils/logger';
-import { ClientOnMemory } from '../clients/client.memory';
 
-import { EveesDiff } from './evees-diff';
+import { EveesDiffExplorer } from './evees-diff-explorer';
 
 export class EveesProposalDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-DIFF');
@@ -21,8 +20,8 @@ export class EveesProposalDiff extends servicesConnect(LitElement) {
   @property({ attribute: false })
   loading: boolean = true;
 
-  @query('#evees-update-diff')
-  eveesDiffEl!: EveesDiff;
+  @query('#evees-diff-explorer')
+  eveesDiffEl!: EveesDiffExplorer;
 
   async firstUpdated() {
     this.loadProposal();
@@ -40,7 +39,7 @@ export class EveesProposalDiff extends servicesConnect(LitElement) {
     this.loading = true;
 
     const proposal = await this.evees.getPerspectiveData(this.proposalId);
-    const localEvees = this.evees.clone();
+    const localEvees = this.evees.clone('ProposalClient');
     await localEvees.client.update(proposal.object.mutation);
 
     this.loading = false;
@@ -55,7 +54,7 @@ export class EveesProposalDiff extends servicesConnect(LitElement) {
     }
 
     return html`
-      <evees-update-diff id="evees-update-diff" ?summary=${this.summary}> </evees-update-diff>
+      <evees-diff-explorer id="evees-diff-explorer" ?summary=${this.summary}> </evees-diff-explorer>
     `;
   }
 

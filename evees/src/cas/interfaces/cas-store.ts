@@ -30,5 +30,5 @@ export interface CASStore {
   /** a couple of handy endpoints to just get or store one entity and not have to filter EntityGetResult */
   getEntity<T = any>(hash: string): Promise<Entity<T>>;
   storeEntity(object: ObjectOn): Promise<string>;
-  hashEntity(object: ObjectOn): Promise<string>;
+  hashEntity<T = any>(object: ObjectOn): Promise<Entity<T>>;
 }

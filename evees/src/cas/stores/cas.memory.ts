@@ -101,14 +101,14 @@ export class CASOnMemory implements CASStore {
 
   async storeEntity(object: ObjectOn): Promise<string> {
     /** Hash using the base layer */
-    const hash = await this.base.hashEntity(object);
+    const entity = await this.base.hashEntity(object);
     /** Store in the new entities buffer */
-    this.newEntities.set(hash, {
-      entity: { id: hash, object: object.object },
+    this.newEntities.set(entity.id, {
+      entity,
       remote: object.remote,
     });
     /** return the hash */
-    return hash;
+    return entity.id;
   }
 
   async getEntity<T = any>(uref: string): Promise<Entity<any>> {
@@ -116,7 +116,7 @@ export class CASOnMemory implements CASStore {
     return entities[0] as Entity<T>;
   }
 
-  hashEntity(object: ObjectOn): Promise<string> {
+  hashEntity<T = any>(object: ObjectOn): Promise<Entity<T>> {
     return this.base.hashEntity(object);
   }
 }

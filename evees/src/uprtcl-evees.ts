@@ -19,6 +19,7 @@ export {
   SearchOptions,
   ParentAndChild,
   SearchResult,
+  UpdateDetails,
 } from './evees/interfaces/types';
 
 /** interfaces */
@@ -39,18 +40,22 @@ export {
 /** Merge */
 export { SimpleMergeStrategy } from './evees/merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './evees/merge/recursive-context.merge-strategy';
-export { MergeStrategy } from './evees/merge/merge-strategy';
 export { HasMerge, MergingBehaviorNames } from './evees/merge/merge.behaviour';
 
-export { mergeStrings, mergeResult, mergeArrays } from './evees/merge/utils';
+export {
+  mergeStrings,
+  mergeResult,
+  mergeArrays,
+  arrayDiff,
+  combineMutations,
+} from './evees/merge/utils';
 
 /** Elements */
 export { EveesPerspectivesList } from './evees/elements/evees-perspectives-list';
 export { EveesBaseElement } from './evees/elements/evees-base';
-export { EveesInfoPopper } from './evees/elements/evees-info-popper';
-export { EveesInfoPage } from './evees/elements/evees-info-page';
+export { EveesBaseEditable, EditableCase } from './evees/elements/evees-base-editable';
+export { EveesInfoPopper, EveesInfoConfig } from './evees/elements/evees-info-popper';
 export { EveesInfoBase } from './evees/elements/evees-info-base';
-export { EveesInfoUserBased, EveesInfoConfig } from './evees/elements/evees-info-user-based';
 export { ProposalsList } from './evees/elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './evees/elements/evees-perspective-icon';
 
@@ -63,7 +68,7 @@ export {
   CONTENT_UPDATED_TAG,
   PROPOSAL_CREATED_TAG,
 } from './evees/elements/events';
-export { EveesDiff } from './evees/elements/evees-diff';
+export { EveesDiffExplorer } from './evees/elements/evees-diff-explorer';
 
 /** UI support components */
 export { prettyAddress } from './evees/elements/support';
@@ -77,12 +82,13 @@ export { ConnectionLogged } from './utils/connection.logged';
 
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
-export { Proposals } from './evees/proposals/proposals';
+export { Proposals, ProposalEvents } from './evees/proposals/proposals';
+export { ProposalsWithUI } from './evees/proposals/proposals.with-ui';
 export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 
 /** Aceess Control */
 export { AccessControl } from './evees/interfaces/access-control';
-export { RemoteLogged } from './evees/interfaces/remote.logged';
+export { RemoteLogged, RemoteLoggedEvents } from './evees/interfaces/remote.logged';
 export { RemoteWithUI } from './evees/interfaces/remote.with-ui';
 
 export { Logger } from './utils/logger';
@@ -96,10 +102,15 @@ export { CASStore, EntityGetResult } from './cas/interfaces/cas-store';
 export { CASRemote } from './cas/interfaces/cas-remote';
 export { CidConfig } from './cas/interfaces/cid-config';
 
+/* merge */
+export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
+
 /** Patterns */
 export { HasChildren, HasLinks, LinkingBehaviorNames } from './patterns/behaviours/has-links';
 export { HasLenses, Lens } from './patterns/behaviours/has-lenses';
+export { RenderEntityInput } from './patterns/elements/uprtcl-entity';
 export { HasTitle } from './patterns/behaviours/has-title';
+export { HasEmpty } from './patterns/behaviours/has-empty';
 export { PatternRecognizer } from './patterns/recognizer/pattern-recognizer';
 export { Pattern } from './patterns/interfaces/pattern';
 export { PerspectiveType } from './evees/patterns/perspective.pattern';
@@ -113,5 +124,8 @@ export { MultiContainer } from './container/multi.container';
 export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Clients */
-export { EveesDraftsLocal } from './evees/clients/evees.drafts.local';
-export { ClientOnMemory } from './evees/clients/client.memory';
+export { EveesDraftsLocal } from './evees/clients/drafts.temp/evees.drafts.local';
+export { ClientOnMemory } from './evees/clients/memory/client.memory';
+export { RemoteEveesLocal } from './evees/clients/local/remote.local';
+export { CASOnMemory } from './cas/stores/cas.memory';
+export { CASLocal } from './cas/stores/cas.local';

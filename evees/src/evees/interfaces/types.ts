@@ -136,6 +136,14 @@ export interface SearchOptionsJoin {
   id: string;
 }
 
+export interface EveesOptions {
+  creatorId?: string;
+  createdBefore?: number;
+  createdAfter?: number;
+  updatedBefore?: number;
+  updatedAfter?: number;
+}
+
 export interface SearchOptions {
   under?: SearchOptionsJoin[];
   linksTo?: SearchOptionsJoin[];
@@ -148,6 +156,10 @@ export interface SearchOptions {
     first: number;
     offset: number;
   };
+}
+
+export interface SearchForkOptions {
+  leves?: number;
 }
 
 export interface SearchResult {
@@ -163,12 +175,7 @@ export interface ParentAndChild {
 
 export interface DiffLens {
   name: string;
-  render: (
-    evees: Evees,
-    newEntity: any,
-    oldEntity: any,
-    summary: boolean
-  ) => TemplateResult;
+  render: (evees: Evees, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;
   type?: string;
 }
 
@@ -184,4 +191,11 @@ export interface EveesConfig {
     remote: string;
     owner: string;
   };
+}
+
+export interface UpdateDetails {
+  path: string[];
+  newData: Entity<any>;
+  oldData?: Entity<any>;
+  update: Update;
 }

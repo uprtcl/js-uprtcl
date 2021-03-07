@@ -1,23 +1,38 @@
-import { CASStore, Logger, NewPerspective, Proposal, Proposals } from '@uprtcl/evees';
+import { html } from 'lit-html';
+
+import { CASStore, Lens, Logger, Proposal, ProposalEvents, ProposalsWithUI } from '@uprtcl/evees';
 
 import { PolkadotConnection } from '../../connection.polkadot';
 
 import { ProposalConfig, VoteValue } from './proposal.config.types';
-import { PolkadotCouncilEveesStorage } from './evees.council.store';
+import { CouncilStoreEvents, PolkadotCouncilEveesStorage } from './evees.council.store';
 import { ProposalManifest } from './types';
+import EventEmitter from 'events';
 
-export class ProposalsPolkadotCouncil implements Proposals {
+export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
 
   public store!: CASStore;
+  events: EventEmitter;
 
   private canProposeCache = false;
 
   constructor(
     public connection: PolkadotConnection,
     public councilStore: PolkadotCouncilEveesStorage,
+    public remoteId: string,
     public config: ProposalConfig
-  ) {}
+  ) {
+    this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
+
+    if (this.councilStore.events) {
+      this.councilStore.events.on(CouncilStoreEvents.proposalStatusChanged, (proposalStatus) => {
+        this.logger.log('Proposal Status Changed', proposalStatus);
+        this.events.emit(ProposalEvents.status_changed, proposalStatus);
+      });
+    }
+  }
 
   async ready(): Promise<void> {
     await this.init();
@@ -47,6 +62,7 @@ export class ProposalsPolkadotCouncil implements Proposals {
     this.logger.info('createProposal()', { proposal });
 
     const proposalManifest: ProposalManifest = {
+      remote: this.remoteId,
       fromPerspectiveId: proposal.fromPerspectiveId,
       toPerspectiveId: proposal.toPerspectiveId,
       creatorId: this.connection.account,
@@ -64,6 +80,8 @@ export class ProposalsPolkadotCouncil implements Proposals {
       proposalManifest,
     });
 
+    this.events.emit(ProposalEvents.created, [proposalId]);
+
     return proposalId;
   }
 
@@ -72,11 +90,7 @@ export class ProposalsPolkadotCouncil implements Proposals {
 
     this.logger.info('getProposal() - pre', { proposalId });
 
-    const { object: proposalManifest } = await this.store.getEntity<ProposalManifest>(proposalId);
-
-    // const newPerspectives = proposalManifest.updates.filter(update => update.fromPerspectiveId === undefined).map(update => {
-    //   perspect
-    // })
+    const proposalManifest = await this.councilStore.getProposalManifest(proposalId);
 
     const proposal: Proposal = {
       creatorId: '',
@@ -105,5 +119,18 @@ export class ProposalsPolkadotCouncil implements Proposals {
 
   async vote(proposalId: string, vote: VoteValue) {
     return this.councilStore.vote(proposalId, vote);
+  }
+
+  lense(): Lens {
+    return {
+      name: 'evees-polkadot:proposal',
+      type: 'proposal',
+      render: (entity: any) => {
+        return html`
+          <evees-polkadot-council-proposal proposal-id=${entity.proposalId}>
+          </evees-polkadot-council-proposal>
+        `;
+      },
+    };
   }
 }

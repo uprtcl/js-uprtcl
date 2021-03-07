@@ -1,3 +1,4 @@
+import EventEmitter from 'events';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Option } from '@polkadot/types';
 import { AddressOrPair, Signer } from '@polkadot/api/types';
@@ -9,6 +10,10 @@ import { IdentityInfo, Registration } from '@polkadot/types/interfaces';
 
 import { ChainConnectionDetails, ConnectionDetails } from '@uprtcl/evees-blockchain';
 import { Connection, ConnectionOptions, Logger } from '@uprtcl/evees';
+
+export enum ConnectionEvents {
+  newBlock = 'new-block',
+}
 
 const getIdentityInfo = (identity: Option<Registration>) => {
   if (identity && identity.isSome) {
@@ -75,6 +80,7 @@ export class PolkadotConnection extends Connection {
   public connectionDetails: ConnectionDetails;
   private useDerivative = false;
   public identitiesCache: { [account: string]: any } = {};
+  readonly events?: EventEmitter;
 
   logger = new Logger('Polkadot-Connection');
 
@@ -88,6 +94,8 @@ export class PolkadotConnection extends Connection {
       throw new Error(`connection details for connection id '${connectionName}' not found`);
     }
     this.connectionDetails = connections[connectionName];
+    this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
   }
 
   public async connect(): Promise<void> {
@@ -97,6 +105,11 @@ export class PolkadotConnection extends Connection {
     this.api = await ApiPromise.create({ provider: wsProvider });
     this.chain = (await this.api.rpc.system.chain()).toString();
     this.useDerivative = this.api.tx.utility.asDerivative !== undefined;
+
+    await this.api.rpc.chain.subscribeNewHeads((lastHeader) => {
+      // this.logger.log('New block', lastHeader.number.toNumber());
+      this.events ? this.events.emit(ConnectionEvents.newBlock, lastHeader) : null;
+    });
 
     this.logger.log('Connected', {
       api: this.api,

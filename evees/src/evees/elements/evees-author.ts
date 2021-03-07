@@ -41,15 +41,9 @@ export class EveesAuthor extends servicesConnect(LitElement) {
 
   async load() {
     this.loading = true;
-
-    if (!this.remoteId) return;
     if (!this.userId) return;
 
-    const remote = this.evees.remotes.find((r) => r.id === this.remoteId);
-    if (!remote) {
-      throw new Error(`remote ${this.remoteId} not found`);
-    }
-    this.remote = remote;
+    this.remote = this.evees.getRemote(this.remoteId);
     this.loading = false;
     this.requestUpdate();
   }

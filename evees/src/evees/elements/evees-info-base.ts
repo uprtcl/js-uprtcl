@@ -10,15 +10,14 @@ import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
 import { Perspective, PerspectiveDetails, Commit } from '../interfaces/types';
-import { Client } from '../interfaces/client';
-import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteEvees } from '../interfaces/remote.evees';
 
-import { EveesDiff } from './evees-diff';
 import { ProposalCreatedEvent } from './events';
 import { Proposal } from '../proposals/types';
 import { RecursiveContextMergeStrategy } from '../merge/recursive-context.merge-strategy';
 import { Evees } from '../evees.service';
+import { MergeConfig } from '../merge/merge-strategy';
+import { EveesDiffExplorer } from './evees-diff-explorer';
 
 interface PerspectiveData {
   id?: string;
@@ -30,6 +29,7 @@ interface PerspectiveData {
   data?: Entity<any>;
 }
 
+/** An evees info base component, it starts from the first-uref */
 export class EveesInfoBase extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-INFO');
 
@@ -41,12 +41,6 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
 
   @property({ type: String, attribute: 'parent-id' })
   parentId!: string;
-
-  @property({ type: String, attribute: 'default-remote' })
-  defaultRemoteId: string | undefined = undefined;
-
-  @property({ type: String, attribute: 'official-remote' })
-  officialRemoteId: string | undefined = undefined;
 
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
@@ -93,8 +87,8 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
 
-  @query('#evees-update-diff')
-  eveesDiffEl!: EveesDiff;
+  @query('#evees-diff-explorer')
+  eveesDiffEl!: EveesDiffExplorer;
 
   @property({ attribute: false })
   eveesDiffInfoMessage!: TemplateResult;
@@ -104,23 +98,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
 
   protected remote!: RemoteEvees;
 
-  /** official remote is used to indentity the special perspective, "the master branch" */
-  protected officialRemote: RemoteEvees | undefined = undefined;
-
-  /** default remote is used to create new branches */
-  protected defaultRemote: RemoteEvees | undefined = undefined;
-
-  async firstUpdated() {
-    this.defaultRemote =
-      this.defaultRemoteId !== undefined
-        ? this.evees.remotes.find((remote) => remote.id === this.defaultRemoteId)
-        : this.evees.config.defaultRemote;
-
-    this.officialRemote =
-      this.officialRemoteId !== undefined
-        ? this.evees.remotes.find((remote) => remote.id === this.officialRemoteId)
-        : this.evees.config.officialRemote;
-  }
+  async firstUpdated() {}
 
   updated(changedProperties) {
     if (changedProperties.get('uref') !== undefined) {
@@ -180,11 +158,6 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
 
     this.isLogged = await this.remote.isLogged();
 
-    if (this.defaultRemote) await this.defaultRemote.ready();
-
-    this.isLoggedOnDefault =
-      this.defaultRemote !== undefined ? await this.defaultRemote.isLogged() : false;
-
     this.loading = false;
     this.logger.log(`evee ${this.uref} loaded`, {
       perspectiveData: this.perspectiveData,
@@ -206,15 +179,13 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
 
     if (this.perspectiveData.perspective === undefined) throw new Error('undefined');
 
-    const config = {
+    const config: MergeConfig = {
       forceOwner: true,
       remote: this.perspectiveData.perspective.remote,
-      path: this.perspectiveData.perspective.path,
-      canUpdate: this.remote.userId,
-      parentId: this.uref,
+      guardianId: this.uref,
     };
 
-    this.eveesPull = this.evees.clone();
+    this.eveesPull = this.evees.clone('PullClient');
     const merger = new RecursiveContextMergeStrategy(this.eveesPull);
 
     await merger.mergePerspectivesExternal(this.uref, fromUref, {
@@ -237,24 +208,6 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     }) as EventListener);
   }
 
-  async login() {
-    if (this.defaultRemote === undefined) throw new Error('default remote undefined');
-    this.loggingIn = true;
-    await this.defaultRemote.login();
-
-    await this.evees.client.refresh();
-    this.load();
-    this.loggingIn = false;
-  }
-
-  async logout() {
-    if (this.defaultRemote === undefined) throw new Error('default remote undefined');
-    await this.defaultRemote.logout();
-
-    await this.evees.client.refresh();
-    this.load();
-  }
-
   async otherPerspectiveMerge(fromPerspectiveId: string, toPerspectiveId: string) {
     this.merging = true;
     this.logger.info(`merge ${fromPerspectiveId} on ${toPerspectiveId}`);
@@ -268,14 +221,14 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     const { details: toDetails } = await this.evees.client.getPerspective(toPerspectiveId);
     const { details: fromDetails } = await this.evees.client.getPerspective(fromPerspectiveId);
 
-    const eveesMerge = this.evees.clone();
+    const eveesMerge = this.evees.clone('MergeClient');
     const merger = new RecursiveContextMergeStrategy(eveesMerge);
     await merger.mergePerspectivesExternal(toPerspectiveId, fromPerspectiveId, config);
 
     const canUpdate = toDetails.canUpdate !== undefined;
     const canPropose = toRemote
       ? toRemote.proposals
-        ? await toRemote.proposals.canPropose(this.remote.userId)
+        ? await toRemote.proposals.canPropose(this.uref, this.remote.userId)
         : false
       : false;
 
@@ -349,15 +302,10 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     this.merging = false;
   }
 
-  async forkPerspective(perspectiveId?: string) {
-    if (!this.defaultRemote) throw new Error('default remote not defined');
-
+  async forkPerspective(perspectiveId?: string, remoteId?: string) {
     this.creatingNewPerspective = true;
 
-    const newPerspectiveId = await this.evees.forkPerspective(
-      perspectiveId || this.uref,
-      this.defaultRemote.id
-    );
+    const newPerspectiveId = await this.evees.forkPerspective(perspectiveId || this.uref, remoteId);
 
     this.dispatchEvent(
       new CustomEvent('new-perspective-created', {
@@ -432,7 +380,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     return html`
       <uprtcl-dialog id="updates-dialog">
         <div>${this.eveesDiffInfoMessage}</div>
-        <evees-update-diff id="evees-update-diff"></evees-update-diff>
+        <evees-diff-explorer id="evees-diff-explorer"></evees-diff-explorer>
       </uprtcl-dialog>
     `;
   }

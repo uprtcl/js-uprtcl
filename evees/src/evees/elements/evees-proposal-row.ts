@@ -2,15 +2,14 @@ import { LitElement, property, html, css, query } from 'lit-element';
 
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
-import { Entity } from '../../cas/interfaces/entity';
 import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { EveesDiff } from './evees-diff';
+import { EveesDiffExplorer } from './evees-diff-explorer';
 import { ContentUpdatedEvent } from './events';
-import { ClientOnMemory } from '../clients/client.memory';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 import { Proposal } from '../proposals/types';
+import { ProposalsWithUI } from '../proposals/proposals.with-ui';
 
 export class EveesProposalRow extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -42,14 +41,15 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   @query('#updates-dialog')
   updatesDialogEl!: UprtclDialog;
 
-  @query('#evees-update-diff')
-  eveesDiffEl!: EveesDiff;
+  @query('#evees-diff-explorer')
+  eveesDiffEl!: EveesDiffExplorer;
 
-  proposal!: Entity<Proposal>;
+  proposal!: Proposal;
   executed = false;
   canExecute = false;
 
   protected toRemote!: RemoteWithUI;
+  protected proposals!: ProposalsWithUI;
 
   async firstUpdated() {
     this.load();
@@ -65,13 +65,23 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     this.loading = true;
     this.loadingCreator = true;
 
-    this.proposal = await this.evees.getPerspectiveData(this.proposalId);
+    const proposal = await this.evees.client.store.getEntity(this.proposalId);
+    const remote = this.evees.getRemote(proposal.object.remote);
 
-    const fromPerspective = this.proposal.object.fromPerspectiveId
-      ? await this.evees.client.store.getEntity(this.proposal.object.fromPerspectiveId)
+    if (!remote.proposals) {
+      throw new Error('Proposals not defined');
+    }
+
+    this.proposal = await remote.proposals.getProposal(this.proposalId);
+
+    const fromPerspective = this.proposal.fromPerspectiveId
+      ? await this.evees.client.store.getEntity(this.proposal.fromPerspectiveId)
       : undefined;
 
-    this.toRemote = await this.evees.getPerspectiveRemote(this.proposal.object.toPerspectiveId);
+    this.toRemote = await this.evees.getPerspectiveRemote(this.proposal.toPerspectiveId);
+
+    if (!this.toRemote.proposals) throw new Error('ToRemote dont have proposals service');
+    this.proposals = this.toRemote.proposals as ProposalsWithUI;
 
     /** the author is the creator of the fromPerspective */
     this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
@@ -82,7 +92,9 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     await this.checkExecuted();
 
     /** the proposal creator is set at proposal creation */
-    this.canRemove = await this.evees.client.canUpdate(this.proposalId);
+    this.canRemove = this.evees.client.proposals
+      ? await this.evees.client.proposals.canDelete(this.proposalId)
+      : false;
 
     this.loading = false;
   }
@@ -92,7 +104,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   async checkExecuted() {
     /* a proposal is considered accepted if all the updates are now ancestors of their target */
     const isAncestorVector = await Promise.all(
-      this.proposal.object.mutation.updates
+      this.proposal.mutation.updates
         .filter((u) => !!u.details.headId)
         .map((update) => {
           return this.evees.isAncestorCommit(
@@ -110,7 +122,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     /* check the update list, if user canUpdate on all the target perspectives,
     the user can execute the proposal */
     const canExecuteVector = await Promise.all(
-      this.proposal.object.mutation.updates.map(
+      this.proposal.mutation.updates.map(
         async (update): Promise<boolean> => {
           return this.evees.client.canUpdate(update.perspectiveId);
         }
@@ -121,8 +133,8 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   }
 
   async showProposalChanges() {
-    const localEvees = this.evees.clone();
-    await localEvees.client.update(this.proposal.object.mutation);
+    const localEvees = this.evees.clone('ProposalClient');
+    await localEvees.client.update(this.proposal.mutation);
 
     this.showDiff = true;
     const options: MenuConfig = {};
@@ -153,6 +165,8 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     await this.updateComplete;
 
     this.eveesDiffEl.localEvees = localEvees;
+    this.eveesDiffEl.rootPerspective = this.proposal.toPerspectiveId;
+
     this.updatesDialogEl.options = options;
 
     const value = await new Promise((resolve) => {
@@ -174,7 +188,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
       this.dispatchEvent(
         new ContentUpdatedEvent({
-          detail: { uref: this.proposal.object.toPerspectiveId },
+          detail: { uref: this.proposal.toPerspectiveId },
           bubbles: true,
           composed: true,
         })
@@ -190,7 +204,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   renderDiff() {
     return html`
       <uprtcl-dialog id="updates-dialog">
-        <evees-update-diff id="evees-update-diff"> </evees-update-diff>
+        <evees-diff-explorer id="evees-diff-explorer"> </evees-diff-explorer>
       </uprtcl-dialog>
     `;
   }
@@ -233,9 +247,9 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     let renderDefault = true;
     let lense: any = undefined;
-    if (this.toRemote && this.toRemote.proposal !== undefined) {
+    if (this.proposals && this.proposals.lense) {
       renderDefault = false;
-      lense = this.toRemote.proposal as any;
+      lense = this.proposals.lense;
     }
 
     return renderDefault ? this.renderDefault() : lense().render({ proposalId: this.proposalId });

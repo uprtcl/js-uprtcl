@@ -6,6 +6,7 @@ import { DocumentTextNodeEditor } from './elements/prosemirror/documents-text-no
 import { DocumentEditor } from './elements/document-editor';
 import { TextNodeDiff } from './elements/document-text-node-diff';
 import { CustomBlocks } from './types';
+import { EditableDocumentEditor } from './elements/document-editor.editable';
 
 export interface DocumentsModuleConfig {
   customBlocks?: CustomBlocks;
@@ -22,6 +23,7 @@ export class DocumentsModule implements EveesContentModule {
   async registerComponents() {
     customElements.define('documents-text-node-editor', DocumentTextNodeEditor);
     customElements.define('documents-editor', DocumentEditor);
+    customElements.define('editable-document-editor', EditableDocumentEditor);
     customElements.define('documents-text-node-diff', TextNodeDiff);
   }
 

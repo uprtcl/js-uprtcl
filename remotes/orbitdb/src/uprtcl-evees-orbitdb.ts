@@ -1,6 +1,8 @@
 export { EveesOrbitDB } from './provider/evees.orbit-db';
 export { EveesAccessControlOrbitDB } from './provider/evees-acl.orbit-db';
 export { getContextAcl } from './custom-stores/context-access-controller';
+export { getProposalsAcl } from './custom-stores/proposals-access-controller';
+
 export { EveesOrbitDBSearchEngine } from './search.engine/evees.search-engine.orbitdb';
 
 export {

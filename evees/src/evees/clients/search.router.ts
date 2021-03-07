@@ -1,9 +1,13 @@
+import { CASStore } from 'src/cas/interfaces/cas-store';
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
+import { BaseRouter } from './base.router';
 import { ParentAndChild, SearchOptions, SearchResult } from '../interfaces/types';
 
-export class SearchEngineRouter implements SearchEngine {
-  constructor(protected remotes: RemoteEvees[]) {}
+export class SearchEngineRouter extends BaseRouter implements SearchEngine {
+  constructor(protected remotes: RemoteEvees[], protected store: CASStore) {
+    super(remotes, store);
+  }
 
   async forks(perspectiveId: string): Promise<string[]> {
     const all = await Promise.all(
@@ -21,16 +25,8 @@ export class SearchEngineRouter implements SearchEngine {
     );
     return Array.prototype.concat.apply([], all);
   }
-  async proposals(perspectiveId: string): Promise<string[]> {
+  async explore(options: SearchOptions) {
     const all = await Promise.all(
-      this.remotes.map((remote) => {
-        return remote.searchEngine ? remote.searchEngine.proposals(perspectiveId) : [];
-      })
-    );
-    return Array.prototype.concat.apply([], all);
-  }
-  async explore(options: SearchOptions): Promise<SearchResult> {
-    const allResults = await Promise.all(
       this.remotes.map((remote) => {
         return remote.searchEngine ? remote.searchEngine.explore(options) : { perspectiveIds: [] };
       })
@@ -44,7 +40,7 @@ export class SearchEngineRouter implements SearchEngine {
       },
       ended: allResults[allResults.length - 1].ended,
     };
-    allResults.forEach((result) => {
+    all.forEach((result) => {
       combinedResult.perspectiveIds.push(...result.perspectiveIds);
       if (combinedResult.slice) {
         if (result.slice) {

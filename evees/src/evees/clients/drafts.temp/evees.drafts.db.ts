@@ -1,7 +1,7 @@
 import Dexie from 'dexie';
 
 // temporary service for documents modile. Should be replaced by a LocalClient with version history.
-export class EveesDB extends Dexie {
+export class EveesDraftsDB extends Dexie {
   drafts: Dexie.Table<any, string>;
 
   constructor() {

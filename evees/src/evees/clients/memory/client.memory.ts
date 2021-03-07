@@ -1,4 +1,3 @@
-import lodash from 'lodash-es';
 import { EventEmitter } from 'events';
 
 import {
@@ -9,11 +8,11 @@ import {
   PerspectiveGetResult,
   EveesMutation,
   EveesMutationCreate,
-} from '../interfaces/types';
-import { CASStore } from '../../cas/interfaces/cas-store';
-import { Entity, ObjectOn } from '../../cas/interfaces/entity';
+} from '../../interfaces/types';
+import { CASStore } from '../../../cas/interfaces/cas-store';
+import { Entity, ObjectOn } from '../../../cas/interfaces/entity';
 
-import { Client, ClientEvents } from '../interfaces/client';
+import { Client, ClientEvents } from '../../interfaces/client';
 
 interface CachedDetails {
   details: PerspectiveDetails;
@@ -27,7 +26,7 @@ export class ClientOnMemory implements Client {
   /** a map with the updates for each perspective. There might be more than on update ordered as they arrive */
   private updates = new Map<string, Update[]>();
 
-  /** TDB */
+  /** TBD */
   private canUpdates = new Map<string, boolean>();
   private userPerspectives = new Map<string, string[]>();
 
@@ -39,16 +38,39 @@ export class ClientOnMemory implements Client {
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
 
-  constructor(protected base: Client, public store: CASStore, mutation?: EveesMutation) {
+  constructor(
+    protected base: Client,
+    public store: CASStore,
+    mutation?: EveesMutation,
+    readonly name: string = 'OnMemoryClient'
+  ) {
     this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
 
     if (mutation) {
       this.update(mutation);
+    }
+
+    if (this.base.events) {
+      this.base.events.on(ClientEvents.updated, (perspectiveIds: string[]) => {
+        /** remove the cached perspectives if updated */
+        perspectiveIds.forEach((id) => {
+          if (this.cachedPerspectives.get(id) !== undefined) {
+            this.cachedPerspectives.delete(id);
+          }
+        });
+
+        this.events.emit(ClientEvents.updated, perspectiveIds);
+      });
     }
   }
 
   get searchEngine() {
     return this.base.searchEngine;
+  }
+
+  get proposals() {
+    return this.base.proposals;
   }
 
   async getPerspective(
@@ -60,7 +82,7 @@ export class ClientOnMemory implements Client {
       /** skip asking the base client only if we already search for the requested levels under
        * this perspective */
       if (!options || options.levels === undefined || options.levels === cachedPerspective.levels) {
-        return { details: lodash.cloneDeep(cachedPerspective.details) };
+        return { details: { ...cachedPerspective.details } };
       }
     }
 
@@ -101,6 +123,7 @@ export class ClientOnMemory implements Client {
             ...newPerspective.update.details,
             canUpdate: true,
           },
+          levels: -1, // new perspectives are assumed to be fully on the cache
         });
       })
     );
@@ -183,7 +206,7 @@ export class ClientOnMemory implements Client {
   async diff(): Promise<EveesMutation> {
     return {
       newPerspectives: Array.from(this.newPerspectives.values()),
-      updates: Array.prototype.concat([], [...Array.from(this.updates.values())]),
+      updates: Array.prototype.concat.apply([], [...Array.from(this.updates.values())]),
       deletedPerspectives: [],
     };
   }
@@ -193,9 +216,9 @@ export class ClientOnMemory implements Client {
     let perspectives = this.userPerspectives.get(perspectiveId);
     if (perspectives === undefined) {
       perspectives = await this.base.getUserPerspectives(perspectiveId);
-      this.userPerspectives.set(perspectiveId, perspectives);
+      this.userPerspectives.set(perspectiveId, perspectives as string[]);
     }
-    return perspectives;
+    return perspectives ? perspectives : [];
   }
 
   async refresh(): Promise<void> {}

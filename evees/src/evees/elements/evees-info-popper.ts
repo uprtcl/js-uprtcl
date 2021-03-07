@@ -5,8 +5,20 @@ import { UprtclPopper } from '@uprtcl/common-ui';
 import { Logger } from '../../utils/logger';
 import { servicesConnect } from '../../container/multi-connect.mixin';
 
-import { EveesInfoConfig } from './evees-info-user-based';
 import { DEFAULT_COLOR, eveeColor } from './support';
+
+export interface EveesInfoConfig {
+  showProposals?: boolean;
+  showDraftControl?: boolean;
+  showMyDraft?: boolean;
+  showInfo?: boolean;
+  showIcon?: boolean;
+  showAcl?: boolean;
+  showDebugInfo?: boolean;
+  officialOwner?: string;
+  checkOwner?: boolean;
+  isDraggable?: boolean;
+}
 
 export class EveesInfoPopper extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-INFO-POPPER');

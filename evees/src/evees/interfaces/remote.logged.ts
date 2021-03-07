@@ -1,6 +1,12 @@
 import { ConnectionLogged } from '../../utils/connection.logged';
 import { Ready } from '../../utils/ready';
 
+export enum RemoteLoggedEvents {
+  logged_out = 'logged_out',
+  logged_in = 'logged_in',
+  logged_status_changed = 'logged_status_changed',
+}
+
 export interface RemoteLogged extends Ready, ConnectionLogged {
   /**
    * The id is used to select the JS remote from the listed of available Remotes.

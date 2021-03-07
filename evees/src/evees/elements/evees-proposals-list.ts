@@ -1,10 +1,11 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
 import { servicesConnect } from '../../container/multi-connect.mixin';
 import { Logger } from '../../utils/logger';
 
 import { Evees } from '../evees.service';
 import { RemoteEvees } from '../interfaces/remote.evees';
+import { ProposalEvents } from '../proposals/proposals';
 
 export class ProposalsList extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');
@@ -12,14 +13,25 @@ export class ProposalsList extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'perspective-id' })
   perspectiveId!: string;
 
-  @property({ attribute: false })
+  @internalProperty()
   loadingProposals = true;
 
+  @internalProperty()
   proposalsIds: string[] = [];
+
   remote!: RemoteEvees;
   evees!: Evees;
 
   async firstUpdated() {
+    this.loadingProposals = true;
+    this.proposalsIds = [];
+
+    if (this.evees.client.proposals) {
+      if (this.evees.client.proposals.events) {
+        this.evees.client.proposals.events.on(ProposalEvents.created, () => this.load());
+      }
+    }
+
     this.load();
   }
 
@@ -27,13 +39,14 @@ export class ProposalsList extends servicesConnect(LitElement) {
     if (!this.evees) return;
     if (!this.evees.client.searchEngine) throw new Error('searchEngine not registered');
 
-    this.loadingProposals = true;
-    this.logger.info('loadProposals');
-
-    this.proposalsIds = await this.evees.client.searchEngine.proposals(this.perspectiveId);
-
     /** data on other perspectives (proposals are injected on them) */
     this.remote = await this.evees.getPerspectiveRemote(this.perspectiveId);
+
+    if (this.evees.client.proposals) {
+      this.proposalsIds = await this.evees.client.proposals.getProposalsToPerspective(
+        this.perspectiveId
+      );
+    }
 
     this.loadingProposals = false;
     this.logger.info('getProposals()', { proposalsIds: this.proposalsIds });

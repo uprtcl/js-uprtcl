@@ -12,16 +12,19 @@ import {
   NewPerspective,
   Update,
   ForkDetails,
-  PerspectiveDetails,
+  EveesMutation,
+  UpdateDetails,
 } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
-import { HasChildren } from '../patterns/behaviours/has-links';
+import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
 import { Signed } from '../patterns/interfaces/signable';
 import { ErrorWithCode } from '../utils/error';
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { getHome } from './default.perspectives';
-import { ClientOnMemory } from './clients/client.memory';
+import { ClientOnMemory } from './clients/memory/client.memory';
+import { CASOnMemory } from 'src/cas/stores/cas.memory';
+import { arrayDiff } from './merge/utils';
 
 export interface CreateCommit {
   dataId: string;
@@ -54,13 +57,14 @@ export class Evees {
 
   /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
-  clone(client?: Client): Evees {
-    client = client || new ClientOnMemory(this.client, this.client.store);
+  clone(name: string = 'NewClient', client?: Client, mutation?: EveesMutation): Evees {
+    const store = client ? client.store : new CASOnMemory(this.client.store);
+    client = client || new ClientOnMemory(this.client, store, mutation, name);
     return new Evees(client, this.recognizer, this.remotes, this.config, this.modules);
   }
 
   findRemote<T extends RemoteEvees>(query: string): T {
-    const remote = this.remotes.find((r) => r.id.startsWith(query));
+    const remote = this.remotes.find((r) => r.id.includes(query));
     if (!remote) throw new Error(`remote starting with ${query} not found`);
     return remote as T;
   }
@@ -100,10 +104,25 @@ export class Evees {
     return result.details.headId ? this.getCommitData<T>(result.details.headId) : undefined;
   }
 
+  async tryGetCommitData<T = any>(commitId: string | undefined): Promise<Entity<any> | undefined> {
+    if (commitId === undefined) return commitId;
+    const dataId = await this.tryGetCommitDataId(commitId);
+    if (!dataId) return undefined;
+
+    const data = await this.client.store.getEntity<T>(dataId);
+    return data;
+  }
+
   async getCommitData<T = any>(commitId: string): Promise<Entity<any>> {
     const dataId = await this.getCommitDataId(commitId);
     const data = await this.client.store.getEntity<T>(dataId);
     return data;
+  }
+
+  async tryGetCommitDataId(commitId: string | undefined): Promise<string | undefined> {
+    if (commitId === undefined) return commitId;
+    const commit = await this.client.store.getEntity(commitId);
+    return commit ? commit.object.payload.dataId : undefined;
   }
 
   async getCommitDataId(commitId: string): Promise<string> {
@@ -148,6 +167,11 @@ export class Evees {
     return thisBehaviors.map((behavior) => {
       return behavior[behaviorName](object);
     });
+  }
+
+  async perspectiveBehaviorFirst(uref: string, behavior: string) {
+    const data = await this.getPerspectiveData(uref);
+    return this.behaviorFirst(data.object, behavior);
   }
 
   private hasBehavior(object: object, behaviorName: string) {
@@ -205,7 +229,6 @@ export class Evees {
 
     if (hasData) {
       const data = await this.getCommitData(update.details.headId as string);
-
       const has = this.hasBehavior(data.object, 'text');
 
       if (has) {
@@ -236,30 +259,14 @@ export class Evees {
           oldChildren = oldHas ? this.behaviorConcat(oldData.object, patternName) : [];
         }
 
-        let addedChildren: string[] = [];
-        let removedChildren: string[] = [];
-
-        // identify added and removed children
-        const difference = oldChildren
-          .filter((oldChild: string) => !children.includes(oldChild))
-          .concat(children.filter((newChild: string) => !oldChildren.includes(newChild)));
-
-        difference.map((child) => {
-          if (oldChildren.includes(child)) {
-            removedChildren.push(child);
-          }
-
-          if (children.includes(child)) {
-            addedChildren.push(child);
-          }
-        });
+        const { added, removed } = arrayDiff(oldChildren, children);
 
         /** set the details */
         update.linkChanges = {
           ...update.linkChanges,
           [patternName]: {
-            added: addedChildren,
-            removed: removedChildren,
+            added,
+            removed,
           },
         };
       }
@@ -304,7 +311,18 @@ export class Evees {
   async createEvee(input: CreateEvee): Promise<string> {
     let { remoteId } = input;
     const { object, partialPerspective, guardianId } = input;
-    remoteId = remoteId || this.remotes[0].id;
+
+    if (!remoteId) {
+      if (!guardianId) {
+        // default remote
+        remoteId = this.remotes[0].id;
+      } else {
+        // set the same remote as guardianId
+        const guardianRemote = await this.getPerspectiveRemote(guardianId);
+        remoteId = guardianRemote.id;
+      }
+    }
+
     let headId;
 
     if (object) {
@@ -390,8 +408,8 @@ export class Evees {
   }
 
   async getPerspectiveChildren(uref: string): Promise<string[]> {
-    const data = await this.getPerspectiveData(uref);
-    return this.behaviorConcat(data.object, 'children');
+    const data = await this.tryGetPerspectiveData(uref);
+    return data ? this.behaviorConcat(data.object, LinkingBehaviorNames.CHILDREN) : [];
   }
 
   async spliceChildren(
@@ -610,7 +628,8 @@ export class Evees {
   async forkPerspective(
     perspectiveId: string,
     remoteId?: string,
-    guardianId?: string
+    guardianId?: string,
+    recurse: boolean = true
   ): Promise<string> {
     const refPerspective: Entity<Signed<Perspective>> = await this.client.store.getEntity(
       perspectiveId
@@ -637,7 +656,8 @@ export class Evees {
       forkCommitId = await this.forkCommit(
         details.headId,
         perspective.object.payload.remote,
-        perspective.id // this perspective is set as the parent of the children's new perspectives
+        perspective.id, // this perspective is set as the parent of the children's new perspectives
+        recurse
       );
     }
 
@@ -649,11 +669,16 @@ export class Evees {
     return perspective.id;
   }
 
-  async forkCommit(commitId: string, remote: string, parentId?: string): Promise<string> {
+  async forkCommit(
+    commitId: string,
+    remote: string,
+    parentId?: string,
+    recurse: boolean = true
+  ): Promise<string> {
     const commit: Secured<Commit> = await this.client.store.getEntity(commitId);
 
     const dataId = commit.object.payload.dataId;
-    const dataForkId = await this.forkEntity(dataId, remote, parentId);
+    const dataForkId = await this.forkEntity(dataId, remote, parentId, recurse);
 
     const eveesRemote = await this.getRemote(remote);
 
@@ -671,19 +696,28 @@ export class Evees {
     return this.client.store.storeEntity({ object: signedCommit, remote });
   }
 
-  async forkEntity(entityId: string, remote: string, parentId?: string): Promise<string> {
-    const data = await this.client.store.getEntity(entityId);
-    if (!data) throw new Error(`data ${entityId} not found`);
+  async forkEntity(
+    entityId: string,
+    remote: string,
+    parentId?: string,
+    recurse: boolean = true
+  ): Promise<string> {
+    if (recurse) {
+      const data = await this.client.store.getEntity(entityId);
+      if (!data) throw new Error(`data ${entityId} not found`);
 
-    /** createOwnerPreservingEntity of children */
-    const getLinksForks = this.behaviorConcat(data.object, 'children').map((link) =>
-      this.fork(link, remote, parentId)
-    );
-    const newLinks = await Promise.all(getLinksForks);
-    // TODO how can replace children when matching multiple patterns?
-    const newObject = this.behaviorFirst(data.object, 'replaceChildren')(newLinks);
+      /** createOwnerPreservingEntity of children */
+      const getLinksForks = this.behaviorConcat(data.object, 'children').map((link) =>
+        this.fork(link, remote, parentId)
+      );
+      const newLinks = await Promise.all(getLinksForks);
+      // TODO how can replace children when matching multiple patterns?
+      const newObject = this.behaviorFirst(data.object, 'replaceChildren')(newLinks);
 
-    return this.client.store.storeEntity({ object: newObject, remote });
+      return this.client.store.storeEntity({ object: newObject, remote });
+    } else {
+      return entityId;
+    }
   }
 
   async getHome(remoteId?: string, userId?: string): Promise<Secured<Perspective>> {
@@ -691,6 +725,50 @@ export class Evees {
     const home = await getHome(remote, userId ? userId : remote.userId);
     await this.client.store.storeEntity({ object: home.object, remote: remote.id });
     return home;
+  }
+
+  async exploreDiffUnder(perspectiveId: string, localEvees: Evees): Promise<UpdateDetails[]> {
+    const mutation = await localEvees.client.diff();
+    /** explore the root perspective and look for updates in the mutation. Store the updates in this.updatesDetails */
+    return this.exploreDiffOn(perspectiveId, mutation, localEvees);
+  }
+
+  private async exploreDiffOn(
+    perspectiveId: string,
+    mutation: EveesMutation,
+    localEvees: Evees,
+    path: string[] = [],
+    updateDetails: UpdateDetails[] = []
+  ): Promise<UpdateDetails[]> {
+    const update = mutation.updates.find((update) => update.perspectiveId === perspectiveId);
+
+    if (update && update.details.headId) {
+      const newData = await localEvees.getCommitData(update.details.headId);
+
+      const oldData =
+        update.oldDetails && update.oldDetails.headId !== undefined
+          ? await localEvees.getCommitData(update.oldDetails.headId)
+          : undefined;
+
+      const updateDetail: UpdateDetails = {
+        path,
+        newData,
+        oldData,
+        update,
+      };
+
+      updateDetails.push(updateDetail);
+    }
+
+    /** recursively call on the perspective children (children are computed based on the
+     * curren head, not the updated one) */
+    const children = await this.getPerspectiveChildren(perspectiveId);
+    for (const child of children) {
+      // recursive call to explore diffs of the children
+      await this.exploreDiffOn(child, mutation, localEvees, path.concat(child), updateDetails);
+    }
+
+    return updateDetails;
   }
 }
 

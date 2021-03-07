@@ -5,14 +5,15 @@ import {
   mergeStrings,
   HasDiffLenses,
   DiffLens,
-  Client,
+  MergeConfig,
   HasTitle,
   HasLenses,
   HasChildren,
+  HasEmpty,
   Lens,
   Pattern,
-  RecursiveContextMergeStrategy,
   Evees,
+  MergeStrategy,
 } from '@uprtcl/evees';
 
 import { Wiki } from '../types';
@@ -30,7 +31,7 @@ export class WikiPattern extends Pattern<Wiki> {
   type = WikiBindings.WikiType;
 }
 
-export class WikiLinks implements HasChildren<Wiki> {
+export class WikiLinks implements HasChildren<Wiki>, HasEmpty<Wiki> {
   replaceChildren = (wiki: Wiki) => (childrenHashes: string[]): Wiki => ({
     ...wiki,
     pages: childrenHashes,
@@ -38,23 +39,25 @@ export class WikiLinks implements HasChildren<Wiki> {
 
   children: (wiki: Wiki) => string[] = (wiki: Wiki): string[] => wiki.pages;
 
-  links: (wiki: Wiki) => Promise<string[]> = async (wiki: Wiki) => this.children(wiki);
+  empty = (): Wiki => {
+    return { title: '', pages: [] };
+  };
 
   merge = (originalNode: Wiki) => async (
-    modifications: (Wiki | undefined)[],
-    mergeStrategy: RecursiveContextMergeStrategy,
-    evees: Evees,
-    config
+    modifications: Wiki[],
+    merger: MergeStrategy,
+    config: MergeConfig
   ): Promise<Wiki> => {
     const mergedTitle = mergeStrings(
       originalNode.title,
       modifications.map((data) => (!!data ? data.title : originalNode.title))
     );
 
-    // TODO: add entity
-    const mergedPages = await mergeStrategy.mergeLinks(
+    if (!merger.mergeChildren) throw new Error('mergeChildren function not found in merger');
+
+    const mergedPages = await merger.mergeChildren(
       originalNode.pages,
-      modifications.map((data) => (!!data ? data.pages : originalNode.pages)),
+      modifications.map((data) => data.pages),
       config
     );
 
@@ -96,7 +99,7 @@ export class WikiCommon implements HasTitle, HasLenses<Wiki>, HasDiffLenses<Wiki
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <wiki-diff
-              .evees=${Evees}
+              .localEvees=${evees}
               .newData=${newEntity}
               .oldData=${oldEntity}
               ?summary=${summary}
