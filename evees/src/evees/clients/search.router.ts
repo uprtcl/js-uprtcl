@@ -38,7 +38,7 @@ export class SearchEngineRouter extends BaseRouter implements SearchEngine {
         entities: [],
         perspectives: [],
       },
-      ended: allResults[allResults.length - 1].ended,
+      ended: !!all.map((r) => r.ended).find((e) => e !== true), // if ended is false there is any remote in which ended !== true
     };
     all.forEach((result) => {
       combinedResult.perspectiveIds.push(...result.perspectiveIds);

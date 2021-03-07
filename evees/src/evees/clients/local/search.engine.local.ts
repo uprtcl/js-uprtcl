@@ -27,9 +27,9 @@ export class LocalSearchEngine implements SearchEngine {
       .toArray();
 
     // search independent perspectives
-    const perspectiveInDb = await this.remote.db.perspectives.get(perspectiveId);
+    // const perspectiveInDb = await this.remote.db.perspectives.get(perspectiveId);
 
-    perspectiveInDb.children.map();
+    // perspectiveInDb.children.map();
 
     return others.map((other) => other.id);
   }
