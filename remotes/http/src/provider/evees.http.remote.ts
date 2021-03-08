@@ -127,7 +127,7 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async deletePerspectives(perspectiveIds: string[]): Promise<PostResult> {
-    return this.connection.put('/persp/delete', {
+    return this.connection.put('/deletePersp', {
       perspectiveIds,
     });
   }

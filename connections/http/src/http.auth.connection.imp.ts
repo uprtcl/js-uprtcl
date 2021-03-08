@@ -121,7 +121,7 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
     return this.putOrPost(url, body, 'POST');
   }
 
-  public async delete(url: string): Promise<PostResult> {
+  public async delete(url: string, body: any = {}): Promise<PostResult> {
     if (LOG) this.logger.log('[HTTP DELETE]', this.host + url);
     return fetch(url, {
       method: 'DELETE',
@@ -129,6 +129,7 @@ export class HttpAuthenticatedConnectionImp implements HttpAuthenticatedConnecti
         ...this.headers,
         Accept: 'application/json',
       },
+      body: JSON.stringify(body),
     })
       .then((response) => {
         return response.json() as Promise<PostResult>;

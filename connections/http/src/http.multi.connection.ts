@@ -57,8 +57,8 @@ export class HttpMultiConnection implements HttpConnection, ConnectionLogged {
   post(url: string, body: any): Promise<PostResult> {
     return this.connection().post(url, body);
   }
-  delete(url: string): Promise<PostResult> {
-    return this.connection().delete(url);
+  delete(url: string, body: any): Promise<PostResult> {
+    return this.connection().delete(url, body);
   }
   putOrPost(url: string, body: any, method: string): Promise<PostResult> {
     return this.connection().putOrPost(url, body, method);
