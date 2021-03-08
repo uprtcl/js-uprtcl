@@ -105,14 +105,16 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     /* a proposal is considered accepted if all the updates are now ancestors of their target */
     const isAncestorVector = await Promise.all(
       this.proposal.mutation.updates
-        .filter((u) => !!u.details.headId)
-        .map((update) => {
-          return this.evees.isAncestorCommit(
-            update.perspectiveId,
-            update.details.headId as string,
-            update.oldDetails?.headId
-          );
-        })
+        ? this.proposal.mutation.updates
+            .filter((u) => !!u.details.headId)
+            .map((update) => {
+              return this.evees.isAncestorCommit(
+                update.perspectiveId,
+                update.details.headId as string,
+                update.oldDetails?.headId
+              );
+            })
+        : [true]
     );
 
     this.executed = !isAncestorVector.includes(false);
@@ -122,11 +124,13 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     /* check the update list, if user canUpdate on all the target perspectives,
     the user can execute the proposal */
     const canExecuteVector = await Promise.all(
-      this.proposal.mutation.updates.map(
-        async (update): Promise<boolean> => {
-          return this.evees.client.canUpdate(update.perspectiveId);
-        }
-      )
+      this.proposal.mutation.updates
+        ? this.proposal.mutation.updates.map(
+            async (update): Promise<boolean> => {
+              return this.evees.client.canUpdate(update.perspectiveId);
+            }
+          )
+        : [true]
     );
 
     this.canExecute = !canExecuteVector.includes(false);

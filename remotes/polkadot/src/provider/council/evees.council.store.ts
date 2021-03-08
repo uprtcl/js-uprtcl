@@ -271,6 +271,10 @@ export class PolkadotCouncilEveesStorage {
         })
       );
 
+      // their entities are persisted too
+      this.store.storeEntities(proposal.mutation.entities);
+      await this.store.flush();
+
       this.events
         ? this.events.emit(
             CouncilStoreEvents.perspectivesUpdated,

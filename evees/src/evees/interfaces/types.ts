@@ -2,7 +2,7 @@ import { TemplateResult } from 'lit-element';
 
 import { Behaviour } from '../../patterns/interfaces/behaviour';
 import { Secured } from '../../cas/utils/cid-hash';
-import { Entity } from '../../cas/interfaces/entity';
+import { Entity, EntityCreate } from '../../cas/interfaces/entity';
 
 import { Client } from './client';
 import { RemoteEvees } from './remote.evees';
@@ -129,7 +129,7 @@ export interface EveesMutationCreate {
   newPerspectives?: NewPerspective[];
   updates?: Update[];
   deletedPerspectives?: string[];
-  entities?: Entity[];
+  entities?: EntityCreate[];
 }
 
 export interface SearchOptionsJoin {

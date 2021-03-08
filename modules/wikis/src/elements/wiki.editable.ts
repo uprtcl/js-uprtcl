@@ -161,13 +161,11 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
     const mutation = await this.mergeEvees.client.diff();
 
-    /** the entities associated to the proposal are preemptively persisted on the CASRemote */
-    await this.mergeEvees.client.store.flush();
-
     const proposal: Proposal = {
       toPerspectiveId: this.uref,
       mutation,
     };
+
     await this.evees.client.proposals.createProposal(proposal);
     await this.evees.client.flush();
 

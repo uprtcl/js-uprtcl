@@ -88,8 +88,7 @@ export class CASOnMemory implements CASStore {
   async storeEntity(entity: EntityCreate): Promise<Entity> {
     /** Store in the new entities buffer */
     const entityVer = await this.base.hashEntity(entity);
-
-    // TODO: validate the hash is as expected
+    entityVer.remote = entity.remote;
 
     this.newEntities.set(entityVer.id, entityVer);
 
