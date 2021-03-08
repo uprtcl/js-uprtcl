@@ -95,6 +95,10 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async newPerspectives(perspectivesData: NewPerspective[]) {
+    if (perspectivesData.length === 0) {
+      return;
+    }
+
     await this.connection.post('/persp', {
       perspectives: perspectivesData.map((perspectiveData) => {
         return {
@@ -117,6 +121,10 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async updatePerspectives(updates: Update[]): Promise<void> {
+    if (updates.length === 0) {
+      return;
+    }
+
     await this.connection.put('/persp/update', {
       updates,
     });
@@ -127,6 +135,10 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async deletePerspectives(perspectiveIds: string[]): Promise<PostResult> {
+    if (perspectiveIds.length === 0) {
+      return { result: 'success', message: '', elementIds: [] };
+    }
+
     return this.connection.put('/deletePersp', {
       perspectiveIds,
     });
