@@ -256,12 +256,20 @@ export class PolkadotCouncilEveesStorage {
 
     /** accepted proposals are converted into valid perspectives */
     if (proposal.status === ProposalStatus.Accepted) {
-      const updates = proposal.mutation.newPerspectives
-        .map((np) => np.update)
-        .concat(proposal.mutation.updates);
+      // their entities are persisted too
+      if (proposal.mutation.entities) {
+        await this.store.storeEntities(proposal.mutation.entities);
+        await this.store.flush();
+      }
+
+      const newPerspectivesUpdates = proposal.mutation.newPerspectives
+        ? proposal.mutation.newPerspectives.map((np) => np.update)
+        : [];
+      const updates = proposal.mutation.updates ? proposal.mutation.updates : [];
+      const allUpdates = newPerspectivesUpdates.concat(updates);
 
       await Promise.all(
-        updates.map(async (update: Update) => {
+        allUpdates.map(async (update: Update) => {
           const perspective = await this.store.getEntity<Signed<Perspective>>(update.perspectiveId);
           await this.db.perspectives.put({
             id: update.perspectiveId,
@@ -271,14 +279,10 @@ export class PolkadotCouncilEveesStorage {
         })
       );
 
-      // their entities are persisted too
-      this.store.storeEntities(proposal.mutation.entities);
-      await this.store.flush();
-
       this.events
         ? this.events.emit(
             CouncilStoreEvents.perspectivesUpdated,
-            updates.map((u) => u.perspectiveId)
+            allUpdates.map((u) => u.perspectiveId)
           )
         : null;
     }
