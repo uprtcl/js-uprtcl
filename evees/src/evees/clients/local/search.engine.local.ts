@@ -90,6 +90,10 @@ export class LocalSearchEngine implements SearchEngine {
 
     return thisLevel.concat(...independent);
   }
+  // search independent perspectives
+  // const perspectiveInDb = await this.remote.db.perspectives.get(perspectiveId);
+
+  // perspectiveInDb.children.map();
 
   async forks(
     perspectiveId: string,

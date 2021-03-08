@@ -18,6 +18,6 @@ export interface HttpConnection {
   getWithPut<T>(url: string, body: any): Promise<T>;
   put(url: string, body: any): Promise<PostResult>;
   post(url: string, body: any): Promise<PostResult>;
-  delete(url: string): Promise<PostResult>;
+  delete(url: string, body?: any): Promise<PostResult>;
   putOrPost(url: string, body: any, method: string): Promise<PostResult>;
 }

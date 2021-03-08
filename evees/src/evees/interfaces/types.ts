@@ -149,7 +149,10 @@ export interface EveesOptions {
 export interface SearchOptions {
   under?: SearchOptionsJoin[];
   linksTo?: SearchOptionsJoin[];
-  query?: string;
+  text?: {
+    value: string;
+    levels?: number;
+  };
   orderBy?: string;
   pagination?: {
     first: number;

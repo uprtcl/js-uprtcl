@@ -35,7 +35,7 @@ export class FindMostRecentCommonAncestor {
       if (!commit) {
         commit = await this.client.store.getEntity(commitId);
 
-        if (!commit) throw new Error('Could not get ancestor commit');
+        if (!commit) throw new Error(`Could not get ancestor commit ${commitId}`);
 
         this.allCommits[commitId] = commit;
       }

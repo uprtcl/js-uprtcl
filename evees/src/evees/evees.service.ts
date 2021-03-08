@@ -263,6 +263,7 @@ export class Evees {
 
         /** set the details */
         update.linkChanges = {
+          ...update.linkChanges,
           [patternName]: {
             added,
             removed,
@@ -406,6 +407,10 @@ export class Evees {
     });
   }
 
+  async deletePerspective(uref: string): Promise<void> {
+    return this.client.deletePerspective(uref);
+  }
+
   async getPerspectiveChildren(uref: string): Promise<string[]> {
     const data = await this.tryGetPerspectiveData(uref);
     return data ? this.behaviorConcat(data.object, LinkingBehaviorNames.CHILDREN) : [];
@@ -532,6 +537,13 @@ export class Evees {
     const spliceResult = await this.spliceChildren(data.object, [], index, 1);
     await this.updatePerspectiveData(perspectiveId, spliceResult.object);
     return spliceResult.removed[0];
+  }
+
+  /** removes a child and deletes it from the remote (it might might other links to it */
+  async deleteChild(perspectiveId: string, index: number): Promise<string> {
+    const childId = await this.removeChild(perspectiveId, index);
+    await this.deletePerspective(childId);
+    return childId;
   }
 
   async getChildId(perspectiveId: string, ix: number) {
