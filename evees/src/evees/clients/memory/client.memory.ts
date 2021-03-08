@@ -216,6 +216,10 @@ export class ClientOnMemory implements Client {
 
     await this.base.flush();
 
+    await this.clear();
+  }
+
+  async clear(): Promise<void> {
     this.newPerspectives.clear();
     this.updates.clear();
     this.deletedPerspectives.clear();

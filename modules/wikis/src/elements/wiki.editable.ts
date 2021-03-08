@@ -169,6 +169,11 @@ export class EditableWiki extends servicesConnect(LitElement) {
     await this.evees.client.proposals.createProposal(proposal);
     await this.evees.client.flush();
 
+    const casRemote = this.evees.getCASRemote(this.editRemote.casID);
+
+    if (casRemote.clear) await casRemote.clear();
+    if (this.editRemote.clear) await this.editRemote.clear();
+
     this.creatingProposal = false;
   }
 

@@ -64,6 +64,10 @@ export class EveesBlockchain implements RemoteEvees {
   refresh(): Promise<void> {
     return Promise.resolve();
   }
+  clear(): Promise<void> {
+    /** dont have cache */
+    return Promise.resolve();
+  }
   getUserPerspectives(perspectiveId: string): Promise<string[]> {
     throw new Error('Method not implemented.');
   }

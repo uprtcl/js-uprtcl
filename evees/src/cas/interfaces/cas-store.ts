@@ -31,6 +31,9 @@ export interface CASStore {
   /** list all the new entities created relative to this store base store */
   diff(): Promise<Entity[]>;
 
+  /** delete all the entities on the base layer */
+  clear?(): Promise<void>;
+
   /** a few handy endpoints to just get or store one entity and not have to filter EntityGetResult */
   getEntity<T = any>(hash: string): Promise<Entity<T>>;
   storeEntity(entity: EntityCreate): Promise<Entity>;

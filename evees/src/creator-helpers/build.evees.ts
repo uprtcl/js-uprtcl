@@ -7,9 +7,11 @@ import { ClientOnMemory } from '../evees/clients/memory/client.memory';
 import { RemoteRouter } from '../evees/clients/client.router';
 import { CASStore } from '../cas/interfaces/cas-store';
 import { EveesContentModule } from '../evees/interfaces/evees.content.module';
+import { CASRemote } from 'src/cas/interfaces/cas-remote';
 
 export const buildEvees = (
-  remotes: Array<RemoteEvees>,
+  remotes: RemoteEvees[],
+  stores: CASRemote[],
   store: CASStore,
   recognizer: PatternRecognizer,
   modules: Map<string, EveesContentModule>,
@@ -32,5 +34,5 @@ export const buildEvees = (
   // const cached = new ClientLocal(router, store);
   const onMemory = new ClientOnMemory(router, store);
 
-  return new Evees(onMemory, recognizer, remotes, config, modules);
+  return new Evees(onMemory, recognizer, remotes, stores, config, modules);
 };

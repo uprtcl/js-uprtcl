@@ -93,6 +93,8 @@ export class RemoteRouter extends BaseRouter implements Client {
 
   async refresh() {}
 
+  async clear(): Promise<void> {}
+
   /** get all user perspectives on all registered remotes */
   async getUserPerspectives(perspectiveId: string) {
     const all = await Promise.all(

@@ -25,6 +25,7 @@ import { getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
 import { CASOnMemory } from 'src/cas/stores/cas.memory';
 import { arrayDiff } from './merge/utils';
+import { CASRemote } from 'src/cas/interfaces/cas-remote';
 
 export interface CreateCommit {
   dataId: string;
@@ -51,6 +52,7 @@ export class Evees {
     readonly client: Client,
     readonly recognizer: PatternRecognizer,
     readonly remotes: RemoteEvees[],
+    readonly stores: CASRemote[],
     readonly config: EveesConfig,
     readonly modules: Map<string, EveesContentModule>
   ) {}
@@ -69,7 +71,7 @@ export class Evees {
       await client.update(mutation);
     }
 
-    return new Evees(client, this.recognizer, this.remotes, this.config, this.modules);
+    return new Evees(client, this.recognizer, this.remotes, this.stores, this.config, this.modules);
   }
 
   findRemote<T extends RemoteEvees>(query: string): T {
@@ -86,6 +88,12 @@ export class Evees {
     } else {
       return this.remotes[0] as T;
     }
+  }
+
+  getCASRemote<T extends CASRemote>(casID: string): T {
+    const store = this.stores.find((r) => r.casID === casID);
+    if (!store) throw new Error(`store ${store} not found`);
+    return store as T;
   }
 
   async getPerspectiveRemote<T extends RemoteEvees>(perspectiveId: string): Promise<T> {

@@ -244,6 +244,10 @@ export class RemoteEveesLocal implements RemoteEvees {
     throw new Error('Method not implemented.');
   }
 
+  async clear(): Promise<void> {
+    await this.db.perspectives.clear();
+  }
+
   getUserPerspectives(perspectiveId: string): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
