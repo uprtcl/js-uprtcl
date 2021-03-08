@@ -485,7 +485,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const commit = await this.localEvees.createCommit(
       {
-        dataId,
+        dataId: dataId.id,
         parentsIds,
       },
       remote
