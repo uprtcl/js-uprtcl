@@ -15,7 +15,7 @@ export class CASRouter implements CASStore {
     });
   }
 
-  cacheEntities(entities: Entity<any>[]): Promise<void> {
+  cacheEntities(entities: Entity[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
@@ -34,7 +34,7 @@ export class CASRouter implements CASStore {
     return [];
   }
 
-  async getEntity(uref: string): Promise<Entity<any>> {
+  async getEntity(uref: string): Promise<Entity> {
     const { entities } = await this.getEntities([uref]);
     return entities[0];
   }
@@ -55,7 +55,7 @@ export class CASRouter implements CASStore {
     return entitiesPerStore;
   }
 
-  async storeEntities(entities: EntityCreate[]): Promise<Entity<any>[]> {
+  async storeEntities(entities: EntityCreate[]): Promise<Entity[]> {
     const entitiesPerStore = this.splitEntities(entities);
 
     const entitiesPerRemote = await Promise.all(
@@ -70,7 +70,7 @@ export class CASRouter implements CASStore {
     return Array.prototype.concat([], entitiesPerRemote);
   }
 
-  async hashEntities(entities: EntityCreate[]): Promise<Entity<any>[]> {
+  async hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
     const entitiesPerStore = this.splitEntities(entities);
 
     const entitiesPerRemote = await Promise.all(
@@ -142,9 +142,9 @@ export class CASRouter implements CASStore {
 
   /** Ask all registered sources for all the objects:
    *  - return all found objects when all objects found, or when all objects have been requested to all sources */
-  private async tryGetFromSources(hashes: string[]): Promise<Entity<any>[]> {
+  private async tryGetFromSources(hashes: string[]): Promise<Entity[]> {
     const requestedOn: string[] = [];
-    const allObjects: Map<string, Entity<any>> = new Map();
+    const allObjects: Map<string, Entity> = new Map();
 
     return new Promise((resolve) => {
       Array.from(this.storesMap.keys()).map(async (casID) => {

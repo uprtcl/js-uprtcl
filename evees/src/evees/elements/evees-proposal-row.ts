@@ -133,7 +133,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   }
 
   async showProposalChanges() {
-    const localEvees = this.evees.clone('ProposalClient');
+    const localEvees = await this.evees.clone('ProposalClient');
     await localEvees.client.update(this.proposal.mutation);
 
     this.showDiff = true;

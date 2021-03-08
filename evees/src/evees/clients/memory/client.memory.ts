@@ -43,15 +43,10 @@ export class ClientOnMemory implements Client {
   constructor(
     protected base: Client,
     public store: CASStore,
-    mutation?: EveesMutation,
     readonly name: string = 'OnMemoryClient'
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
-
-    if (mutation) {
-      this.update(mutation);
-    }
 
     if (this.base.events) {
       this.base.events.on(ClientEvents.updated, (perspectiveIds: string[]) => {
@@ -175,6 +170,10 @@ export class ClientOnMemory implements Client {
   }
 
   async update(mutation: EveesMutationCreate): Promise<void> {
+    if (mutation.entities) {
+      await this.store.storeEntities(mutation.entities);
+    }
+
     if (mutation.newPerspectives) {
       await this.createPerspectives(mutation.newPerspectives);
     }
@@ -198,7 +197,7 @@ export class ClientOnMemory implements Client {
     return this.update({ updates: [update] });
   }
 
-  async hashEntities(entities: EntityCreate[]): Promise<Entity<any>[]> {
+  async hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
     return this.store.hashEntities(entities);
   }
 
@@ -237,7 +236,7 @@ export class ClientOnMemory implements Client {
       newPerspectives: Array.from(this.newPerspectives.values()),
       updates: Array.prototype.concat.apply([], [...Array.from(this.updates.values())]),
       deletedPerspectives: Array.from(this.deletedPerspectives.values()),
-      entities: [],
+      entities: await this.store.diff(),
     };
   }
 

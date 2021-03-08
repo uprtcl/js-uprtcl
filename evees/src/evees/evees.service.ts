@@ -57,9 +57,18 @@ export class Evees {
 
   /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
-  clone(name: string = 'NewClient', client?: Client, mutation?: EveesMutation): Evees {
+  async clone(
+    name: string = 'NewClient',
+    client?: Client,
+    mutation?: EveesMutation
+  ): Promise<Evees> {
     const store = client ? client.store : new CASOnMemory(this.client.store);
-    client = client || new ClientOnMemory(this.client, store, mutation, name);
+    client = client || new ClientOnMemory(this.client, store, name);
+
+    if (mutation) {
+      await client.update(mutation);
+    }
+
     return new Evees(client, this.recognizer, this.remotes, this.config, this.modules);
   }
 
@@ -99,12 +108,12 @@ export class Evees {
     return this.getCommitData<T>(result.details.headId);
   }
 
-  async tryGetPerspectiveData<T = any>(perspectiveId: string): Promise<Entity<any> | undefined> {
+  async tryGetPerspectiveData<T = any>(perspectiveId: string): Promise<Entity | undefined> {
     const result = await this.client.getPerspective(perspectiveId);
     return result.details.headId ? this.getCommitData<T>(result.details.headId) : undefined;
   }
 
-  async tryGetCommitData<T = any>(commitId: string | undefined): Promise<Entity<any> | undefined> {
+  async tryGetCommitData<T = any>(commitId: string | undefined): Promise<Entity | undefined> {
     if (commitId === undefined) return commitId;
     const dataId = await this.tryGetCommitDataId(commitId);
     if (!dataId) return undefined;
@@ -113,7 +122,7 @@ export class Evees {
     return data;
   }
 
-  async getCommitData<T = any>(commitId: string): Promise<Entity<any>> {
+  async getCommitData<T = any>(commitId: string): Promise<Entity> {
     const dataId = await this.getCommitDataId(commitId);
     const data = await this.client.store.getEntity<T>(dataId);
     return data;
@@ -364,7 +373,7 @@ export class Evees {
     perspectiveId: string,
     object: object = {},
     guardianId?: string
-  ): Promise<Entity<any>> {
+  ): Promise<Entity> {
     const data = await this.getPerspectiveData<{ proposals: string[] }>(perspectiveId);
     if (!data) {
       // initializes the home space with an empty object {}

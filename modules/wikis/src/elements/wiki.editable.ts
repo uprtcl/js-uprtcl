@@ -97,16 +97,13 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
     if (forks.length > 0) {
       // build
-      const entities: Entity<any>[] = [];
+      const entities: Entity[] = [];
 
       const mutations = await Promise.all(
         forks.map(async (forkId) => {
-          const mergeEvees = this.evees.clone(`TempMergeClientFor-${forkId}`);
+          const mergeEvees = await this.evees.clone(`TempMergeClientFor-${forkId}`);
           const merger = new RecursiveContextMergeStrategy(mergeEvees);
           await merger.mergePerspectivesExternal(this.uref, forkId, { forceOwner: true });
-
-          const newEntitites = await mergeEvees.client.store.diff();
-          entities.push(...newEntitites);
 
           return mergeEvees.client.diff();
         })
@@ -114,8 +111,8 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
       const mutation = combineMutations(mutations);
 
-      this.mergeEvees = this.evees.clone('WikiMergeClient', undefined, mutation);
-      this.mergeEvees.clone.store.this.hasChanges = mutation.updates.length > 0;
+      this.mergeEvees = await this.evees.clone('WikiMergeClient', undefined, mutation);
+      this.hasChanges = mutation.updates.length > 0;
     }
   }
 

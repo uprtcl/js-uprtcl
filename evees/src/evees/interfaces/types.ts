@@ -110,7 +110,7 @@ export interface PerspectiveAndDetails {
 
 export interface Slice {
   perspectives: PerspectiveAndDetails[];
-  entities: Entity<any>[];
+  entities: Entity[];
 }
 
 export interface PerspectiveGetResult {
@@ -197,7 +197,7 @@ export interface EveesConfig {
 
 export interface UpdateDetails {
   path: string[];
-  newData: Entity<any>;
-  oldData?: Entity<any>;
+  newData: Entity;
+  oldData?: Entity;
   update: Update;
 }

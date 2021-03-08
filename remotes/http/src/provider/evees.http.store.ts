@@ -24,8 +24,8 @@ export class HttpStore implements CASRemote {
     return Promise.resolve();
   }
 
-  async get(hash: string): Promise<Entity<any>> {
-    return this.connection.get<Entity<any>>(`/get/${hash}`);
+  async get(hash: string): Promise<Entity> {
+    return this.connection.get<Entity>(`/get/${hash}`);
   }
 
   async hash(object: object): Promise<Entity> {
@@ -39,7 +39,7 @@ export class HttpStore implements CASRemote {
     };
   }
 
-  cacheEntities(entities: Entity<any>[]): Promise<void> {
+  cacheEntities(entities: Entity[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
@@ -65,7 +65,7 @@ export class HttpStore implements CASRemote {
     return [];
   }
 
-  async getEntity(hash: string): Promise<Entity<any>> {
+  async getEntity(hash: string): Promise<Entity> {
     const entities = await this.getEntities([hash]);
     return entities[0];
   }

@@ -18,7 +18,7 @@ export interface DocNode {
   placeholderRef?: string;
   remote?: string;
   context?: string;
-  data?: Entity<any>;
+  data?: Entity;
   draft: any;
   type?: string;
   draftType?: string;

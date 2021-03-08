@@ -8,7 +8,7 @@ import { Entity, EntityCreate } from '../interfaces/entity';
  * entities on the base CASStore */
 export class CASOnMemory implements CASStore {
   private newEntities = new Map<string, Entity>();
-  private cachedEntities = new Map<string, Entity<any>>();
+  private cachedEntities = new Map<string, Entity>();
 
   /** The base CASStore can be a better persisted CASStore in IndexedDB or the CAS router which will
    * connect to remote stores like IPFS or a web server.
@@ -41,7 +41,7 @@ export class CASOnMemory implements CASStore {
   }
 
   async getEntities(hashes: string[]): Promise<EntityGetResult> {
-    const found: Entity<any>[] = [];
+    const found: Entity[] = [];
     const notFound: string[] = [];
 
     /** Check the cache */
@@ -97,7 +97,7 @@ export class CASOnMemory implements CASStore {
     return entityVer;
   }
 
-  async getEntity<T = any>(uref: string): Promise<Entity<any>> {
+  async getEntity<T = any>(uref: string): Promise<Entity> {
     const { entities } = await this.getEntities([uref]);
     return entities[0] as Entity<T>;
   }
