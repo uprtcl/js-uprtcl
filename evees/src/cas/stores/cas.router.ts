@@ -59,12 +59,7 @@ export class CASRouter implements CASStore {
   }
 
   hashEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
-    return Promise.all(
-      objects.map(async (o) => {
-        const hash = await this.hashEntity(o);
-        return { id: hash, object: o };
-      })
-    );
+    return Promise.all(objects.map(async (o) => this.hashEntity(o)));
   }
 
   async storeEntity(object: ObjectOn): Promise<string> {
@@ -72,7 +67,7 @@ export class CASRouter implements CASStore {
     return entities[0].id;
   }
 
-  hashEntity(object: ObjectOn): Promise<string> {
+  hashEntity<T = any>(object: ObjectOn): Promise<Entity<T>> {
     return this.hashOnSource(object);
   }
 

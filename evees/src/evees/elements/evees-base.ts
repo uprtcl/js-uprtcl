@@ -9,6 +9,7 @@ import { servicesConnect } from '../../container/multi-connect.mixin';
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { ClientEvents } from '../interfaces/client';
 import { Commit, Perspective } from '../interfaces/types';
+import { RemoteLoggedEvents } from '../interfaces/remote.logged';
 
 export class EveesBaseElement<T extends object = object> extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-BASE-ELEMENT');
@@ -22,6 +23,9 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
   @internalProperty()
   loading: boolean = true;
 
+  @internalProperty()
+  isLogged: boolean = false;
+
   canUpdate!: boolean;
   guardianId!: string | undefined;
 
@@ -34,6 +38,12 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
   async firstUpdated() {
     this.remote = await this.evees.getPerspectiveRemote(this.uref);
 
+    this.checkLogged();
+
+    if (this.remote.events) {
+      this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.checkLogged());
+    }
+
     this.loading = true;
     await this.load();
     this.loading = false;
@@ -43,6 +53,10 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
         this.perspectiveUpdated(perspectives)
       );
     }
+  }
+
+  async checkLogged() {
+    this.isLogged = await this.remote.isLogged();
   }
 
   perspectiveUpdated(perspectives: string[]) {

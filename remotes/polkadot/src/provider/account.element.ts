@@ -29,9 +29,11 @@ export class PolkadotAccountElement extends servicesConnect(LitElement) {
   identity!: any;
 
   async firstUpdated() {
-    const polkadotRemote = this.evees.findRemote<EveesBlockchain>('polkadot');
-
-    this.connection = polkadotRemote.connection.connection;
+    // MultiService must be initialized with the polkadot connection service using this same name
+    this.connection = this.request('polkadot-connection');
+    if (!this.connection) {
+      throw new Error('Polkadot connection not found');
+    }
 
     this.load();
   }

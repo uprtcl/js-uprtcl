@@ -5,6 +5,7 @@ import {
   CASStore,
   Perspective,
   Signed,
+  SearchResult,
 } from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
@@ -14,7 +15,7 @@ import { EveesOrbitDBEntities } from '../custom-stores/orbit-db.stores';
 export class EveesOrbitDBSearchEngine implements SearchEngine {
   constructor(public orbitdbcustom: OrbitDBCustom, protected store: CASStore) {}
 
-  explore(options: SearchOptions) {
+  explore(options: SearchOptions): Promise<SearchResult> {
     throw new Error('Method not implemented.');
   }
   async locate(perspectiveId: string, forks = false): Promise<ParentAndChild[]> {

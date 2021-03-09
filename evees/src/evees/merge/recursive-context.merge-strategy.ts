@@ -1,4 +1,5 @@
 import { PerspectiveType } from '../patterns/perspective.pattern';
+import { MergeConfig } from './merge-strategy';
 import { SimpleMergeStrategy } from './simple.merge-strategy';
 import { mergeArrays } from './utils';
 
@@ -66,7 +67,11 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     await Promise.all(promises);
   }
 
-  async mergePerspectivesExternal(toPerspectiveId: string, fromPerspectiveId: string, config: any) {
+  async mergePerspectivesExternal(
+    toPerspectiveId: string,
+    fromPerspectiveId: string,
+    config: MergeConfig
+  ) {
     /** reset internal state */
     this.perspectivesByContext = new Map();
     await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
@@ -76,7 +81,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config: any
+    config: MergeConfig
   ): Promise<string> {
     return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
   }
@@ -93,7 +98,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   async mergeChildren(
     originalLinks: string[],
     modificationsLinks: string[][],
-    config: any
+    config: MergeConfig
   ): Promise<string[]> {
     if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
 
@@ -126,7 +131,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
              *  and updating its head (here is where recursion start) */
 
             config = {
-              parentId: perspectivesByContext.to,
+              guardianId: perspectivesByContext.to,
               ...config,
             };
 
@@ -148,7 +153,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
                 const newPerspectiveId = await this.evees.forkPerspective(
                   perspectivesByContext.from as string,
                   config.remote,
-                  config.parentId
+                  config.guardianId
                 );
                 return newPerspectiveId;
               } else {

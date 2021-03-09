@@ -23,7 +23,7 @@ export const snapDefaultPerspective = async (
     remote: remote.id,
   });
 
-  const context = perspective.context !== undefined ? perspective.context : defaultContext;
+  const context = perspective.context !== undefined ? perspective.context : defaultContext.id;
 
   const object: Perspective = {
     creatorId: creatorId,
@@ -45,19 +45,14 @@ export const snapDefaultPerspective = async (
     },
   };
 
-  const hash = await remote.store.hashEntity({ object: secured, remote: remote.id });
-  return {
-    id: hash,
-    object: secured,
-  };
+  return remote.store.hashEntity({ object: secured, remote: remote.id });
 };
 
 export const getHome = async (
   remote: RemoteEvees,
   userId?: string
 ): Promise<Secured<Perspective>> => {
-  const creatorId = userId === undefined ? remote.userId : userId;
-  if (!creatorId) throw new Error('creator cannot be undefined');
+  const creatorId = userId === undefined ? (remote.userId ? remote.userId : '') : userId;
 
   const remoteHome: Perspective = {
     remote: remote.id,
@@ -75,11 +70,7 @@ export const getHome = async (
     },
   };
 
-  const hash = await remote.store.hashEntity({ object: secured, remote: remote.id });
-  return {
-    id: hash,
-    object: secured,
-  };
+  return remote.store.hashEntity({ object: secured, remote: remote.id });
 };
 
 export const getConceptPerspective = async (concept: string): Promise<Secured<Perspective>> => {

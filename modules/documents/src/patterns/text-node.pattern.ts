@@ -5,15 +5,17 @@ import {
   HasDiffLenses,
   HasLenses,
   DiffLens,
-  Client,
+  MergeConfig,
   Pattern,
   HasChildren,
   HasTitle,
+  HasEmpty,
   Lens,
   Evees,
   LinkingBehaviorNames,
   HasMerge,
   MergingBehaviorNames,
+  RenderEntityInput,
 } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
@@ -48,7 +50,11 @@ export class TextNodePattern extends Pattern<TextNode> {
 }
 
 export class TextNodeCommon
-  implements HasLenses<TextNode>, HasChildren<TextNode>, HasMerge<TextNode> {
+  implements
+    HasLenses<TextNode, RenderEntityInput>,
+    HasChildren<TextNode>,
+    HasMerge<TextNode>,
+    HasEmpty<TextNode> {
   [LinkingBehaviorNames.REPLACE_CHILDREN] = (node: TextNode) => (
     childrenHashes: string[]
   ): TextNode => ({
@@ -58,17 +64,23 @@ export class TextNodeCommon
 
   [LinkingBehaviorNames.CHILDREN] = (node: TextNode): string[] => node.links;
 
+  empty = (): TextNode => {
+    return { text: '', type: TextType.Title, links: [] };
+  };
+
   text = (node: TextNode): string => node.text;
 
-  lenses = (node: TextNode): Lens[] => {
+  lenses = (node: TextNode): Lens<RenderEntityInput>[] => {
     return [
       {
         name: 'documents:document',
         type: 'content',
-        render: (entity: any, context: any) => {
-          return html`
-            <documents-text-node .data=${node} uref=${entity.id}> </documents-text-node>
-          `;
+        render: (input: RenderEntityInput, evees?: Evees) => {
+          return html`<documents-editor
+            uref=${input.uref}
+            ?read-only=${input.readOnly}
+            .localEvees=${evees}
+          ></documents-editor>`;
         },
       },
     ];
@@ -116,7 +128,7 @@ export class TextNodeCommon
   [MergingBehaviorNames.MERGE] = (originalNode: TextNode) => async (
     modifications: TextNode[],
     merger: MergeStrategy,
-    config: any
+    config: MergeConfig
   ): Promise<TextNode> => {
     const resultText = modifications[1].text;
     const resultType = mergeResult(

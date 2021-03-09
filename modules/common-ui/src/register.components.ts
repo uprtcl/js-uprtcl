@@ -19,6 +19,7 @@ import { UprtclToggle } from './elements/toggle';
 import { UprtclIndicator } from './elements/indicator';
 import { UprtclCopyToClipboard } from './elements/copy-to-clipboard';
 import { UprtclIconAndName } from './elements/icon-and-name';
+import { UprtclExpandable } from './elements/expandable';
 
 export function registerComponents() {
   customElements.define('uprtcl-button', UprtclButton);
@@ -40,4 +41,5 @@ export function registerComponents() {
   customElements.define('uprtcl-indicator', UprtclIndicator);
   customElements.define('uprtcl-copy-to-clipboard', UprtclCopyToClipboard);
   customElements.define('uprtcl-icon-and-name', UprtclIconAndName);
+  customElements.define('uprtcl-expandable', UprtclExpandable);
 }

@@ -1,3 +1,11 @@
+import { Entity } from '../../cas/interfaces/entity';
+
+export interface MergeConfig {
+  forceOwner?: boolean;
+  remote?: string;
+  guardianId?: string;
+}
+
 export interface MergeStrategy {
   /**
    * @returns the id of the resulting head commit of the perspective to merge to
@@ -5,7 +13,7 @@ export interface MergeStrategy {
   mergePerspectives(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config: any
+    config: MergeConfig
   ): Promise<string>;
 
   /**
@@ -15,7 +23,7 @@ export interface MergeStrategy {
   mergePerspectivesExternal(
     toPerspectiveId: string,
     fromPerspectiveId: string,
-    config: any
+    config: MergeConfig
   ): Promise<string>;
 
   /**
@@ -25,7 +33,7 @@ export interface MergeStrategy {
     toCommitId: string,
     fromCommitId: string,
     remoteId: string,
-    config: any
+    config: MergeConfig
   ): Promise<string>;
 
   /**

@@ -1,4 +1,9 @@
-import { PolkadotConnection, TransactionReceipt } from '../../connection.polkadot';
+import EventEmitter from 'events';
+import {
+  ConnectionEvents,
+  PolkadotConnection,
+  TransactionReceipt,
+} from '../../connection.polkadot';
 import { EveesCouncilDB } from './dexie.council.store';
 
 import {
@@ -15,18 +20,38 @@ import { CASStore, Logger, Perspective, PerspectiveDetails, Signed, Update } fro
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 
+export enum CouncilStoreEvents {
+  proposalStatusChanged = 'proposal-status-changed',
+  perspectivesUpdated = 'perspectives-updated',
+}
+
+const LOG_ENABLED = false;
+
 /* a store that keeps track of the council common state regarding the council proposals */
 export class PolkadotCouncilEveesStorage {
   logger: Logger = new Logger('PolkadotCouncilEveesStorage');
 
   store!: CASStore;
   protected db!: EveesCouncilDB;
+  readonly events?: EventEmitter;
+
+  private fetchPromises: Map<number, Promise<void>> = new Map();
 
   constructor(
     protected connection: PolkadotConnection,
     public config: ProposalConfig,
     protected casID: string
-  ) {}
+  ) {
+    this.events = new EventEmitter();
+    this.events.setMaxListeners(1000);
+
+    if (this.connection.events) {
+      this.connection.events.on(ConnectionEvents.newBlock, (block) => {
+        if (LOG_ENABLED) this.logger.log('Block received', block);
+        this.fetchCouncilDatas(block.number.toNumber());
+      });
+    }
+  }
 
   async ready(): Promise<void> {
     const localStoreName = `${this.connection.getNetworkId()}-evees-council`;
@@ -69,33 +94,36 @@ export class PolkadotCouncilEveesStorage {
     }
 
     const councilProposals = myCouncilData.proposals ? myCouncilData.proposals : [];
-    this.logger.log('gossip proposals');
+    if (LOG_ENABLED) this.logger.log('gossip proposals');
 
     this.db.proposals.each((localProposal, cursor) => {
       if (councilProposals.findIndex((p) => p.id === cursor.key) === -1) {
         const proposal = {
           id: cursor.key,
         };
-        this.logger.log('gossiping', proposal);
+        if (LOG_ENABLED) this.logger.log('gossiping', proposal);
         councilProposals.push(proposal);
       }
     });
 
     myCouncilData.proposals = [...councilProposals];
-    this.logger.log('CouncilData Updated to', myCouncilData);
-    return this.store.storeEntity({ object: myCouncilData, casID: this.casID });
+    if (LOG_ENABLED) this.logger.log('CouncilData Updated to', myCouncilData);
+    const dataId = await this.store.storeEntity({ object: myCouncilData, casID: this.casID });
+    await this.store.flush();
+
+    return dataId;
   }
 
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
     block = block || (await this.db.meta.get('block')).value;
     const head = await this.connection.getMutableHead(member, COUNCIL_KEYS, block);
     if (!head) {
-      this.logger.log(`Council Data of ${member} is undefined`);
+      if (LOG_ENABLED) this.logger.log(`Council Data of ${member} is undefined`);
       return {};
     }
 
     const councilData = await this.store.getEntity(head);
-    this.logger.log(`Council Data of ${member}`, councilData);
+    if (LOG_ENABLED) this.logger.log(`Council Data of ${member}`, councilData);
     return councilData ? councilData.object : {};
   }
 
@@ -150,32 +178,50 @@ export class PolkadotCouncilEveesStorage {
   /** reads all the council datas and populate the DB */
   async fetchCouncilDatas(at?: number) {
     at = at || (await this.connection.getLatestBlock());
+    const last = await this.db.meta.get('block');
 
-    const council = await this.connection.getCouncil(at);
+    /** only update if block is new */
+    if (!last || at > last.value) {
+      /** prevent making parallel requests */
+      if (this.fetchPromises.has(at)) {
+        return this.fetchPromises.get(at);
+      }
 
-    this.logger.log('Fetch council data', { council });
+      const fetchAt = async (at) => {
+        const council = await this.connection.getCouncil(at);
 
-    await Promise.all(
-      council.map(async (member) => {
-        if (at === undefined) throw new Error('latest block was not defined');
+        if (LOG_ENABLED) this.logger.log('Fetch council data', { council });
 
-        // get council data of member.
-        const data = await this.getCouncilDataOf(member, at);
+        await Promise.all(
+          council.map(async (member) => {
+            if (at === undefined) throw new Error('latest block was not defined');
 
-        await Promise.all(this.cacheVotes(data, at, member));
-        /** proposal status uses the latest cached votes */
-        await Promise.all(this.cacheProposals(data, at));
-      })
-    );
+            // get council data of member.
+            const data = await this.getCouncilDataOf(member, at);
 
-    /** timestamp the latest sync */
-    this.db.meta.put({ entry: 'block', value: at });
+            await Promise.all(this.cacheVotes(data, at, member));
+            /** proposal status uses the latest cached votes */
+            await Promise.all(this.cacheProposals(data, at));
+          })
+        );
+
+        /** timestamp the latest sync */
+        this.db.meta.put({ entry: 'block', value: at });
+      };
+
+      const fetchPromise = fetchAt(at);
+      this.fetchPromises.set(at, fetchPromise);
+
+      await fetchPromise;
+
+      this.fetchPromises.delete(at);
+    }
   }
 
   cacheProposals(data: CouncilData, at: number): Promise<void>[] {
     if (data.proposals === undefined) return [];
 
-    this.logger.log('caching proposals of ', { data });
+    if (LOG_ENABLED) this.logger.log('caching proposals of ', { data });
 
     return data.proposals.map(async (councilProposal) => this.cacheProposal(councilProposal, at));
   }
@@ -185,15 +231,27 @@ export class PolkadotCouncilEveesStorage {
     // store proposals of that member on my local db.
     const mine = await this.db.proposals.get(proposalId);
 
-    this.logger.log(`caching proposal ${proposalId}`, { mine });
+    if (LOG_ENABLED) this.logger.log(`caching proposal ${proposalId}`, { mine });
 
     // if I have it and is not pending, that's it.
     if (mine && mine.status !== ProposalStatus.Pending) return;
 
     const proposal = mine || (await this.initLocalProposal(proposalId));
+
+    const prevStatus = proposal.status;
     proposal.status = await this.getProposalStatus(proposalId, at);
 
-    this.logger.log(`adding proposal to cache ${proposalId}`, { proposal });
+    if (proposal.status !== prevStatus) {
+      if (LOG_ENABLED) this.logger.log('proposal status changed', proposal);
+      this.events
+        ? this.events.emit(CouncilStoreEvents.proposalStatusChanged, {
+            proposalId: proposal.id,
+            status: proposal.status,
+          })
+        : null;
+    }
+
+    if (LOG_ENABLED) this.logger.log(`adding proposal to cache ${proposalId}`, { proposal });
     await this.db.proposals.put(proposal);
 
     /** accepted proposals are converted into valid perspectives */
@@ -212,19 +270,26 @@ export class PolkadotCouncilEveesStorage {
           });
         })
       );
+
+      this.events
+        ? this.events.emit(
+            CouncilStoreEvents.perspectivesUpdated,
+            updates.map((u) => u.perspectiveId)
+          )
+        : null;
     }
   }
 
   cacheVotes(data: CouncilData, at: number, member: string): Promise<void>[] {
     if (data.votes === undefined) return [];
 
-    this.logger.log('caching votes of', { data });
+    if (LOG_ENABLED) this.logger.log('caching votes of', { data });
 
     return data.votes.map(async (vote) => {
       const voteId = `${vote.proposalId}-${vote.member}`;
       const myCopy = await this.db.votes.get(voteId);
 
-      this.logger.log('caching vote of', { vote, myCopy });
+      if (LOG_ENABLED) this.logger.log('caching vote of', { vote, myCopy });
 
       /* if I have it that's it. This also prevents double casting votes */
       if (myCopy) return;
@@ -242,7 +307,7 @@ export class PolkadotCouncilEveesStorage {
         return;
       }
 
-      this.logger.log('adding vote to cache', { vote });
+      if (LOG_ENABLED) this.logger.log('adding vote to cache', { vote });
       const voteLocal = {
         id: voteId,
         proposalId: vote.proposalId,
@@ -254,9 +319,9 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getProposalManifest(proposalId: string): Promise<ProposalManifest> {
-    const { object: proposalManifest } = await this.store.getEntity<ProposalManifest>(proposalId);
-    if (!proposalManifest) throw new Error(`Proposal ${proposalId} not found`);
-    return proposalManifest;
+    const proposalPerspective = await this.store.getEntity<Signed<Perspective>>(proposalId);
+    if (!proposalPerspective) throw new Error(`Proposal ${proposalId} not found`);
+    return proposalPerspective.object.payload.meta.proposal;
   }
 
   async initLocalProposal(proposalId: string): Promise<LocalProposal> {
@@ -273,7 +338,7 @@ export class PolkadotCouncilEveesStorage {
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
     await this.ready();
     /** at this point cache data is up to date */
-    this.logger.log(`getting perspective ${perspectiveId}`);
+    if (LOG_ENABLED) this.logger.log(`getting perspective ${perspectiveId}`);
     const perspective = await this.db.perspectives.get(perspectiveId);
     return { headId: perspective ? perspective.headId : undefined };
   }
@@ -282,7 +347,7 @@ export class PolkadotCouncilEveesStorage {
     await this.ready();
     const perspectives = await this.db.perspectives.where('context').equals(context).toArray();
 
-    this.logger.log(`getting context perspectives ${context}`, perspectives);
+    if (LOG_ENABLED) this.logger.log(`getting context perspectives ${context}`, perspectives);
 
     return perspectives.map((e) => e.id);
   }
@@ -304,10 +369,11 @@ export class PolkadotCouncilEveesStorage {
       newCouncilData.proposals.splice(ix, 1, councilProposal);
     }
 
-    this.logger.log('addProposalToCouncilData', {
-      myCouncilData,
-      newCouncilData,
-    });
+    if (LOG_ENABLED)
+      this.logger.log('addProposalToCouncilData', {
+        myCouncilData,
+        newCouncilData,
+      });
 
     return newCouncilData;
   }
@@ -326,10 +392,11 @@ export class PolkadotCouncilEveesStorage {
     );
     newCouncilData.votes.push(vote);
 
-    this.logger.log('addProposalToCouncilData', {
-      myCouncilData,
-      newCouncilData,
-    });
+    if (LOG_ENABLED)
+      this.logger.log('addProposalToCouncilData', {
+        myCouncilData,
+        newCouncilData,
+      });
 
     return newCouncilData;
   }
@@ -338,8 +405,27 @@ export class PolkadotCouncilEveesStorage {
     if (this.connection.account === undefined) throw new Error('user not logged in');
     if (!(await this.connection.canSign())) throw new Error('user cant sign');
 
+    /** a proposal is a perspective like object (includes the remote) but we make it inmutable by adding the
+     * proposal details (mutation or list of changes) part of the perspective object. */
+    const proposalObject: Signed<Perspective> = {
+      payload: {
+        remote: proposalManifest.remote,
+        context: '',
+        creatorId: '',
+        path: '',
+        timestamp: Date.now(),
+        meta: {
+          proposal: proposalManifest,
+        },
+      },
+      proof: {
+        signature: '',
+        type: '',
+      },
+    };
+
     const proposalId = await this.store.storeEntity({
-      object: proposalManifest,
+      object: proposalObject,
       casID: this.casID,
     });
     const council = await this.connection.getCouncil(proposalManifest.block);
@@ -354,14 +440,13 @@ export class PolkadotCouncilEveesStorage {
       object: newCouncilData,
       casID: this.casID,
     });
-
-    this.logger.log('createProposal', { newCouncilDataHash, newCouncilData });
-    await this.updateCouncilData(newCouncilDataHash);
+    if (LOG_ENABLED) this.logger.log('createProposal', { newCouncilDataHash, newCouncilData });
+    await Promise.all([this.store.flush(), this.updateCouncilData(newCouncilDataHash)]);
 
     /** cache this proposal on my localdb */
     const localProposal = await this.initLocalProposal(proposalId);
 
-    this.logger.log('caching proposal', { proposalId, localProposal });
+    if (LOG_ENABLED) this.logger.log('caching proposal', { proposalId, localProposal });
     await this.db.proposals.put(localProposal);
 
     return proposalId;
@@ -370,10 +455,11 @@ export class PolkadotCouncilEveesStorage {
   async getProposalsToPerspective(perspectiveId: string) {
     const proposals = this.db.proposals.where('toPerspectiveId').equals(perspectiveId);
     const proposalIds = await proposals.primaryKeys();
-    this.logger.log('getProposalsToPerspective', {
-      perspectiveId,
-      proposalIds,
-    });
+    if (LOG_ENABLED)
+      this.logger.log('getProposalsToPerspective', {
+        perspectiveId,
+        proposalIds,
+      });
     return proposalIds;
   }
 
@@ -384,7 +470,7 @@ export class PolkadotCouncilEveesStorage {
 
     const votes = await this.db.votes.where('proposalId').equals(proposalId).toArray();
 
-    this.logger.log('getProposalStatus', { proposalId, proposal });
+    if (LOG_ENABLED) this.logger.log('getProposalStatus', { proposalId, proposal });
     const block = (await this.db.meta.get('block')).value;
     return {
       status: proposal.status,
@@ -412,8 +498,9 @@ export class PolkadotCouncilEveesStorage {
       object: newCouncilData,
       casID: this.casID,
     });
-    this.logger.log('vote', { vote, newCouncilDataHash, newCouncilData });
-    await this.updateCouncilData(newCouncilDataHash);
+
+    if (LOG_ENABLED) this.logger.log('vote', { vote, newCouncilDataHash, newCouncilData });
+    await Promise.all([this.store.flush(), this.updateCouncilData(newCouncilDataHash)]);
 
     /** update the proposal status based  */
     await this.fetchCouncilDatas();

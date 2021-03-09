@@ -13,6 +13,7 @@ export interface CouncilData {
 }
 
 export interface ProposalManifest {
+  remote: string; // stores the remote as part of the  proposalId
   toPerspectiveId: string;
   fromPerspectiveId?: string;
   creatorId?: string;

@@ -1,5 +1,7 @@
 import { Diff } from 'diff-match-patch-ts';
 import isEqual from 'lodash-es/isEqual';
+import { Evees } from '../evees.service';
+import { EveesMutation } from '../interfaces/types';
 
 import { DiffUtils } from './diff.utils';
 
@@ -85,4 +87,30 @@ export const mergeArrays = (originalLinks: string[], modificationsLinks: string[
     .map((link) => link.link);
 
   return sortedLinks;
+};
+
+export const arrayDiff = (
+  oldEls: string[],
+  newEls: string[]
+): { added: string[]; removed: string[] } => {
+  return {
+    added: newEls.filter((el) => !oldEls.includes(el)),
+    removed: oldEls.filter((el) => !newEls.includes(el)),
+  };
+};
+
+export const combineMutations = (mutations: EveesMutation[]): EveesMutation => {
+  const mutation: EveesMutation = {
+    newPerspectives: [],
+    deletedPerspectives: [],
+    updates: [],
+  };
+
+  mutations.forEach((thisMutation) => {
+    mutation.newPerspectives.concat(thisMutation.newPerspectives);
+    mutation.deletedPerspectives.concat(thisMutation.deletedPerspectives);
+    mutation.updates.concat(thisMutation.updates);
+  });
+
+  return mutation;
 };
