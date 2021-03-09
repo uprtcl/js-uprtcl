@@ -65,7 +65,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
 
     /** it's assumed that there is only one fork per user on the remote  */
     const drafts = await this.editRemote.searchEngine.forks(this.firstRef);
-    this.mineId = drafts.length > 0 ? drafts[0] : undefined;
+    this.mineId = drafts.length > 0 ? drafts[0].forkId : undefined;
     this.logger.log('BaseDraft -- load() set mineId', this.mineId);
 
     this.checkCase();

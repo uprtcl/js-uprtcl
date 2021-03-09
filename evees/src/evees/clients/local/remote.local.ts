@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
 
+import { Evees } from '../../../evees/evees.service';
 import { Logger } from '../../../utils/logger';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { Secured } from '../../../cas/utils/cid-hash';
@@ -35,7 +36,7 @@ export class RemoteEveesLocal implements RemoteEvees {
   logger = new Logger('RemoteEveesLocal');
   accessControl: AccessControl = new LocalAccessControl();
   store!: CASStore;
-  searchEngine: SearchEngine;
+  searchEngine: LocalSearchEngine;
   db: EveesDB;
   events: EventEmitter;
 
@@ -59,6 +60,10 @@ export class RemoteEveesLocal implements RemoteEvees {
 
   setStore(store: CASStore) {
     this.store = store;
+  }
+
+  setEvees(evees: Evees) {
+    this.searchEngine.setEvees(evees);
   }
 
   snapPerspective(

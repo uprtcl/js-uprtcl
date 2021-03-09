@@ -97,13 +97,13 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
     if (forks.length > 0) {
       // build
-      const entities: Entity[] = [];
-
       const mutations = await Promise.all(
-        forks.map(async (forkId) => {
-          const mergeEvees = await this.evees.clone(`TempMergeClientFor-${forkId}`);
+        forks.map(async (fork) => {
+          const mergeEvees = await this.evees.clone(`TempMergeClientFor-${fork.forkId}`);
           const merger = new RecursiveContextMergeStrategy(mergeEvees);
-          await merger.mergePerspectivesExternal(this.uref, forkId, { forceOwner: true });
+          await merger.mergePerspectivesExternal(fork.ofPerspectiveId, fork.forkId, {
+            forceOwner: true,
+          });
 
           return mergeEvees.client.diff();
         })

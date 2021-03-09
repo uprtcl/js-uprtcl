@@ -3,6 +3,7 @@ import { RemoteEvees } from '../interfaces/remote.evees';
 import { SearchEngine } from '../interfaces/search.engine';
 import { BaseRouter } from './base.router';
 import {
+  ForkOf,
   ParentAndChild,
   SearchForkOptions,
   SearchOptions,
@@ -14,7 +15,7 @@ export class SearchEngineRouter extends BaseRouter implements SearchEngine {
     super(remotes, store);
   }
 
-  async forks(perspectiveId: string, options?: SearchForkOptions): Promise<string[]> {
+  async forks(perspectiveId: string, options?: SearchForkOptions): Promise<ForkOf[]> {
     const all = await Promise.all(
       this.remotes.map((remote) => {
         return remote.searchEngine ? remote.searchEngine.forks(perspectiveId, options) : [];

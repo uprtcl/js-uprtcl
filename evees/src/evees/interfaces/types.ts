@@ -175,6 +175,12 @@ export interface ParentAndChild {
   childId: string;
 }
 
+export interface ForkOf {
+  forkId: string;
+  ofPerspectiveId: string;
+  atHeadId?: string;
+}
+
 export interface DiffLens {
   name: string;
   render: (evees: Evees, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;
