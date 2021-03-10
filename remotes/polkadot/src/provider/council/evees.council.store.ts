@@ -49,7 +49,7 @@ export class PolkadotCouncilEveesStorage {
     protected connection: PolkadotConnection,
     public config: ProposalConfig,
     protected casID: string,
-    readonly fetchRealTime: boolean = false
+    readonly fetchRealTime: boolean = true
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);

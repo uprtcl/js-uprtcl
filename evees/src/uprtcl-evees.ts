@@ -99,7 +99,7 @@ export { Logger } from './utils/logger';
 export { Secured, hashObject, deriveEntity, sortObject } from './cas/utils/cid-hash';
 export { deriveSecured, signObject } from './cas/utils/signed';
 export { Signed } from './patterns/interfaces/signable';
-export { Entity } from './cas/interfaces/entity';
+export { Entity, EntityCreate } from './cas/interfaces/entity';
 export { CASStore, EntityGetResult } from './cas/interfaces/cas-store';
 export { CASRemote } from './cas/interfaces/cas-remote';
 export { CidConfig } from './cas/interfaces/cid-config';
