@@ -16,7 +16,15 @@ import {
 } from './types';
 import { getStatus } from './proposal.logic.quorum';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
-import { CASStore, Logger, Perspective, PerspectiveDetails, Signed, Update } from '@uprtcl/evees';
+import {
+  CASStore,
+  Entity,
+  Logger,
+  Perspective,
+  PerspectiveDetails,
+  Signed,
+  Update,
+} from '@uprtcl/evees';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
 
@@ -40,7 +48,8 @@ export class PolkadotCouncilEveesStorage {
   constructor(
     protected connection: PolkadotConnection,
     public config: ProposalConfig,
-    protected casID: string
+    protected casID: string,
+    readonly fetchRealTime: boolean = false
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
@@ -48,7 +57,9 @@ export class PolkadotCouncilEveesStorage {
     if (this.connection.events) {
       this.connection.events.on(ConnectionEvents.newBlock, (block) => {
         if (LOG_ENABLED) this.logger.log('Block received', block);
-        this.fetchCouncilDatas(block.number.toNumber());
+        if (this.fetchRealTime) {
+          this.fetchCouncilDatas(block.number.toNumber());
+        }
       });
     }
   }
@@ -122,7 +133,14 @@ export class PolkadotCouncilEveesStorage {
       return {};
     }
 
-    const councilData = await this.store.getEntity(head);
+    let councilData: Entity<CouncilData> | undefined = undefined;
+
+    try {
+      councilData = await this.store.getEntity(head);
+    } catch (e) {
+      this.logger.error(`Error getting head entity from store ${head}`);
+    }
+
     if (LOG_ENABLED) this.logger.log(`Council Data of ${member}`, councilData);
     return councilData ? councilData.object : {};
   }
@@ -190,7 +208,7 @@ export class PolkadotCouncilEveesStorage {
       const fetchAt = async (at) => {
         const council = await this.connection.getCouncil(at);
 
-        if (LOG_ENABLED) this.logger.log('Fetch council data', { council });
+        if (LOG_ENABLED) this.logger.log('Fetch council data', { at, council });
 
         await Promise.all(
           council.map(async (member) => {

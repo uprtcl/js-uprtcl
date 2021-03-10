@@ -2,6 +2,7 @@ import lodash from 'lodash-es';
 
 import { CASStore, EntityGetResult } from '../interfaces/cas-store';
 import { Entity, EntityCreate } from '../interfaces/entity';
+import { validateEntities } from '../utils/cid-hash';
 
 /** The CASOnMemory caches the created and read entities on memory.
  * When the flush() function is called, it stores all the cached created
@@ -70,6 +71,11 @@ export class CASOnMemory implements CASStore {
 
     // if not found, then ask the base store
     const result = await this.base.getEntities(notFound);
+
+    if (result.entities.length !== notFound.length) {
+      throw new Error(`Entities not found ${JSON.stringify(notFound)}`);
+    }
+
     const entities = found.concat(result.entities);
 
     // cache the read entities
@@ -89,6 +95,8 @@ export class CASOnMemory implements CASStore {
     /** Store in the new entities buffer */
     const entityVer = await this.base.hashEntity(entity);
     entityVer.remote = entity.remote;
+
+    validateEntities([entityVer], [entity]);
 
     this.newEntities.set(entityVer.id, entityVer);
 

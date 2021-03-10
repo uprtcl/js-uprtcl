@@ -47,3 +47,15 @@ export async function deriveEntity<O extends object>(
     casID,
   };
 }
+
+/** verify that the reference entities that have a hash were created with the same hash */
+export function validateEntities(entities: Entity[], references: EntityCreate[]) {
+  references.map((ref) => {
+    if (ref.id) {
+      const entity = entities.find((e) => e.id === ref.id);
+      if (!entity) {
+        throw new Error(`Entity ${JSON.stringify(ref)} not found in entity set`);
+      }
+    }
+  });
+}

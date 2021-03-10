@@ -2,6 +2,7 @@ import { Logger } from '../../utils/logger';
 import { CASRemote } from '../interfaces/cas-remote';
 import { CASStore, EntityGetResult } from '../interfaces/cas-store';
 import { Entity, EntityCreate } from '../interfaces/entity';
+import { validateEntities } from '../utils/cid-hash';
 
 export class CASRouter implements CASStore {
   protected logger = new Logger('CASRouter');
@@ -61,12 +62,11 @@ export class CASRouter implements CASStore {
     const entitiesPerRemote = await Promise.all(
       Array.from(entitiesPerStore.entries()).map(async ([casID, entities]) => {
         const store = this.getStore(casID);
-        return store.storeEntities(entities);
+        const storedEntities = await store.storeEntities(entities);
+        validateEntities(storedEntities, entities);
       })
     );
 
-    /** TODO: maybe this is a good place to validate the hash is correct? it would
-     * keep each remote accountable */
     return Array.prototype.concat([], entitiesPerRemote);
   }
 

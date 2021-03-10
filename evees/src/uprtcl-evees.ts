@@ -20,6 +20,7 @@ export {
   ParentAndChild,
   SearchResult,
   UpdateDetails,
+  ForkOf,
 } from './evees/interfaces/types';
 
 /** interfaces */
