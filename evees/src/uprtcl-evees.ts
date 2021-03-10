@@ -96,7 +96,14 @@ export { RemoteWithUI } from './evees/interfaces/remote.with-ui';
 export { Logger } from './utils/logger';
 
 /** CAS */
-export { Secured, hashObject, deriveEntity, sortObject } from './cas/utils/cid-hash';
+export {
+  Secured,
+  hashObject,
+  deriveEntity,
+  sortObject,
+  cidConfigOf,
+  validateEntities,
+} from './cas/utils/cid-hash';
 export { deriveSecured, signObject } from './cas/utils/signed';
 export { Signed } from './patterns/interfaces/signable';
 export { Entity, EntityCreate } from './cas/interfaces/entity';

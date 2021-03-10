@@ -12,9 +12,10 @@ import {
   CASRemote,
   hashObject,
   EntityCreate,
+  validateEntities,
 } from '@uprtcl/evees';
 
-import { IpfsConnectionOptions, PinnerConfig } from './types';
+import { IpfsConnectionOptions } from './types';
 import { PinnerCached } from './pinner.cached';
 
 export interface PutConfig {
@@ -31,7 +32,6 @@ export const defaultCidConfig: CidConfig = {
   base: 'base58btc',
 };
 
-const TIMEOUT = 10000;
 const ENABLE_LOG = true;
 
 const promiseWithTimeout = (promise: Promise<any>, timeout: number): Promise<any> => {
@@ -48,6 +48,7 @@ export class IpfsStore extends Connection implements CASRemote {
   logger = new Logger('IpfsStore');
 
   casID = 'ipfs';
+  readonly isLocal = false;
 
   constructor(
     public cidConfig: CidConfig = defaultCidConfig,
@@ -135,8 +136,12 @@ export class IpfsStore extends Connection implements CASRemote {
 
   async cacheEntities(entities: Entity[]): Promise<void> {}
 
-  storeEntities(entities: EntityCreate[]): Promise<Entity[]> {
-    return Promise.all(entities.map((entity) => this.putIpfs(entity.object)));
+  async storeEntities(entitiesCreate: EntityCreate[]): Promise<Entity[]> {
+    const entities = await Promise.all(entitiesCreate.map((entity) => this.putIpfs(entity.object)));
+
+    validateEntities(entities, entitiesCreate);
+
+    return entities;
   }
   hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
     return Promise.all(entities.map((entity) => this.hash(entity)));

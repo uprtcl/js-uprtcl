@@ -695,35 +695,76 @@ export class Evees {
 
   async forkCommit(
     commitId: string,
-    remote: string,
+    remoteId: string,
     parentId?: string,
     recurse: boolean = true
   ): Promise<string> {
     const commit: Secured<Commit> = await this.client.store.getEntity(commitId);
 
     const dataId = commit.object.payload.dataId;
-    const dataForkId = await this.forkEntity(dataId, remote, parentId, recurse);
+    const dataForkId = await this.forkEntity(dataId, remoteId, parentId, recurse);
 
-    const eveesRemote = await this.getRemote(remote);
+    const eveesRemote = await this.getRemote(remoteId);
 
     /** build new head object pointing to new data */
     const newCommit: Commit = {
       creatorsIds: eveesRemote.userId ? [eveesRemote.userId] : [''],
       dataId: dataForkId,
-      message: `autocommit to fork ${commitId} on remote ${remote}`,
+      message: `autocommit to fork ${commitId} on remote ${remoteId}`,
       forking: commitId,
       parentsIds: [],
       timestamp: Date.now(),
     };
     const signedCommit = signObject(newCommit);
 
-    const entity = await this.client.store.storeEntity({ object: signedCommit, remote });
+    const entity = await this.client.store.storeEntity({ object: signedCommit, remote: remoteId });
+
+    /** store also the linked commits and their datas if not on the target remote */
+    const fromStore = this.getCASRemote(commit.casID);
+
+    if (fromStore.isLocal) {
+      const toRemote = this.getRemote(remoteId);
+      await this.cloneCommitRec(commitId, toRemote.id);
+    }
+
     return entity.id;
+  }
+
+  async cloneEntity<T = any>(id: string, onRemoteId: string): Promise<Entity<T>> {
+    const entity = await this.client.store.getEntity<T>(id);
+
+    if (entity.remote !== onRemoteId) {
+      // change the target casID and store it again
+      const storeEntity = { ...entity };
+      storeEntity.remote = onRemoteId;
+      this.client.store.storeEntity(storeEntity);
+      return storeEntity;
+    }
+
+    return entity;
+  }
+
+  /** clone (not fork) the commit and its links if they are not in a target casID. This
+   * is usefull to clone local objects on another environment that will not have access to them */
+  async cloneCommitRec(commitId: string, onRemoteId: string): Promise<void> {
+    const commit = await this.cloneEntity<Signed<Commit>>(commitId, onRemoteId);
+
+    /** recursively call on commit links */
+    const linkedCommits: string[] = commit.object.payload.parentsIds;
+
+    if (commit.object.payload.forking) {
+      linkedCommits.push(commit.object.payload.forking);
+    }
+
+    await this.cloneEntity(commit.object.payload.dataId, onRemoteId);
+
+    /** recursive call on linked commits */
+    await Promise.all(linkedCommits.map((link) => this.cloneCommitRec(link, onRemoteId)));
   }
 
   async forkEntity(
     entityId: string,
-    remote: string,
+    remoteId: string,
     parentId?: string,
     recurse: boolean = true
   ): Promise<string> {
@@ -733,13 +774,13 @@ export class Evees {
 
       /** createOwnerPreservingEntity of children */
       const getLinksForks = this.behaviorConcat(data.object, 'children').map((link) =>
-        this.fork(link, remote, parentId)
+        this.fork(link, remoteId, parentId)
       );
       const newLinks = await Promise.all(getLinksForks);
       // TODO how can replace children when matching multiple patterns?
       const newObject = this.behaviorFirst(data.object, 'replaceChildren')(newLinks);
 
-      const entity = await this.client.store.storeEntity({ object: newObject, remote });
+      const entity = await this.client.store.storeEntity({ object: newObject, remote: remoteId });
       return entity.id;
     } else {
       return entityId;

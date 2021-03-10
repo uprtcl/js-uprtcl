@@ -1,12 +1,12 @@
-import { Logger } from '@uprtcl/micro-orchestrator';
-import { EntityStatus, PinnerCacheDB } from './pinner.cache.db';
+import { Logger } from '@uprtcl/evees';
+import { EntityStatus, PinnerCacheDB } from './pinner.cached.db';
 
 export class PinnerCached {
   logger: Logger = new Logger('Pinner Cached');
   cache: PinnerCacheDB;
   isFlusshing = false;
 
-  constructor(protected url: string, flushInterval: number) {
+  constructor(protected url: string, flushInterval: number = 1000) {
     this.cache = new PinnerCacheDB(`pinner-cache-${url}`);
     setInterval(() => this.flush(), flushInterval);
   }
@@ -56,17 +56,13 @@ export class PinnerCached {
     this.isFlusshing = true;
 
     const unpinned = this.cache.entities.where('pinned').equals(0);
-    const n = await unpinned.count();
-    if (n > 0) {
-      this.logger.log(`${n} objects not pinned pinned`);
-    }
 
     const unpinnedHashes = await unpinned
       .clone()
       .and((o: EntityStatus) => !o.id.startsWith('/orbitdb/'))
       .primaryKeys();
 
-    const unpinnedDB = await unpinned
+    const unpinnedDBs = await unpinned
       .clone()
       .and((o) => o.id.startsWith('/orbitdb/'))
       .primaryKeys();
@@ -83,27 +79,30 @@ export class PinnerCached {
       });
       this.logger.log('pinning entities - done');
     }
-    if (unpinnedDB.length > 0) {
-      this.logger.log('pinning addresses', unpinnedDB);
+
+    if (unpinnedDBs.length > 0) {
+      this.logger.log('pinning addresses', unpinnedDBs);
       await fetch(`${this.url}/pin`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ addresses: unpinnedDB }),
+        body: JSON.stringify({ addresses: unpinnedDBs }),
       });
       this.logger.log('pinning addresses - done');
     }
 
-    const nPinned = await this.cache.entities.where('pinned').equals(0).modify({ pinned: 1 });
-
-    if (nPinned > 0) {
-      this.logger.log('marked as pinned', nPinned);
-    }
-    if (n !== nPinned) {
-      throw new Error('Error marked the pinned objects as pinned');
-    }
+    /** marge unpinned as pinned */
+    await Promise.all(
+      unpinnedHashes.concat(unpinnedDBs).map(async (id) => {
+        // TODO mark all with a dexie tx
+        await this.cache.entities.put({
+          id: id,
+          pinned: 1,
+        });
+      })
+    );
 
     this.isFlusshing = false;
   }

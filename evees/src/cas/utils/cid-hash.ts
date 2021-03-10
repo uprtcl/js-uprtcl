@@ -33,6 +33,18 @@ export async function hashObject(
   return cid.toString();
 }
 
+export function cidConfigOf(cidStr: string): CidConfig {
+  let cid = new CID(cidStr);
+  let multihash = multihashing.multihash.decode(cid.multihash);
+
+  return {
+    base: cid.multibaseName,
+    version: cid.version,
+    codec: cid.codec,
+    type: multihash.name,
+  };
+}
+
 export type Secured<T> = Entity<Signed<T>>;
 
 export async function deriveEntity<O extends object>(
@@ -54,6 +66,7 @@ export function validateEntities(entities: Entity[], references: EntityCreate[])
     if (ref.id) {
       const entity = entities.find((e) => e.id === ref.id);
       if (!entity) {
+        console.error(`Entity ${ref.id} not found on entity set`, { entities, references });
         throw new Error(`Entity ${JSON.stringify(ref)} not found in entity set`);
       }
     }
