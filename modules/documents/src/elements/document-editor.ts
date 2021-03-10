@@ -223,7 +223,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       }
     }
 
-    if (!dataId || !entityType) throw Error(`data not loaded for uref ${this.uref}`);
+    if (!dataId || !entityType) throw Error(`data not loaded for uref ${uref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
     const data = await this.localEvees.client.store.getEntity(dataId);
