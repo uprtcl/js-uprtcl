@@ -110,6 +110,8 @@ export class UprtclDialog extends LitElement {
         background-color: white;
         box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
         border-radius: 10px;
+        display: flex;
+        flex-direction: column;
       }
       .large-modal {
         width: 90vw;
@@ -121,11 +123,9 @@ export class UprtclDialog extends LitElement {
         min-width: 800px;
       }
       .slot-container {
-        max-height: calc(100vh - 200px);
+        height: 100%;
         min-height: 200px;
         overflow-y: auto;
-        display: flex;
-        flex-direction: column;
       }
       .top-right {
         position: absolute;
