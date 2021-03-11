@@ -13,6 +13,7 @@ import {
   hashObject,
   EntityCreate,
   validateEntities,
+  cidConfigOf,
 } from '@uprtcl/evees';
 
 import { IpfsConnectionOptions } from './types';
@@ -64,11 +65,13 @@ export class IpfsStore extends Connection implements CASRemote {
    */
   public async connect(ipfsOptions?: IpfsConnectionOptions): Promise<void> {
     if (!this.client) {
-      this.client = new IPFS.create();
+      this.client = IPFS.create();
     }
   }
 
-  private async putIpfs(object: object): Promise<Entity> {
+  private async putIpfs(object: object, cidConfig?: CidConfig): Promise<Entity> {
+    cidConfig = cidConfig || this.cidConfig;
+
     const sorted = sortObject(object);
     const buffer = CBOR.encode(sorted);
     if (ENABLE_LOG) {
@@ -137,7 +140,12 @@ export class IpfsStore extends Connection implements CASRemote {
   async cacheEntities(entities: Entity[]): Promise<void> {}
 
   async storeEntities(entitiesCreate: EntityCreate[]): Promise<Entity[]> {
-    const entities = await Promise.all(entitiesCreate.map((entity) => this.putIpfs(entity.object)));
+    const entities = await Promise.all(
+      entitiesCreate.map((entityCreate) => {
+        const cidConfig = entityCreate.id ? cidConfigOf(entityCreate.id) : this.cidConfig;
+        return this.putIpfs(entityCreate.object, cidConfig);
+      })
+    );
 
     validateEntities(entities, entitiesCreate);
 

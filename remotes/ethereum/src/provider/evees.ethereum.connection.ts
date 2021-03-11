@@ -1,13 +1,12 @@
 import { html, TemplateResult } from 'lit-html';
 
-import { Logger } from '@uprtcl/evees';
+import { Logger, cidToHex32, bytes32ToCid } from '@uprtcl/evees';
 import {
   EthereumConnection,
   EthereumContractOptions,
   EthereumContract,
 } from '@uprtcl/ethereum-provider';
 import { BlockchainConnection } from '@uprtcl/evees-blockchain';
-import { cidToHex32, bytes32ToCid } from '@uprtcl/ipfs-provider';
 
 import { abi as abiRoot, networks as networksRoot } from './contracts-json/UprtclRoot.min.json';
 const UprtclRoot = { abi: abiRoot, networks: networksRoot };

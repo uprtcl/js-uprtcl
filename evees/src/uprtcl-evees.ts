@@ -103,6 +103,8 @@ export {
   sortObject,
   cidConfigOf,
   validateEntities,
+  cidToHex32,
+  bytes32ToCid,
 } from './cas/utils/cid-hash';
 export { deriveSecured, signObject } from './cas/utils/signed';
 export { Signed } from './patterns/interfaces/signable';

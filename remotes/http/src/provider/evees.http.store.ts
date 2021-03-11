@@ -13,6 +13,7 @@ const httpCidConfig: CidConfig = {
 
 export class HttpStore implements CASRemote {
   logger = new Logger('Http Store');
+  isLocal: boolean = false;
 
   constructor(protected connection: HttpConnection, public cidConfig: CidConfig) {}
 
