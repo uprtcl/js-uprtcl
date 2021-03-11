@@ -1,4 +1,4 @@
-import { LitElement, html, property, css } from 'lit-element';
+import { LitElement, html, property, css, internalProperty } from 'lit-element';
 import { MenuConfig } from './options-menu';
 
 export class UprtclDialog extends LitElement {
@@ -7,6 +7,40 @@ export class UprtclDialog extends LitElement {
 
   @property({ type: Object })
   options: MenuConfig = {};
+
+  @property({ type: Boolean, attribute: 'show-close' })
+  showClose: boolean = false;
+
+  @property({ type: String })
+  size: 'large' | 'medium' = 'medium';
+
+  @internalProperty()
+  dialogId!: string;
+
+  handleDocClick = (event) => {
+    const ix = event.composedPath().findIndex((el: any) => el.id === this.dialogId);
+    if (ix === -1) {
+      this.emitClose();
+    }
+  };
+
+  async firstUpdated() {
+    console.log('firstUpdated()');
+
+    this.dialogId = `dialog-${Math.floor(Math.random() * 1000000)}`;
+
+    /** await a cycle to prevent old clicks from being detected */
+    setTimeout(() => document.addEventListener('click', this.handleDocClick), 500);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('click', this.handleDocClick);
+  }
+
+  emitClose() {
+    this.dispatchEvent(new CustomEvent('close'));
+  }
 
   optionClicked(e, option) {
     e.stopPropagation();
@@ -18,19 +52,28 @@ export class UprtclDialog extends LitElement {
 
   render() {
     const options = Object.getOwnPropertyNames(this.options).reverse();
-
+    const sizeClass = `${this.size}-modal`;
     return html`
       <div class="modal">
-        <div class="modal-content">
+        <div class=${`modal-content ${sizeClass}`} id=${this.dialogId}>
           <div class="slot-container">
             <slot></slot>
+            ${this.showClose
+              ? html`<uprtcl-icon-button
+                  class="top-right"
+                  icon="clear"
+                  button
+                  skinny
+                  @click=${() => this.emitClose()}
+                ></uprtcl-icon-button>`
+              : ''}
           </div>
           <div class="buttons-container">
-            ${options.map(option => {
+            ${options.map((option) => {
               const details = this.options[option];
               return html`
                 <uprtcl-button
-                  @click=${e => (details.disabled ? undefined : this.optionClicked(e, option))}
+                  @click=${(e) => (details.disabled ? undefined : this.optionClicked(e, option))}
                   icon=${details.icon as string}
                   ?disabled=${details.disabled !== undefined ? details.disabled : false}
                   ?skinny=${details.skinny !== undefined ? details.skinny : false}
@@ -61,23 +104,33 @@ export class UprtclDialog extends LitElement {
         justify-content: center;
       }
       .modal-content {
-        position:relative;
-        width: 50vw;
-        max-width: 800px;
-        min-width:420px;
+        position: relative;
         margin: 0 auto;
         padding: 1rem;
         background-color: white;
         box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
         border-radius: 10px;
       }
+      .large-modal {
+        width: 90vw;
+        height: 90vh;
+      }
+      /** TODO: make sure size works fine on all cases */
+      .medium-modal {
+        width: 50vw;
+        min-width: 800px;
+      }
       .slot-container {
-        margin-bottom: 3vw;
         max-height: calc(100vh - 200px);
         min-height: 200px;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
+      }
+      .top-right {
+        position: absolute;
+        top: 12px;
+        right: 12px;
       }
       .buttons-container {
         display: flex;
