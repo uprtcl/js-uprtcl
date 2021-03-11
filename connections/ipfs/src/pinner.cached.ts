@@ -6,9 +6,20 @@ export class PinnerCached {
   cache: PinnerCacheDB;
   isFlusshing = false;
 
-  constructor(protected url: string, flushInterval: number = 1000) {
+  constructor(
+    readonly ipfsInstance: any,
+    readonly url: string,
+    readonly peerMadr: string,
+    flushInterval: number = 1000
+  ) {
     this.cache = new PinnerCacheDB(`pinner-cache-${url}`);
     setInterval(() => this.flush(), flushInterval);
+  }
+
+  async init() {
+    this.ipfsInstance.swarm.connect(this.peerMadr).then((r) => {
+      this.logger.log(`Connected to peer ${this.peerMadr}`, r);
+    });
   }
 
   async pin(hash: string) {

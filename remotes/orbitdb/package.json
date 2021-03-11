@@ -17,7 +17,7 @@
     "@uprtcl/ipfs-provider": "^0.2.0",
     "@uprtcl/orbitdb-provider": "^0.2.0",
     "cbor-js": "^0.1.0",
-    "ipfs": "^0.54.4",
+    "ipfs": "^0.50.2",
     "lit-html": "^1.1.2",
     "orbit-db-access-controllers": "^0.2.6",
     "rxjs": "^6.6.3"

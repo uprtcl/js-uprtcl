@@ -16,7 +16,7 @@
     "@tabcat/orbit-db-set": "^2.0.0",
     "@uprtcl/ipfs-provider": "^0.2.0",
     "@uprtcl/evees": "^0.2.0",
-    "ipfs": "^0.54.4",
+    "ipfs": "^0.50.2",
     "npm-check-updates": "^10.2.1",
     "orbit-db": "^0.26.0"
   },

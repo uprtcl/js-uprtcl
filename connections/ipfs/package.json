@@ -16,7 +16,7 @@
     "cbor-js": "^0.1.0",
     "concat-stream": "^2.0.0",
     "dexie": "^3.0.2",
-    "ipfs": "^0.54.4"
+    "ipfs": "^0.50.2"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
