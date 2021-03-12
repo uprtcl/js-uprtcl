@@ -33,11 +33,12 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.uref = this.firstRef;
     this.remote = this.evees.remotes[0];
     this.editRemote = this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
-    this.checkLoggedEdit();
+
+    this.checkLoggedOnEdit();
 
     if (this.editRemote.events) {
       this.editRemote.events.on(RemoteLoggedEvents.logged_status_changed, () =>
-        this.checkLoggedEdit()
+        this.checkLoggedOnEdit()
       );
     }
 
@@ -56,7 +57,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     }
   }
 
-  async checkLoggedEdit() {
+  async checkLoggedOnEdit() {
     this.isLoggedEdit = await this.editRemote.isLogged();
   }
 
