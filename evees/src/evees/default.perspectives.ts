@@ -1,8 +1,9 @@
 import { Secured } from '../cas/utils/cid-hash';
-import { deriveSecured } from 'src/cas/utils/signed';
+import { CidConfig, defaultCidConfig } from '../cas/interfaces/cid-config';
+import { deriveSecured } from '../cas/utils/signed';
+
 import { RemoteEvees } from './interfaces/remote.evees';
 import { PartialPerspective, Perspective } from './interfaces/types';
-import { CidConfig } from 'src/cas/interfaces/cid-config';
 
 export const snapDefaultPerspective = async (
   remote: RemoteEvees,
@@ -76,8 +77,8 @@ export const getHome = async (
 
 export const getConceptPerspective = async (
   concept: string,
-  cidConfig: CidConfig,
-  casID: string
+  cidConfig: CidConfig = defaultCidConfig,
+  casID: string = ''
 ): Promise<Secured<Perspective>> => {
   const perspective: Perspective = {
     remote: '',

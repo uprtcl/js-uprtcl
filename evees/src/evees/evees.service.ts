@@ -1,5 +1,7 @@
+import { CASOnMemory } from '../cas/stores/cas.memory';
 import { signObject } from '../cas/utils/signed';
 import { Secured } from '../cas/utils/cid-hash';
+import { CASRemote } from '../cas/interfaces/cas-remote';
 import { Client } from './interfaces/client';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
@@ -23,9 +25,7 @@ import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
-import { CASOnMemory } from 'src/cas/stores/cas.memory';
 import { arrayDiff } from './merge/utils';
-import { CASRemote } from 'src/cas/interfaces/cas-remote';
 
 export interface CreateCommit {
   dataId: string;
