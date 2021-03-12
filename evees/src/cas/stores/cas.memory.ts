@@ -1,52 +1,48 @@
 import lodash from 'lodash-es';
 
 import { CASStore, EntityGetResult } from '../interfaces/cas-store';
-import { Entity, EntityOn, ObjectOn } from '../interfaces/entity';
+import { Entity, EntityCreate } from '../interfaces/entity';
+import { validateEntities } from '../utils/cid-hash';
 
 /** The CASOnMemory caches the created and read entities on memory.
  * When the flush() function is called, it stores all the cached created
  * entities on the base CASStore */
 export class CASOnMemory implements CASStore {
-  private newEntities = new Map<string, EntityOn>();
-  private cachedEntities = new Map<string, Entity<any>>();
+  private newEntities = new Map<string, Entity>();
+  private cachedEntities = new Map<string, Entity>();
 
   /** The base CASStore can be a better persisted CASStore in IndexedDB or the CAS router which will
    * connect to remote stores like IPFS or a web server.
    */
   constructor(protected base: CASStore) {}
 
-  async cacheEntities(entities: Entity<any>[]): Promise<void> {
+  async cacheEntities(entities: Entity[]): Promise<void> {
     entities.forEach((entity) => this.cachedEntities.set(entity.id, entity));
   }
 
-  async hashEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
-    return this.base.hashEntities(objects);
+  async hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
+    return this.base.hashEntities(entities);
+  }
+
+  async diff() {
+    return Array.from(this.newEntities.values());
   }
 
   async flush(): Promise<void> {
     const newEntities = Array.from(this.newEntities.values());
-    /** remove the id, it was temporarily set to be able to read from the newEntities buffer */
-    const objectsOnRemote = newEntities.map((entityOnRemote) => {
-      return {
-        object: entityOnRemote.entity.object,
-        remote: entityOnRemote.remote,
-      };
-    });
 
     /** store the objects on the base layer */
-    await this.base.storeEntities(objectsOnRemote);
+    await this.base.storeEntities(newEntities);
 
     /** add the entities to the cached entities */
-    newEntities.forEach((entityOnRemote) =>
-      this.cachedEntities.set(entityOnRemote.entity.id, entityOnRemote.entity)
-    );
+    newEntities.forEach((entity) => this.cachedEntities.set(entity.id, entity));
 
     /** clear the newEntities buffer */
     this.newEntities.clear();
   }
 
   async getEntities(hashes: string[]): Promise<EntityGetResult> {
-    const found: Entity<any>[] = [];
+    const found: Entity[] = [];
     const notFound: string[] = [];
 
     /** Check the cache */
@@ -60,7 +56,7 @@ export class CASOnMemory implements CASStore {
          */
         const entityNew = this.newEntities.get(hash);
         if (entityNew) {
-          found.push(lodash.cloneDeep(entityNew.entity));
+          found.push(lodash.cloneDeep(entityNew));
         } else {
           notFound.push(hash);
         }
@@ -75,6 +71,11 @@ export class CASOnMemory implements CASStore {
 
     // if not found, then ask the base store
     const result = await this.base.getEntities(notFound);
+
+    if (result.entities.length !== notFound.length) {
+      throw new Error(`Entities not found ${JSON.stringify(notFound)}`);
+    }
+
     const entities = found.concat(result.entities);
 
     // cache the read entities
@@ -86,37 +87,29 @@ export class CASOnMemory implements CASStore {
     return { entities };
   }
 
-  storeEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
-    return Promise.all(
-      objects.map(async (o) => {
-        const hash = await this.storeEntity(o);
-        return {
-          id: hash,
-          object: o.object,
-          remote: o.remote,
-        };
-      })
-    );
+  storeEntities(entities: EntityCreate[]): Promise<Entity[]> {
+    return Promise.all(entities.map((e) => this.storeEntity(e)));
   }
 
-  async storeEntity(object: ObjectOn): Promise<string> {
-    /** Hash using the base layer */
-    const entity = await this.base.hashEntity(object);
+  async storeEntity(entity: EntityCreate): Promise<Entity> {
     /** Store in the new entities buffer */
-    this.newEntities.set(entity.id, {
-      entity,
-      remote: object.remote,
-    });
+    const entityVer = await this.base.hashEntity(entity);
+    entityVer.remote = entity.remote;
+
+    validateEntities([entityVer], [entity]);
+
+    this.newEntities.set(entityVer.id, entityVer);
+
     /** return the hash */
-    return entity.id;
+    return entityVer;
   }
 
-  async getEntity<T = any>(uref: string): Promise<Entity<any>> {
+  async getEntity<T = any>(uref: string): Promise<Entity> {
     const { entities } = await this.getEntities([uref]);
     return entities[0] as Entity<T>;
   }
 
-  hashEntity<T = any>(object: ObjectOn): Promise<Entity<T>> {
-    return this.base.hashEntity(object);
+  hashEntity<T = any>(entity: EntityCreate): Promise<Entity<T>> {
+    return this.base.hashEntity(entity);
   }
 }

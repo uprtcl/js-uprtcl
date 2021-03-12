@@ -68,6 +68,7 @@ export class RemoteRouter extends BaseRouter implements Client {
       deletedPerspectives: [],
       newPerspectives: [],
       updates: [],
+      entities: [],
     };
   }
 
@@ -91,6 +92,8 @@ export class RemoteRouter extends BaseRouter implements Client {
   async flush() {}
 
   async refresh() {}
+
+  async clear(): Promise<void> {}
 
   /** get all user perspectives on all registered remotes */
   async getUserPerspectives(perspectiveId: string) {

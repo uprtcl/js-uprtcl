@@ -55,13 +55,17 @@ export class EveesBlockchain implements RemoteEvees {
     return this.update({ deletedPerspectives: [perspectiveId] });
   }
   async diff(): Promise<EveesMutation> {
-    return { newPerspectives: [], deletedPerspectives: [], updates: [] };
+    return { newPerspectives: [], deletedPerspectives: [], updates: [], entities: [] };
   }
   flush(): Promise<void> {
     /** dont have cache */
     return Promise.resolve();
   }
   refresh(): Promise<void> {
+    return Promise.resolve();
+  }
+  clear(): Promise<void> {
+    /** dont have cache */
     return Promise.resolve();
   }
   getUserPerspectives(perspectiveId: string): Promise<string[]> {
@@ -125,7 +129,7 @@ export class EveesBlockchain implements RemoteEvees {
     return { details };
   }
 
-  async updateEveesData(mutation: EveesMutationCreate) {
+  async updateEveesData(mutation: EveesMutationCreate): Promise<string> {
     if (!this.userId) throw new Error('user not logged in');
 
     const eveesData = await this.getEveesDataOf(this.userId);
@@ -152,15 +156,14 @@ export class EveesBlockchain implements RemoteEvees {
       });
     }
 
-    const hash = await this.store.storeEntity({ object: eveesData, remote: this.id });
+    const eveesEntity = await this.store.storeEntity({ object: eveesData, remote: this.id });
 
     this.logger.log('new evees data object created', {
-      hash,
       eveesData,
       mutation,
     });
 
-    return hash;
+    return eveesEntity.id;
   }
 
   async update(mutation: EveesMutationCreate) {
@@ -169,19 +172,19 @@ export class EveesBlockchain implements RemoteEvees {
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspectiveId = await this.store.storeEntity({
+    const perspective = await this.store.storeEntity({
       object: secured.object,
       remote: secured.object.payload.remote,
     });
-    this.logger.log('[ETH] persistPerspectiveEntity - added to IPFS', perspectiveId);
+    this.logger.log('[ETH] persistPerspectiveEntity - added to IPFS', perspective.id);
 
-    if (secured.id && secured.id != perspectiveId) {
+    if (secured.id && secured.id != perspective.id) {
       throw new Error(
-        `perspective ID computed by IPFS ${perspectiveId} is not the same as the input one ${secured.id}.`
+        `perspective ID computed by IPFS ${perspective.id} is not the same as the input one ${secured.id}.`
       );
     }
 
-    return perspectiveId;
+    return perspective.id;
   }
 
   async isLogged() {

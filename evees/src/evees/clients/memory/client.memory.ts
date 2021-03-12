@@ -10,7 +10,7 @@ import {
   EveesMutationCreate,
 } from '../../interfaces/types';
 import { CASStore } from '../../../cas/interfaces/cas-store';
-import { Entity, ObjectOn } from '../../../cas/interfaces/entity';
+import { Entity, EntityCreate } from '../../../cas/interfaces/entity';
 
 import { Client, ClientEvents } from '../../interfaces/client';
 
@@ -43,15 +43,10 @@ export class ClientOnMemory implements Client {
   constructor(
     protected base: Client,
     public store: CASStore,
-    mutation?: EveesMutation,
     readonly name: string = 'OnMemoryClient'
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
-
-    if (mutation) {
-      this.update(mutation);
-    }
 
     if (this.base.events) {
       this.base.events.on(ClientEvents.updated, (perspectiveIds: string[]) => {
@@ -175,6 +170,10 @@ export class ClientOnMemory implements Client {
   }
 
   async update(mutation: EveesMutationCreate): Promise<void> {
+    if (mutation.entities) {
+      await this.store.storeEntities(mutation.entities);
+    }
+
     if (mutation.newPerspectives) {
       await this.createPerspectives(mutation.newPerspectives);
     }
@@ -198,8 +197,8 @@ export class ClientOnMemory implements Client {
     return this.update({ updates: [update] });
   }
 
-  async hashEntities(objects: ObjectOn[]): Promise<Entity<any>[]> {
-    return this.store.hashEntities(objects);
+  async hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
+    return this.store.hashEntities(entities);
   }
 
   async flush(): Promise<void> {
@@ -217,6 +216,10 @@ export class ClientOnMemory implements Client {
 
     await this.base.flush();
 
+    await this.clear();
+  }
+
+  async clear(): Promise<void> {
     this.newPerspectives.clear();
     this.updates.clear();
     this.deletedPerspectives.clear();
@@ -237,6 +240,7 @@ export class ClientOnMemory implements Client {
       newPerspectives: Array.from(this.newPerspectives.values()),
       updates: Array.prototype.concat.apply([], [...Array.from(this.updates.values())]),
       deletedPerspectives: Array.from(this.deletedPerspectives.values()),
+      entities: await this.store.diff(),
     };
   }
 

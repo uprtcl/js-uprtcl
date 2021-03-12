@@ -6,9 +6,7 @@ import { Entity } from './entity';
 
 export interface CASRemote extends CASStore, Ready {
   casID: string;
+  // flag to know if entities of this store should or not be cloned when referenced
+  isLocal: boolean;
   cidConfig: CidConfig;
-
-  /** A non-remote-addressed store interface. It recieves plain objects
-   * instead of ObjectOn */
-  storeObjects(objects: object[]): Promise<Entity<any>[]>;
 }

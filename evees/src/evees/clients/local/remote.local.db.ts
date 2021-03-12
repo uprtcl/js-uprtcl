@@ -7,7 +7,7 @@ export interface PerspectiveLocal {
   details: PerspectiveDetails;
   children?: string[];
   linksTo?: string[];
-  ecosystem?: string[];
+  // ecosystem?: string[];
   text?: string;
 }
 

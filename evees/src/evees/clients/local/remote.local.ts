@@ -1,7 +1,10 @@
 import EventEmitter from 'events';
-import { ClientEvents } from 'src/evees/interfaces/client';
+
+import { Evees } from '../../../evees/evees.service';
+import { Logger } from '../../../utils/logger';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { Secured } from '../../../cas/utils/cid-hash';
+import { ClientEvents } from '../../../evees/interfaces/client';
 
 import { snapDefaultPerspective } from '../../default.perspectives';
 import { AccessControl } from '../../interfaces/access-control';
@@ -19,7 +22,7 @@ import {
   PerspectiveDetails,
   LinkChanges,
 } from '../../interfaces/types';
-import { EveesDB } from './remote.local.db';
+import { EveesDB, PerspectiveLocal } from './remote.local.db';
 import { LocalSearchEngine } from './search.engine.local';
 
 class LocalAccessControl implements AccessControl {
@@ -30,9 +33,10 @@ class LocalAccessControl implements AccessControl {
 
 /** use local storage to sotre  */
 export class RemoteEveesLocal implements RemoteEvees {
+  logger = new Logger('RemoteEveesLocal');
   accessControl: AccessControl = new LocalAccessControl();
   store!: CASStore;
-  searchEngine: SearchEngine;
+  searchEngine: LocalSearchEngine;
   db: EveesDB;
   events: EventEmitter;
 
@@ -58,6 +62,10 @@ export class RemoteEveesLocal implements RemoteEvees {
     this.store = store;
   }
 
+  setEvees(evees: Evees) {
+    this.searchEngine.setEvees(evees);
+  }
+
   snapPerspective(
     perspective: PartialPerspective,
     guardianId?: string
@@ -74,18 +82,36 @@ export class RemoteEveesLocal implements RemoteEvees {
     details.canUpdate = true;
     return { details };
   }
+
   async update(mutation: EveesMutationCreate) {
-    const create = mutation.newPerspectives
-      ? Promise.all(
-          mutation.newPerspectives.map((newPerspective) => this.newPerspective(newPerspective))
-        )
-      : Promise.resolve([]);
-    const update = mutation.updates
-      ? Promise.all(mutation.updates.map((update) => this.updatePerspective(update)))
-      : Promise.resolve([]);
+    if (mutation.newPerspectives) {
+      await Promise.all(
+        mutation.newPerspectives.map((newPerspective) => this.newPerspective(newPerspective))
+      );
+    }
 
-    await Promise.all([create, update]);
+    if (mutation.updates) {
+      await Promise.all(mutation.updates.map((update) => this.updatePerspective(update)));
+    }
 
+    // /** after all mutations, update the ecosystems of the changed children */
+    // const newUpdates = mutation.newPerspectives
+    //   ? mutation.newPerspectives.map((np) => np.update)
+    //   : [];
+    // const updates = mutation.updates ? mutation.updates : [];
+    // const allUpdates = newUpdates.concat(updates);
+
+    // await Promise.all(
+    //   allUpdates.map(async (update) => {
+    //     if (update.linkChanges && update.linkChanges.children) {
+    //       /** update ecosystem links */
+    //       return this.updateEcosystem(update.perspectiveId, update.linkChanges.children);
+    //     }
+    //     return Promise.resolve();
+    //   })
+    // );
+
+    /** emit the perspectives updated */
     if (mutation.updates && mutation.updates.length > 0) {
       this.events.emit(
         ClientEvents.updated,
@@ -99,6 +125,7 @@ export class RemoteEveesLocal implements RemoteEvees {
       id: newPerspective.perspective.id,
       context: newPerspective.perspective.object.payload.context,
       details: {},
+      // ecosystem: [newPerspective.perspective.id],
     });
 
     return this.updatePerspective(newPerspective.update);
@@ -136,38 +163,79 @@ export class RemoteEveesLocal implements RemoteEvees {
 
     const newText = update.text !== undefined ? update.text : perspective.text;
 
-    await this.db.perspectives.put({
-      id: update.perspectiveId,
-      context: perspective.context,
+    const newPerspectiveLocal: PerspectiveLocal = {
+      ...perspective,
       details: details,
       children: newChildren,
       linksTo: newLinksTo,
       text: newText,
-    });
+    };
 
-    if (update.linkChanges && update.linkChanges.children) {
-      /** update ecosystem links */
-      await this.updateEcosystem(update.perspectiveId, update.linkChanges.children);
-    }
+    this.logger.log('updatePerspective()', newPerspectiveLocal);
+
+    await this.db.perspectives.put(newPerspectiveLocal);
   }
 
-  async updateEcosystem(perspectiveId: string, children: { added: string[]; removed: string[] }) {
-    const perspective = await this.db.perspectives.get(perspectiveId);
-    if (!perspective) throw new Error(`Perspective not found locally ${perspectiveId}`);
+  // // placeholder function not used now
+  // async updateEcosystem(perspectiveId: string, children: { added: string[]; removed: string[] }) {
+  //   const reverseEcosystem = await this.db.perspectives
+  //     .where('ecosystem')
+  //     .equals(perspectiveId)
+  //     .distinct()
+  //     .primaryKeys();
 
-    children.added.map(
-      async (childId): Promise<void> => {
-        const child = await this.db.perspectives.get(childId);
+  //   const updateAdded = children.added.map(
+  //     async (childId): Promise<void> => {
+  //       const child = await this.db.perspectives.get(childId);
 
-        if (!child) {
-          return;
-        }
+  //       if (!child || !child.ecosystem || child.ecosystem.length === 0) {
+  //         return;
+  //       }
 
-        /** append child ecosystem to the perspective and to all its reverese ecosystem */
-        const newEcosystem = perspective.ecosystem ? perspective.ecosystem : [];
-      }
-    );
-  }
+  //       const childEcosytem = child.ecosystem;
+
+  //       await Promise.all(
+  //         reverseEcosystem.map((parentId) => this.mutateEcosystem(parentId, childEcosytem, true))
+  //       );
+  //     }
+  //   );
+
+  //   const updateRemoved = children.removed.map(
+  //     async (childId): Promise<void> => {
+  //       const child = await this.db.perspectives.get(childId);
+
+  //       if (!child || !child.ecosystem || child.ecosystem.length === 0) {
+  //         return;
+  //       }
+
+  //       const childEcosytem = child.ecosystem;
+
+  //       await Promise.all(
+  //         reverseEcosystem.map((parentId) => this.mutateEcosystem(parentId, childEcosytem, false))
+  //       );
+  //     }
+  //   );
+
+  //   return Promise.all([updateAdded, updateRemoved]);
+  // }
+
+  // async mutateEcosystem(perspectiveId: string, elements: string[], add: boolean) {
+  //   const perspective = await this.db.perspectives.get(perspectiveId);
+  //   if (!perspective) throw new Error(`Perspective not found locally ${perspectiveId}`);
+
+  //   const currentEcoystem = perspective.ecosystem ? perspective.ecosystem : [];
+
+  //   if (add) {
+  //     perspective.ecosystem = currentEcoystem.concat(elements);
+  //   } else {
+  //     perspective.ecosystem = currentEcoystem.filter((e) => !elements.includes(e));
+  //   }
+
+  //   /** set the values on the DB */
+  //   this.logger.log('mutateEcosystem()', perspective);
+
+  //   await this.db.perspectives.put(perspective);
+  // }
 
   diff(): Promise<EveesMutation> {
     throw new Error('Method not implemented.');
@@ -179,6 +247,10 @@ export class RemoteEveesLocal implements RemoteEvees {
 
   refresh(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  async clear(): Promise<void> {
+    await this.db.perspectives.clear();
   }
 
   getUserPerspectives(perspectiveId: string): Promise<string[]> {

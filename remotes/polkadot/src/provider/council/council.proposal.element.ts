@@ -83,7 +83,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
     this.proposalManifest = perspective.object.payload.meta.proposal;
 
     // apply the changes in the proposal on a new Evees workspace
-    this.eveesWorkspace = this.evees.clone('CouncilProposalClient');
+    this.eveesWorkspace = await this.evees.clone('CouncilProposalClient');
     this.eveesWorkspace.client.update(this.proposalManifest.mutation);
   }
 

@@ -98,7 +98,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     /** overwrite evees sercive with provided client */
     if (!this.localEvees) {
-      this.localEvees = this.evees.clone('EditorClient');
+      this.localEvees = await this.evees.clone('EditorClient');
     }
 
     this.uref = this.firstRef;
@@ -485,7 +485,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const commit = await this.localEvees.createCommit(
       {
-        dataId,
+        dataId: dataId.id,
         parentsIds,
       },
       remote

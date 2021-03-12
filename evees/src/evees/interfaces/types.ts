@@ -2,7 +2,7 @@ import { TemplateResult } from 'lit-element';
 
 import { Behaviour } from '../../patterns/interfaces/behaviour';
 import { Secured } from '../../cas/utils/cid-hash';
-import { Entity } from '../../cas/interfaces/entity';
+import { Entity, EntityCreate } from '../../cas/interfaces/entity';
 
 import { Client } from './client';
 import { RemoteEvees } from './remote.evees';
@@ -110,7 +110,7 @@ export interface PerspectiveAndDetails {
 
 export interface Slice {
   perspectives: PerspectiveAndDetails[];
-  entities: Entity<any>[];
+  entities: Entity[];
 }
 
 export interface PerspectiveGetResult {
@@ -122,12 +122,14 @@ export interface EveesMutation {
   newPerspectives: NewPerspective[];
   updates: Update[];
   deletedPerspectives: string[];
+  entities: Entity[];
 }
 
 export interface EveesMutationCreate {
   newPerspectives?: NewPerspective[];
   updates?: Update[];
   deletedPerspectives?: string[];
+  entities?: EntityCreate[];
 }
 
 export interface SearchOptionsJoin {
@@ -159,7 +161,7 @@ export interface SearchOptions {
 }
 
 export interface SearchForkOptions {
-  leves?: number;
+  levels?: number;
 }
 
 export interface SearchResult {
@@ -171,6 +173,12 @@ export interface SearchResult {
 export interface ParentAndChild {
   parentId: string;
   childId: string;
+}
+
+export interface ForkOf {
+  forkId: string;
+  ofPerspectiveId: string;
+  atHeadId?: string;
 }
 
 export interface DiffLens {
@@ -195,7 +203,7 @@ export interface EveesConfig {
 
 export interface UpdateDetails {
   path: string[];
-  newData: Entity<any>;
-  oldData?: Entity<any>;
+  newData: Entity;
+  oldData?: Entity;
   update: Update;
 }

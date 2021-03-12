@@ -80,17 +80,17 @@ export class EveesOrbitDB implements RemoteEvees {
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspectiveId = await this.store.storeEntity({
+    const perspective = await this.store.storeEntity({
       object: secured.object,
       casID: this.casID,
     });
     if (ENABLE_LOG) {
-      this.logger.log(`[OrbitDB] persistPerspectiveEntity - added to IPFS`, perspectiveId);
+      this.logger.log(`[OrbitDB] persistPerspectiveEntity - added to IPFS`, perspective.id);
     }
 
-    if (secured.id && secured.id !== perspectiveId) {
+    if (secured.id && secured.id !== perspective.id) {
       throw new Error(
-        `perspective ID computed by IPFS ${perspectiveId} is not the same as the input one ${secured.id}.`
+        `perspective ID computed by IPFS ${perspective.id} is not the same as the input one ${secured.id}.`
       );
     }
 
@@ -98,7 +98,7 @@ export class EveesOrbitDB implements RemoteEvees {
       this.logger.log('persisting', secured);
     }
 
-    return perspectiveId;
+    return perspective.id;
   }
 
   async getPerspectiveStore(perspectiveId: string, pin = false) {

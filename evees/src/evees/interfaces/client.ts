@@ -48,6 +48,8 @@ export interface Client {
   flush(): Promise<void>;
   /** force refresh the perspective details and deletes the cached proposals and userPerspectives. */
   refresh(): Promise<void>;
+  /** delete all changes done and cached in this client. */
+  clear?(): Promise<void>;
 
   /** a custom method that search other perspectives based on the logged user,
    * its kept aside from the searchEngine.otherPerspectives method because we need

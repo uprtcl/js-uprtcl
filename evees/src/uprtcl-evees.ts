@@ -20,6 +20,7 @@ export {
   ParentAndChild,
   SearchResult,
   UpdateDetails,
+  ForkOf,
 } from './evees/interfaces/types';
 
 /** interfaces */
@@ -79,6 +80,7 @@ export { isAncestorOf } from './evees/merge/ancestor';
 export { Connection, ConnectionOptions } from './utils/connection';
 export { Ready } from './utils/ready';
 export { ConnectionLogged } from './utils/connection.logged';
+export { filterAsync, mapAsync } from './utils/async';
 
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
@@ -94,10 +96,19 @@ export { RemoteWithUI } from './evees/interfaces/remote.with-ui';
 export { Logger } from './utils/logger';
 
 /** CAS */
-export { Secured, hashObject, deriveEntity, sortObject } from './cas/utils/cid-hash';
+export {
+  Secured,
+  hashObject,
+  deriveEntity,
+  sortObject,
+  cidConfigOf,
+  validateEntities,
+  cidToHex32,
+  bytes32ToCid,
+} from './cas/utils/cid-hash';
 export { deriveSecured, signObject } from './cas/utils/signed';
 export { Signed } from './patterns/interfaces/signable';
-export { Entity, ObjectOn } from './cas/interfaces/entity';
+export { Entity, EntityCreate } from './cas/interfaces/entity';
 export { CASStore, EntityGetResult } from './cas/interfaces/cas-store';
 export { CASRemote } from './cas/interfaces/cas-remote';
 export { CidConfig } from './cas/interfaces/cid-config';
