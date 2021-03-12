@@ -30,8 +30,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'uref' })
   uref!: string;
 
-  @property({ type: String, attribute: 'remote-id' })
-  remoteId!: string;
+  /** the editor creates changes as updates on this remote */
+  @property({ type: String, attribute: 'edit-remote-id' })
+  editRemoteId!: string;
 
   @property({ type: Boolean, attribute: 'read-only' })
   readOnly = false;
@@ -166,9 +167,17 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     let editable = false;
     let dataId: string | undefined;
     let remoteId: string | undefined;
+    let draftUref: string | undefined;
 
     if (entityType === PerspectiveType) {
       const remote = await this.localEvees.getPerspectiveRemote(entity.id);
+
+      if (!this.readOnly) {
+        const editRemote = await this.evees.getRemote(this.editRemoteId);
+        const drafts = await editRemote.searchEngine.forks(entity.id);
+        draftUref = drafts.length > 0 ? drafts[0].forkId : undefined;
+      }
+
       const { details } = await this.localEvees.client.getPerspective(uref, { levels: -1 });
       const headId = details.headId;
       remoteId = remote.id;
@@ -230,6 +239,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       childrenNodes: [],
       data,
       draft: data ? data.object : undefined,
+      draftUref,
       draftType: dataType,
       coord,
       level,
@@ -247,13 +257,14 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];
 
-    const remoteId = parent ? parent.remoteId : this.remoteId;
+    const remoteId = parent ? parent.remoteId : this.editRemoteId;
 
     const uref = await this.localEvees.createEvee({
       object: draft,
       guardianId: parent ? parent.uref : undefined,
       remoteId: remoteId,
     });
+    this.localEvees.client.flush();
 
     // Add node coordinates
     const coord = this.setNodeCoordinates(parent, ix);
@@ -278,9 +289,23 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async updateNode(node: DocNode, draft: any) {
+    if (!node.draftUref) {
+      /** if this node has not been forked on the editRemote, fork it
+       * TODO: this is a shallow and disconnected fork. Maybe we want an inteligent way to link the forks
+       * as they are created */
+      node.draftUref = await this.localEvees.forkPerspective(
+        node.uref,
+        this.editRemoteId,
+        undefined,
+        false
+      );
+    }
+
     // optimistically set the dratf
     node.draft = draft;
-    await this.evees.updatePerspectiveData(node.uref, draft);
+
+    await this.localEvees.updatePerspectiveData(node.draftUref, draft);
+    this.localEvees.client.flush();
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {

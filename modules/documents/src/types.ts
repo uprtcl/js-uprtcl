@@ -17,6 +17,7 @@ export interface DocNode {
   remoteId: string;
   data?: Entity;
   draft: any;
+  draftUref?: string;
   draftType: string;
   type?: string;
   coord: number[];
