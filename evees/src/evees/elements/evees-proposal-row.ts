@@ -10,6 +10,7 @@ import { ContentUpdatedEvent } from './events';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 import { Proposal } from '../proposals/types';
 import { ProposalsWithUI } from '../proposals/proposals.with-ui';
+import { Evees } from '../evees.service';
 
 export class EveesProposalRow extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');
@@ -50,6 +51,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
   protected toRemote!: RemoteWithUI;
   protected proposals!: ProposalsWithUI;
+  protected proposalEvees!: Evees;
 
   async firstUpdated() {
     this.load();
@@ -88,6 +90,10 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     this.authorRemote = fromPerspective ? fromPerspective.object.payload.remote : undefined;
     this.loadingCreator = false;
 
+    /** create an Evees service that includes the proposal mutation */
+    this.proposalEvees = await this.evees.clone(`Proposal-${this.proposalId}`);
+    await this.proposalEvees.client.update(this.proposal.mutation);
+
     await this.checkCanExecute();
     await this.checkExecuted();
 
@@ -108,7 +114,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
         ? this.proposal.mutation.updates
             .filter((u) => !!u.details.headId)
             .map((update) => {
-              return this.evees.isAncestorCommit(
+              return this.proposalEvees.isAncestorCommit(
                 update.perspectiveId,
                 update.details.headId as string,
                 update.oldDetails?.headId
@@ -127,7 +133,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
       this.proposal.mutation.updates
         ? this.proposal.mutation.updates.map(
             async (update): Promise<boolean> => {
-              return this.evees.client.canUpdate(update.perspectiveId);
+              return this.proposalEvees.client.canUpdate(update.perspectiveId);
             }
           )
         : [true]
@@ -137,9 +143,6 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
   }
 
   async showProposalChanges() {
-    const localEvees = await this.evees.clone('ProposalClient');
-    await localEvees.client.update(this.proposal.mutation);
-
     this.showDiff = true;
     const options: MenuConfig = {};
 
@@ -168,7 +171,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     await this.updateComplete;
 
-    this.eveesDiffEl.localEvees = localEvees;
+    this.eveesDiffEl.localEvees = this.proposalEvees;
     this.eveesDiffEl.rootPerspective = this.proposal.toPerspectiveId;
 
     this.updatesDialogEl.options = options;
@@ -185,9 +188,12 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     if (value === 'accept') {
       /** run the proposal changes as the logged user */
-      await localEvees.client.flush();
+      await this.proposalEvees.client.flush();
+
+      /** delete the proposal (WHAT?) */
       await this.evees.client.update({ deletedPerspectives: [this.proposalId] });
 
+      /** reload */
       this.load();
 
       this.dispatchEvent(

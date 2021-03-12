@@ -127,12 +127,14 @@ export class IpfsStore extends Connection implements CASRemote {
     }
   }
 
-  async hash(entity: EntityCreate): Promise<Entity> {
+  async hash(entityCreate: EntityCreate): Promise<Entity> {
+    const cidConfig = entityCreate.id ? cidConfigOf(entityCreate.id) : this.cidConfig;
+
     /** optimistically hash based on the CidConfig without asking the server */
-    const id = await hashObject(entity.object, this.cidConfig);
+    const id = await hashObject(entityCreate.object, cidConfig);
     return {
       id,
-      object: entity.object,
+      object: entityCreate.object,
       casID: this.casID,
     };
   }

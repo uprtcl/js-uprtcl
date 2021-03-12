@@ -731,13 +731,17 @@ export class Evees {
   }
 
   async cloneEntity<T = any>(id: string, onRemoteId: string): Promise<Entity<T>> {
+    const onRemote = this.getRemote(onRemoteId);
     const entity = await this.client.store.getEntity<T>(id);
 
-    if (entity.remote !== onRemoteId) {
-      // change the target casID and store it again
+    if (entity.casID !== onRemote.casID) {
+      // change the target remote and casId and store it again
       const storeEntity = { ...entity };
-      storeEntity.remote = onRemoteId;
-      this.client.store.storeEntity(storeEntity);
+
+      storeEntity.casID = onRemote.casID;
+      storeEntity.remote = onRemote.id;
+
+      await this.client.store.storeEntity(storeEntity);
       return storeEntity;
     }
 
