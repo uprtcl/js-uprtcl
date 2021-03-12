@@ -79,15 +79,15 @@ export class IpfsStore extends Connection implements CASRemote {
     }
 
     let putConfig: PutConfig = {
-      format: this.cidConfig.codec,
-      hashAlg: this.cidConfig.type,
-      cidVersion: this.cidConfig.version,
+      format: cidConfig.codec,
+      hashAlg: cidConfig.type,
+      cidVersion: cidConfig.version,
       pin: true,
     };
 
     /** recursively try */
     const result = await this.client.dag.put(Buffer.from(buffer), putConfig);
-    let hashString = result.toString(this.cidConfig.base);
+    let hashString = result.toString(cidConfig.base);
 
     if (ENABLE_LOG) {
       this.logger.log('Object stored', {
