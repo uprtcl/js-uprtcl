@@ -74,6 +74,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   ) {
     /** reset internal state */
     this.perspectivesByContext = new Map();
+    /** by default use the toPerspectiveId as guardian */
+    config.guardianId = config.guardianId || toPerspectiveId;
+
     await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
     return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
   }

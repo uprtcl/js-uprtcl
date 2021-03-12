@@ -1,4 +1,5 @@
-import { Signed } from 'src/patterns/interfaces/signable';
+import { Signed } from '../patterns/interfaces/signable';
+import { Logger } from '../utils/logger';
 import { Secured } from '../cas/utils/cid-hash';
 import { Evees } from '../evees/evees.service';
 import { RemoteEvees } from '../evees/interfaces/remote.evees';
@@ -17,12 +18,14 @@ export interface AppElement {
 /** the relative (to home) path of each app element */
 export class AppElements {
   readonly remote: RemoteEvees;
+  logger = new Logger('AppElements');
 
   constructor(protected evees: Evees, protected home: AppElement, remoteId?: string) {
     this.remote = this.evees.getRemote(remoteId);
   }
 
   async check(): Promise<void> {
+    this.logger.log('check()');
     /** home space perspective is deterministic */
     this.home.perspective = await this.evees.getHome(this.remote.id);
     await this.checkOrCreatePerspective(this.home.perspective);
@@ -118,6 +121,7 @@ export class AppElements {
     /** canUpdate is used as the flag to detect if the home space exists */
     if (!details.canUpdate) {
       /** create the home perspective as it did not existed */
+      this.logger.log('create perspective data()', perspective.object.payload);
       const id = await this.evees.createEvee({
         partialPerspective: perspective.object.payload,
       });
@@ -129,6 +133,8 @@ export class AppElements {
       throw new Error(`perspective not found for element ${JSON.stringify(element)}`);
 
     const data = await this.evees.tryGetPerspectiveData(element.perspective.id);
+    this.logger.log('getOrCreateElementData()', { element, data });
+
     if (!data) {
       await this.initTree(element);
     } else {
@@ -137,6 +143,8 @@ export class AppElements {
   }
 
   async initTree(element: AppElement) {
+    this.logger.log('initTree()', { element });
+
     // Create perspectives from top to bottom
     if (element.children) {
       // snap all perspectives (compute their ids)
@@ -156,6 +164,8 @@ export class AppElements {
     /** gets the element data from its perspective,
      * then visits it's children recursively filling the
      * tree perspective properties*/
+
+    this.logger.log('readTree()', { element });
 
     if (!element.perspective)
       throw new Error(`Element ${JSON.stringify(element)} doest not have the perspective set`);

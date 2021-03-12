@@ -16,6 +16,7 @@ import {
   HasMerge,
   MergingBehaviorNames,
   RenderEntityInput,
+  MergeStrategy,
 } from '@uprtcl/evees';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
@@ -23,7 +24,6 @@ import { DocumentsBindings } from '../bindings';
 import { htmlToText } from '../support/documents.support';
 
 import { DocNodeLens } from './document-patterns';
-import { MergeStrategy } from '@uprtcl/evees/dist/types/evees/merge/merge-strategy';
 
 const propertyOrder = ['text', 'type', 'links'];
 
