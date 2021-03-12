@@ -135,7 +135,6 @@ export { MultiContainer } from './container/multi.container';
 export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Clients */
-export { EveesDraftsLocal } from './evees/clients/drafts.temp/evees.drafts.local';
 export { ClientOnMemory } from './evees/clients/memory/client.memory';
 export { RemoteEveesLocal } from './evees/clients/local/remote.local';
 export { CASOnMemory } from './cas/stores/cas.memory';
