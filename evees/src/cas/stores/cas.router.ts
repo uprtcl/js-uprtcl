@@ -67,7 +67,7 @@ export class CASRouter implements CASStore {
       })
     );
 
-    return Array.prototype.concat([], entitiesPerRemote);
+    return Array.prototype.concat.apply([], entitiesPerRemote);
   }
 
   async hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
@@ -80,7 +80,7 @@ export class CASRouter implements CASStore {
       })
     );
 
-    return Array.prototype.concat([], entitiesPerRemote);
+    return Array.prototype.concat.apply([], entitiesPerRemote);
   }
 
   async storeEntity(entity: EntityCreate): Promise<Entity> {

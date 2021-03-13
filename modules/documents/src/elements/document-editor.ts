@@ -1,4 +1,4 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -13,7 +13,6 @@ import {
   eveeColor,
   PerspectiveType,
   CommitType,
-  EveesInfoConfig,
   Evees,
 } from '@uprtcl/evees';
 
@@ -30,41 +29,25 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'uref' })
   uref!: string;
 
-  /** the editor creates changes as updates on this remote */
-  @property({ type: String, attribute: 'edit-remote-id' })
-  editRemoteId!: string;
-
   @property({ type: Boolean, attribute: 'read-only' })
   readOnly = false;
 
   @property({ type: Number, attribute: 'root-level' })
   rootLevel = 0;
 
-  @property({ type: String })
-  parentId = '';
+  @property({ type: String, attribute: 'parent-id' })
+  parentId!: string;
 
   @property({ type: String, attribute: 'default-type' })
   defaultType: string = PerspectiveType;
 
-  @property({ type: Object })
-  eveesInfoConfig: EveesInfoConfig = {};
-
-  @property({ attribute: false })
-  docHasChanges = false;
-
-  @property({ attribute: false })
-  persistingAll = false;
-
-  @property({ type: Boolean, attribute: false })
-  showCommitMessage = false;
-
   @property({ type: String })
   color!: string;
 
-  @property({ attribute: false })
+  @internalProperty()
   reloading = true;
 
-  @property({ attribute: false })
+  @internalProperty()
   checkedOutPerspectives: {
     [key: string]: { firstUref: string; newUref: string };
   } = {};
@@ -167,20 +150,13 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     let editable = false;
     let dataId: string | undefined;
     let remoteId: string | undefined;
-    let draftUref: string | undefined;
 
     if (entityType === PerspectiveType) {
       const remote = await this.localEvees.getPerspectiveRemote(entity.id);
-
-      if (!this.readOnly) {
-        const editRemote = await this.evees.getRemote(this.editRemoteId);
-        const drafts = await editRemote.searchEngine.forks(entity.id);
-        draftUref = drafts.length > 0 ? drafts[0].forkId : undefined;
-      }
+      remoteId = remote.id;
 
       const { details } = await this.localEvees.client.getPerspective(uref, { levels: -1 });
       const headId = details.headId;
-      remoteId = remote.id;
 
       if (!this.readOnly) {
         const editableRemote =
@@ -239,7 +215,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       childrenNodes: [],
       data,
       draft: data ? data.object : undefined,
-      draftUref,
       draftType: dataType,
       coord,
       level,
@@ -257,7 +232,11 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];
 
-    const remoteId = parent ? parent.remoteId : this.editRemoteId;
+    if (!parent) {
+      throw new Error("Can't create a new node without a parent");
+    }
+
+    const remoteId = parent.remoteId;
 
     const uref = await this.localEvees.createEvee({
       object: draft,
@@ -289,23 +268,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async updateNode(node: DocNode, draft: any) {
-    if (!node.draftUref) {
-      /** if this node has not been forked on the editRemote, fork it
-       * TODO: this is a shallow and disconnected fork. Maybe we want an inteligent way to link the forks
-       * as they are created */
-      node.draftUref = await this.localEvees.forkPerspective(
-        node.uref,
-        this.editRemoteId,
-        undefined,
-        false
-      );
-    }
-
     // optimistically set the dratf
     node.draft = draft;
-
-    await this.localEvees.updatePerspectiveData(node.draftUref, draft);
-    this.localEvees.client.flush();
+    await this.localEvees.updatePerspectiveData(node.uref, draft);
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {
@@ -870,7 +835,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         @dragover=${(e) => this.draggingOver(e, node)}
         @drop=${(e) => this.handleDrop(e, node)}
       >
-        ${!this.readOnly && this.eveesInfoConfig.showInfo
+        ${!this.readOnly
           ? html`
                 <div class="evee-info" style=${`padding-top:${paddingTop}`}></div>
                     <evees-info-popper
@@ -878,7 +843,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
                       uref=${uref}
                       evee-color=${this.getColor()}
                       @checkout-perspective=${(e) => this.handleNodePerspectiveCheckout(e, node)}
-                      .eveesInfoConfig=${this.eveesInfoConfig}
                     ></evees-info-popper></div>
                   `
           : html`<div class="empty-evees-info"></div>`}
@@ -925,7 +889,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
           root-level=${node.level}
           color=${this.getColor()}
           @checkout-perspective=${(e) => this.handleEditorPerspectiveCheckout(e, node)}
-          .eveesInfoConfig=${this.eveesInfoConfig}
         >
         </documents-editor>
       `;

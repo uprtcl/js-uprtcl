@@ -15,7 +15,7 @@ export interface PerspectiveLocal {
 export class EveesDB extends Dexie {
   perspectives: Dexie.Table<PerspectiveLocal, string>;
 
-  constructor(prefix: string = 'local') {
+  constructor(prefix: string = 'client-local') {
     super(`${prefix}-evees-store`);
     this.version(0.1).stores({
       perspectives: '&id,context,*children,*linksTo,*ecosystem,text',

@@ -14,13 +14,16 @@ export class CASOnMemory implements CASStore {
   /** The base CASStore can be a better persisted CASStore in IndexedDB or the CAS router which will
    * connect to remote stores like IPFS or a web server.
    */
-  constructor(protected base: CASStore) {}
+  constructor(protected base?: CASStore) {}
 
   async cacheEntities(entities: Entity[]): Promise<void> {
     entities.forEach((entity) => this.cachedEntities.set(entity.id, entity));
   }
 
   async hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
+    if (!this.base) {
+      throw new Error('Based store not defined');
+    }
     return this.base.hashEntities(entities);
   }
 
@@ -29,6 +32,10 @@ export class CASOnMemory implements CASStore {
   }
 
   async flush(): Promise<void> {
+    if (!this.base) {
+      throw new Error('Based store not defined');
+    }
+
     const newEntities = Array.from(this.newEntities.values());
 
     /** store the objects on the base layer */
@@ -69,6 +76,10 @@ export class CASOnMemory implements CASStore {
       };
     }
 
+    if (!this.base) {
+      throw new Error('Based store not defined');
+    }
+
     // if not found, then ask the base store
     const result = await this.base.getEntities(notFound);
 
@@ -92,6 +103,10 @@ export class CASOnMemory implements CASStore {
   }
 
   async storeEntity(entity: EntityCreate): Promise<Entity> {
+    if (!this.base) {
+      throw new Error('Based store not defined');
+    }
+
     /** Store in the new entities buffer */
     const entityVer = await this.base.hashEntity(entity);
     entityVer.remote = entity.remote;
@@ -109,7 +124,11 @@ export class CASOnMemory implements CASStore {
     return entities[0] as Entity<T>;
   }
 
-  hashEntity<T = any>(entity: EntityCreate): Promise<Entity<T>> {
-    return this.base.hashEntity(entity);
+  async hashEntity<T = any>(entity: EntityCreate): Promise<Entity<T>> {
+    if (!this.base) {
+      throw new Error('Based store not defined');
+    }
+    const hashed = await this.hashEntities([entity]);
+    return hashed[0];
   }
 }

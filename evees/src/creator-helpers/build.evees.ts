@@ -3,7 +3,7 @@ import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 
 import { EveesConfig } from '../evees/interfaces/types';
 import { Evees } from '../evees/evees.service';
-import { ClientOnMemory } from '../evees/clients/memory/client.memory';
+import { ClientOnMemory } from '../evees/clients/memory/cache.memory';
 import { RemoteRouter } from '../evees/clients/client.router';
 import { CASStore } from '../cas/interfaces/cas-store';
 import { EveesContentModule } from '../evees/interfaces/evees.content.module';

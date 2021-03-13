@@ -13,7 +13,7 @@ import {
 } from '../../interfaces/types';
 
 import { RemoteEveesLocal } from './remote.local';
-import { PerspectiveLocal } from './remote.local.db';
+import { PerspectiveLocal } from './client.local.db';
 
 export class LocalSearchEngine implements SearchEngine {
   /** The evees service is needed to navigate a tree of perspectives stored on other remotes */
