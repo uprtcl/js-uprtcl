@@ -7,27 +7,31 @@ import {
   PerspectiveGetResult,
   EveesMutation,
   EveesMutationCreate,
-} from '../../interfaces/types';
-import { CASStore } from '../../../cas/interfaces/cas-store';
-import { Entity, EntityCreate } from '../../../cas/interfaces/entity';
+} from '../interfaces/types';
+import { CASStore } from '../../cas/interfaces/cas-store';
+import { Entity, EntityCreate } from '../../cas/interfaces/entity';
 
-import { Client, ClientEvents } from '../../interfaces/client';
+import { Client, ClientEvents } from '../interfaces/client';
 import { ClientCache } from './client.cache';
+import { SearchEngine } from '../interfaces/search.engine';
+import { Proposals } from '../proposals/proposals';
 
 export class ClientCachedWithBase implements Client {
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
+  searchEngine!: SearchEngine;
+  proposals?: Proposals | undefined;
 
   constructor(
-    protected base: Client,
     public store: CASStore,
     protected cache: ClientCache,
+    protected base?: Client,
     readonly name: string = 'OnMemoryClient'
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
 
-    if (this.base.events) {
+    if (this.base && this.base.events) {
       this.base.events.on(ClientEvents.updated, (perspectiveIds: string[]) => {
         /** remove the cached perspectives if updated */
         perspectiveIds.forEach((id) => {
@@ -39,12 +43,15 @@ export class ClientCachedWithBase implements Client {
     }
   }
 
-  get searchEngine() {
-    return this.base.searchEngine;
-  }
+  async canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
+    if (!userId) {
+      const cachedDetails = await this.cache.getCachedPerspective(perspectiveId);
+      if (cachedDetails && cachedDetails.details.canUpdate) {
+        return cachedDetails.details.canUpdate;
+      }
+    }
 
-  get proposals() {
-    return this.base.proposals;
+    return true;
   }
 
   async getPerspective(
@@ -58,6 +65,10 @@ export class ClientCachedWithBase implements Client {
       if (!options || options.levels === undefined || options.levels === cachedPerspective.levels) {
         return { details: { ...cachedPerspective.details } };
       }
+    }
+
+    if (!this.base) {
+      return { details: {} };
     }
 
     const result = await this.base.getPerspective(perspectiveId, options);
@@ -178,11 +189,15 @@ export class ClientCachedWithBase implements Client {
   }
 
   async flush(): Promise<void> {
+    if (!this.base) {
+      throw new Error('base not defined');
+    }
+
     await this.store.flush();
 
-    const newPerspectives = this.cache.getNewPerspectives();
-    const updates = this.cache.getUpdates();
-    const deletedPerspectives = this.cache.getDeletedPerspective();
+    const newPerspectives = await this.cache.getNewPerspectives();
+    const updates = await this.cache.getUpdates();
+    const deletedPerspectives = await this.cache.getDeletedPerspective();
 
     await this.base.update({
       newPerspectives,

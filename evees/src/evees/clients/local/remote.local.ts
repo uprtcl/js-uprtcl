@@ -8,8 +8,9 @@ import { AccessControl } from '../../interfaces/access-control';
 import { RemoteEvees } from '../../interfaces/remote.evees';
 import { PartialPerspective, Perspective } from '../../interfaces/types';
 import { LocalSearchEngine } from './search.engine.local';
-import { ClientLocal } from './cache.local';
+import { ClientLocal } from './client.local';
 import { CASOnMemory } from 'src/cas/stores/cas.memory';
+import { CacheLocal } from './cache.local';
 
 class LocalAccessControl implements AccessControl {
   async canUpdate(uref: string, userId?: string) {
@@ -22,7 +23,7 @@ export class RemoteEveesLocal extends ClientLocal implements RemoteEvees {
   logger = new Logger('RemoteEveesLocal');
   accessControl: AccessControl = new LocalAccessControl();
   store!: CASStore;
-  searchEngine: LocalSearchEngine;
+  searchEngine!: LocalSearchEngine;
 
   get userId() {
     return 'local';
@@ -37,8 +38,8 @@ export class RemoteEveesLocal extends ClientLocal implements RemoteEvees {
   }
 
   constructor(readonly casID: string) {
-    super('remote', new CASOnMemory());
-    this.searchEngine = new LocalSearchEngine(this);
+    super(new CASOnMemory(), undefined, 'remote');
+    this.searchEngine = new LocalSearchEngine((this.cache as CacheLocal).db);
   }
 
   setStore(store: CASStore) {

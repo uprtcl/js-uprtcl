@@ -24,7 +24,7 @@ import { ErrorWithCode } from '../utils/error';
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
 import { getHome } from './default.perspectives';
-import { ClientOnMemory } from './clients/memory/cache.memory';
+import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
 
 export interface CreateCommit {

@@ -2,14 +2,14 @@ import { CASStore } from '../../../cas/interfaces/cas-store';
 import { Client } from '../../../evees/interfaces/client';
 
 import { ClientCachedWithBase } from '../client.cached.with.base';
-import { CacheOnMemory } from './cache.memory';
+import { CacheLocal } from './cache.local';
 
-export class ClientOnMemory extends ClientCachedWithBase {
+export class ClientLocal extends ClientCachedWithBase {
   constructor(
-    protected base: Client,
     public store: CASStore,
-    readonly name: string = 'OnMemoryClient'
+    protected base?: Client,
+    readonly name: string = 'LocalClient'
   ) {
-    super(store, new CacheOnMemory(), base, name);
+    super(store, new CacheLocal(name, store), base, name);
   }
 }
