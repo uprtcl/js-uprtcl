@@ -1,6 +1,6 @@
 import { EveesMutation, NewPerspective, PerspectiveDetails, Update } from '../interfaces/types';
 
-interface CachedDetails {
+export interface CachedDetails {
   details: PerspectiveDetails;
   levels?: number;
 }
