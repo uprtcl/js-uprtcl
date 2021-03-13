@@ -8,7 +8,7 @@ import { AccessControl } from '../../interfaces/access-control';
 import { RemoteEvees } from '../../interfaces/remote.evees';
 import { PartialPerspective, Perspective } from '../../interfaces/types';
 import { LocalSearchEngine } from './search.engine.local';
-import { ClientLocal } from './client.local';
+import { ClientLocal } from './cache.local';
 import { CASOnMemory } from 'src/cas/stores/cas.memory';
 
 class LocalAccessControl implements AccessControl {
