@@ -6,7 +6,11 @@ import { Entity, EntityCreate } from './interfaces/entity';
 import { validateEntities } from './utils/cid-hash';
 
 export class CASCachedWithBase implements CASStore {
-  constructor(protected cache: CASCache, protected base?: CASStore) {}
+  constructor(
+    protected cache: CASCache,
+    protected base?: CASStore,
+    protected cacheEnabled: boolean = true
+  ) {}
 
   async cacheEntities(entities: Entity[]): Promise<void> {
     entities.forEach((entity) => this.cache.cacheEntity(entity));
@@ -84,9 +88,11 @@ export class CASCachedWithBase implements CASStore {
     const entities = found.concat(result.entities);
 
     // cache the read entities
-    entities.forEach((entity) => {
-      this.cache.cacheEntity(entity);
-    });
+    if (this.cacheEnabled) {
+      entities.forEach((entity) => {
+        this.cache.cacheEntity(entity);
+      });
+    }
 
     // and return them
     return { entities };

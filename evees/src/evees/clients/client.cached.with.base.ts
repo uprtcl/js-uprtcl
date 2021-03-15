@@ -24,7 +24,8 @@ export class ClientCachedWithBase implements Client {
     protected cache: ClientCache,
     public store: CASStore,
     protected base?: Client,
-    readonly name: string = 'client'
+    readonly name: string = 'client',
+    protected cacheEnabled: boolean = true
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
@@ -77,22 +78,24 @@ export class ClientCachedWithBase implements Client {
 
     const result = await this.base.getPerspective(perspectiveId, options);
 
-    /** cache result and slice */
-    this.cache.setCachedPerspective(perspectiveId, {
-      details: result.details,
-      levels: options ? options.levels : undefined,
-    });
-
-    if (result.slice) {
-      /** entities are sent to the store to be cached there */
-      await this.store.cacheEntities(result.slice.entities);
-
-      result.slice.perspectives.forEach((perspectiveAndDetails) => {
-        this.cache.setCachedPerspective(perspectiveAndDetails.id, {
-          details: perspectiveAndDetails.details,
-          levels: options ? options.levels : undefined,
-        });
+    if (this.cacheEnabled) {
+      /** cache result and slice */
+      this.cache.setCachedPerspective(perspectiveId, {
+        details: result.details,
+        levels: options ? options.levels : undefined,
       });
+
+      if (result.slice) {
+        /** entities are sent to the store to be cached there */
+        await this.store.cacheEntities(result.slice.entities);
+
+        result.slice.perspectives.forEach((perspectiveAndDetails) => {
+          this.cache.setCachedPerspective(perspectiveAndDetails.id, {
+            details: perspectiveAndDetails.details,
+            levels: options ? options.levels : undefined,
+          });
+        });
+      }
     }
 
     return { details: result.details };
@@ -105,15 +108,19 @@ export class ClientCachedWithBase implements Client {
           object: newPerspective.perspective.object,
           remote: newPerspective.perspective.object.payload.remote,
         });
+
         this.cache.newPerspective(newPerspective);
-        /** set the current known details of that perspective, can update is set to true */
-        this.cache.setCachedPerspective(newPerspective.perspective.id, {
-          details: {
-            ...newPerspective.update.details,
-            canUpdate: true,
-          },
-          levels: -1, // new perspectives are assumed to be fully on the cache
-        });
+
+        if (this.cacheEnabled) {
+          /** set the current known details of that perspective, can update is set to true */
+          this.cache.setCachedPerspective(newPerspective.perspective.id, {
+            details: {
+              ...newPerspective.update.details,
+              canUpdate: true,
+            },
+            levels: -1, // new perspectives are assumed to be fully on the cache
+          });
+        }
       })
     );
   }
@@ -137,7 +144,9 @@ export class ClientCachedWithBase implements Client {
           cachedDetails.details.guardianId = update.details.guardianId;
         }
 
-        await this.cache.setCachedPerspective(update.perspectiveId, cachedDetails);
+        if (this.cacheEnabled) {
+          await this.cache.setCachedPerspective(update.perspectiveId, cachedDetails);
+        }
       })
     );
 
@@ -155,7 +164,9 @@ export class ClientCachedWithBase implements Client {
         /** set the current known details of that perspective, can update is set to true */
 
         this.cache.deleteNewPerspective(perspectiveId);
-        this.cache.clearCachedPerspective(perspectiveId);
+        if (this.cacheEnabled) {
+          this.cache.clearCachedPerspective(perspectiveId);
+        }
       })
     );
   }
