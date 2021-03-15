@@ -111,16 +111,14 @@ export class ClientCachedWithBase implements Client {
 
         this.cache.newPerspective(newPerspective);
 
-        if (this.cacheEnabled) {
-          /** set the current known details of that perspective, can update is set to true */
-          this.cache.setCachedPerspective(newPerspective.perspective.id, {
-            details: {
-              ...newPerspective.update.details,
-              canUpdate: true,
-            },
-            levels: -1, // new perspectives are assumed to be fully on the cache
-          });
-        }
+        /** set the current known details of that perspective, can update is set to true */
+        this.cache.setCachedPerspective(newPerspective.perspective.id, {
+          details: {
+            ...newPerspective.update.details,
+            canUpdate: true,
+          },
+          levels: -1, // new perspectives are assumed to be fully on the cache
+        });
       })
     );
   }
@@ -144,9 +142,7 @@ export class ClientCachedWithBase implements Client {
           cachedDetails.details.guardianId = update.details.guardianId;
         }
 
-        if (this.cacheEnabled) {
-          await this.cache.setCachedPerspective(update.perspectiveId, cachedDetails);
-        }
+        await this.cache.setCachedPerspective(update.perspectiveId, cachedDetails);
       })
     );
 
@@ -164,9 +160,7 @@ export class ClientCachedWithBase implements Client {
         /** set the current known details of that perspective, can update is set to true */
 
         this.cache.deleteNewPerspective(perspectiveId);
-        if (this.cacheEnabled) {
-          this.cache.clearCachedPerspective(perspectiveId);
-        }
+        this.cache.clearCachedPerspective(perspectiveId);
       })
     );
   }
