@@ -14,6 +14,7 @@ import {
   PerspectiveType,
   CommitType,
   Evees,
+  AsyncQueue,
 } from '@uprtcl/evees';
 
 import { TextType, DocNode, CustomBlocks } from '../types';
@@ -56,10 +57,16 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   } = {};
 
   doc: DocNode | undefined = undefined;
+  updateQueue: AsyncQueue;
 
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
   localEvees!: Evees;
+
+  constructor() {
+    super();
+    this.updateQueue = new AsyncQueue();
+  }
 
   async firstUpdated() {
     const documentsModule = this.evees.modules.get(DocumentsModule.id);
@@ -272,7 +279,14 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   async updateNode(node: DocNode, draft: any) {
     // optimistically set the dratf
     node.draft = draft;
-    await this.localEvees.updatePerspectiveData(node.uref, draft, true);
+    // updates are enqueued
+    this.updateQueue.enqueue(() =>
+      this.localEvees.updatePerspectiveData({
+        perspectiveId: node.uref,
+        object: draft,
+        amend: true,
+      })
+    );
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {
@@ -506,7 +520,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const oldType = node.draft.type;
 
-    this.updateNode(node, content);
+    await this.updateNode(node, content);
 
     /** react to type change by manipulating the tree */
     /** PAR => TITLE */

@@ -207,3 +207,11 @@ export interface UpdateDetails {
   oldData?: Entity;
   update: Update;
 }
+
+export interface UpdatePerspectiveData {
+  perspectiveId: string;
+  object: any;
+  amend?: boolean;
+  onHeadId?: string;
+  guardianId?: string;
+}

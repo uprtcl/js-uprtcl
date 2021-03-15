@@ -46,7 +46,7 @@ export class ProposalsWithEvees implements Proposals {
         ...homeData.object,
         proposals: proposalsSpaceId,
       };
-      this.evees.updatePerspectiveData(home.id, newHomeObject);
+      this.evees.updatePerspectiveData({ perspectiveId: home.id, object: newHomeObject });
       return proposalsSpaceId;
     } else {
       return homeData.object.proposals;

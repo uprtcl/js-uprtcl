@@ -54,8 +54,8 @@ export class CacheLocal implements ClientCache {
   }
 
   async deleteNewPerspective(perspectiveId: string) {
-    if (this.db.newPerspectives.get(perspectiveId) !== undefined) {
-      this.db.newPerspectives.delete(perspectiveId);
+    if ((await this.db.newPerspectives.get(perspectiveId)) !== undefined) {
+      return this.db.newPerspectives.delete(perspectiveId);
     }
   }
 

@@ -16,6 +16,7 @@ import {
   ForkDetails,
   EveesMutation,
   UpdateDetails,
+  UpdatePerspectiveData,
 } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
 import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
@@ -395,13 +396,10 @@ export class Evees {
     return this.getPerspectiveData(perspectiveId);
   }
 
-  async updatePerspectiveData(
-    perspectiveId: string,
-    object: any,
-    amend: boolean = false,
-    onHeadId?: string,
-    guardianId?: string
-  ) {
+  async updatePerspectiveData(options: UpdatePerspectiveData) {
+    const { perspectiveId, object, amend, onHeadId: onHeadIdIn, guardianId } = options;
+    let onHeadId = onHeadIdIn;
+
     const remote = await this.getPerspectiveRemote(perspectiveId);
     const data = await this.client.store.storeEntity({ object, remote: remote.id });
 
@@ -411,6 +409,7 @@ export class Evees {
     }
 
     let parentsIds = onHeadId ? [onHeadId] : undefined;
+    let removeEntities: string[] = [];
 
     if (amend) {
       /** amend removes the latest commit and replaces it with a new one */
@@ -419,7 +418,7 @@ export class Evees {
         parentsIds = oldHead.object.payload.parentsIds;
 
         /** clean the last commit entities */
-        await this.client.store.removeEntities([onHeadId, oldHead.object.payload.dataId]);
+        removeEntities.push(onHeadId, oldHead.object.payload.dataId);
       }
     }
 
@@ -438,6 +437,9 @@ export class Evees {
         guardianId,
       },
     });
+
+    // clean unused entities
+    await this.client.store.removeEntities(removeEntities);
   }
 
   async deletePerspective(uref: string): Promise<void> {
@@ -502,7 +504,8 @@ export class Evees {
       index,
       0
     );
-    await this.updatePerspectiveData(parentId, newParentObject, undefined);
+
+    await this.updatePerspectiveData({ perspectiveId: parentId, object: newParentObject });
 
     if (setGuardian) {
       await this.updatePerspective({
@@ -560,7 +563,7 @@ export class Evees {
     const { removed } = await this.spliceChildren(data.object, [], fromIndex, 1);
     const result = await this.spliceChildren(data.object, removed as string[], toIndex, 0);
 
-    await this.updatePerspectiveData(perspectiveId, result.object);
+    await this.updatePerspectiveData({ perspectiveId, object: result.object });
     return result.removed[0];
   }
 
@@ -568,7 +571,7 @@ export class Evees {
   async removeChild(perspectiveId: string, index: number): Promise<string> {
     const data = await this.getPerspectiveData(perspectiveId);
     const spliceResult = await this.spliceChildren(data.object, [], index, 1);
-    await this.updatePerspectiveData(perspectiveId, spliceResult.object);
+    await this.updatePerspectiveData({ perspectiveId, object: spliceResult.object });
     return spliceResult.removed[0];
   }
 
