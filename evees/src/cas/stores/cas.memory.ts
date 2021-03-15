@@ -5,6 +5,6 @@ import { CASCacheMemory } from './cas.cache.memory';
 
 export class CASOnMemory extends CASCachedWithBase {
   constructor(protected base?: CASStore) {
-    super(new CASCacheMemory());
+    super(new CASCacheMemory(), base);
   }
 }

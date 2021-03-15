@@ -2,6 +2,7 @@ import { Evees } from '../../../evees/evees.service';
 import { Logger } from '../../../utils/logger';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { Secured } from '../../../cas/utils/cid-hash';
+import { Client } from '../../../evees/interfaces/client';
 
 import { snapDefaultPerspective } from '../../default.perspectives';
 import { AccessControl } from '../../interfaces/access-control';
@@ -9,7 +10,6 @@ import { RemoteEvees } from '../../interfaces/remote.evees';
 import { PartialPerspective, Perspective } from '../../interfaces/types';
 import { LocalSearchEngine } from './search.engine.local';
 import { ClientLocal } from './client.local';
-import { CASOnMemory } from 'src/cas/stores/cas.memory';
 import { CacheLocal } from './cache.local';
 
 class LocalAccessControl implements AccessControl {
@@ -23,7 +23,7 @@ export class RemoteEveesLocal extends ClientLocal implements RemoteEvees {
   logger = new Logger('RemoteEveesLocal');
   accessControl: AccessControl = new LocalAccessControl();
   store!: CASStore;
-  searchEngine!: LocalSearchEngine;
+  searchEngineLocal!: LocalSearchEngine;
 
   get userId() {
     return 'local';
@@ -37,9 +37,13 @@ export class RemoteEveesLocal extends ClientLocal implements RemoteEvees {
     return '';
   }
 
-  constructor(readonly casID: string) {
-    super(new CASOnMemory(), undefined, 'remote');
-    this.searchEngine = new LocalSearchEngine((this.cache as CacheLocal).db);
+  constructor(store: CASStore, readonly casID: string, base?: Client) {
+    super(store, base, 'remote');
+    this.searchEngineLocal = new LocalSearchEngine((this.cache as CacheLocal).db);
+  }
+
+  get searchEngine() {
+    return this.searchEngineLocal;
   }
 
   setStore(store: CASStore) {

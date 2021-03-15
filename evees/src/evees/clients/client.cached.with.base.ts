@@ -13,7 +13,6 @@ import { Entity, EntityCreate } from '../../cas/interfaces/entity';
 
 import { Client, ClientEvents } from '../interfaces/client';
 import { ClientCache } from './client.cache';
-import { SearchEngine } from '../interfaces/search.engine';
 import { Proposals } from '../proposals/proposals';
 
 export class ClientCachedWithBase implements Client {
@@ -23,6 +22,7 @@ export class ClientCachedWithBase implements Client {
 
   constructor(
     protected cache: ClientCache,
+    public store: CASStore,
     protected base?: Client,
     readonly name: string = 'OnMemoryClient'
   ) {
