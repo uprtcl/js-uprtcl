@@ -398,19 +398,35 @@ export class Evees {
   async updatePerspectiveData(
     perspectiveId: string,
     object: any,
+    amend: boolean = false,
     onHeadId?: string,
     guardianId?: string
   ) {
     const remote = await this.getPerspectiveRemote(perspectiveId);
     const data = await this.client.store.storeEntity({ object, remote: remote.id });
+
     if (!onHeadId) {
       const { details } = await this.client.getPerspective(perspectiveId);
       onHeadId = details.headId;
     }
+
+    let parentsIds = onHeadId ? [onHeadId] : undefined;
+
+    if (amend) {
+      /** amend removes the latest commit and replaces it with a new one */
+      if (onHeadId) {
+        const oldHead = await this.client.store.getEntity<Signed<Commit>>(onHeadId);
+        parentsIds = oldHead.object.payload.parentsIds;
+
+        /** clean the last commit entities */
+        await this.client.store.removeEntities([onHeadId, oldHead.object.payload.dataId]);
+      }
+    }
+
     const head = await this.createCommit(
       {
         dataId: data.id,
-        parentsIds: onHeadId ? [onHeadId] : undefined,
+        parentsIds,
       },
       remote.id
     );

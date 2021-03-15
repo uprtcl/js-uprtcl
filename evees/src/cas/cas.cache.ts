@@ -10,6 +10,9 @@ export interface CASCache {
   /** put entities are considered new wrt the base */
   putEntity(entity: Entity): Promise<void>;
 
+  /** removes an entity from the newEntity array */
+  removeEntity(hash: string): Promise<void>;
+
   diff(): Promise<Entity[]>;
 
   clear(): Promise<void>;

@@ -246,7 +246,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       guardianId: parent ? parent.uref : undefined,
       remoteId: remoteId,
     });
-    
+
     // Add node coordinates
     const coord = this.setNodeCoordinates(parent, ix);
 
@@ -272,7 +272,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   async updateNode(node: DocNode, draft: any) {
     // optimistically set the dratf
     node.draft = draft;
-    await this.localEvees.updatePerspectiveData(node.uref, draft);
+    await this.localEvees.updatePerspectiveData(node.uref, draft, true);
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {

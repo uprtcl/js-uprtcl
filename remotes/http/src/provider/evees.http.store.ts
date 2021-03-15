@@ -51,6 +51,10 @@ export class HttpStore implements CASRemote {
     return result.entities;
   }
 
+  async removeEntities(hashes: string[]) {
+    throw new Error('not implemented');
+  }
+
   hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
     return Promise.all(entities.map((e) => this.hash(e.object)));
   }

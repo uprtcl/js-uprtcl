@@ -70,6 +70,10 @@ export class CASRouter implements CASStore {
     return Array.prototype.concat.apply([], entitiesPerRemote);
   }
 
+  async removeEntities(hashes: string[]) {
+    throw new Error('not implemented');
+  }
+
   async hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
     const entitiesPerStore = this.splitEntities(entities);
 

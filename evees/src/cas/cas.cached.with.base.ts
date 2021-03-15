@@ -119,6 +119,14 @@ export class CASCachedWithBase implements CASStore {
     return entityVer;
   }
 
+  async removeEntities(hashes: string[]): Promise<void> {
+    await Promise.all(hashes.map((hash) => this.removeEntity(hash)));
+  }
+
+  async removeEntity(hash: string): Promise<void> {
+    return this.cache.removeEntity(hash);
+  }
+
   async getEntity<T = any>(uref: string): Promise<Entity> {
     const { entities } = await this.getEntities([uref]);
     return entities[0] as Entity<T>;

@@ -18,6 +18,9 @@ export class CASCacheMemory implements CASCache {
   async putEntity(entity: Entity<any>): Promise<void> {
     this.newEntities.set(entity.id, entity);
   }
+  async removeEntity(hash: string) {
+    this.newEntities.delete(hash);
+  }
   async diff(): Promise<Entity[]> {
     return Array.from(this.newEntities.values());
   }

@@ -22,6 +22,11 @@ export class CASCacheLocal implements CASCache {
   async putEntity(entity: Entity): Promise<void> {
     await this.db.newEntities.put(entity);
   }
+  async removeEntity(hash: string): Promise<void> {
+    if ((await this.db.newEntities.get(hash)) !== undefined) {
+      await this.db.newEntities.delete(hash);
+    }
+  }
   async diff(): Promise<Entity[]> {
     return this.db.newEntities.toArray();
   }
