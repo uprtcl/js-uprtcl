@@ -48,6 +48,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
+  @property({ type: Object, attribute: false })
+  localEvees!: Evees;
+
   @internalProperty()
   reloading = true;
 
@@ -61,7 +64,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
-  localEvees!: Evees;
 
   constructor() {
     super();
@@ -99,7 +101,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       reload = true;
     }
 
-    if (changedProperties.has('client')) {
+    if (changedProperties.has('localEvees')) {
       reload = true;
     }
 

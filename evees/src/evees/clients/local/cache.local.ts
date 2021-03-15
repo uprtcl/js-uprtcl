@@ -31,6 +31,7 @@ export class CacheLocal implements ClientCache {
     await this.db.perspectives.put({
       id: perspectiveId,
       details: details.details,
+      levels: details.levels,
       context: perspective.object.payload.context,
     });
   }

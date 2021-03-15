@@ -1,10 +1,5 @@
-import { Update, NewPerspective, PerspectiveDetails, EveesMutation } from '../../interfaces/types';
-import { ClientCache } from '../client.cache';
-
-interface CachedDetails {
-  details: PerspectiveDetails;
-  levels?: number;
-}
+import { Update, NewPerspective, EveesMutation } from '../../interfaces/types';
+import { CachedDetails, ClientCache } from '../client.cache';
 
 export class CacheOnMemory implements ClientCache {
   /** a map with the new perspectives to be created */

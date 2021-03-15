@@ -5,6 +5,7 @@ export interface PerspectiveLocal {
   id: string;
   context: string;
   details: PerspectiveDetails;
+  levels?: number;
   children?: string[];
   linksTo?: string[];
   // ecosystem?: string[];

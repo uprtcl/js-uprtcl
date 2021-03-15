@@ -67,7 +67,12 @@ export class ClientCachedWithBase implements Client {
     if (cachedPerspective) {
       /** skip asking the base client only if we already search for the requested levels under
        * this perspective */
-      if (!options || options.levels === undefined || options.levels === cachedPerspective.levels) {
+      if (
+        !options ||
+        options.levels === undefined ||
+        options.levels === cachedPerspective.levels ||
+        !this.cacheEnabled
+      ) {
         return { details: { ...cachedPerspective.details } };
       }
     }
@@ -131,9 +136,19 @@ export class ClientCachedWithBase implements Client {
         /** update the cache with the new head (keep previous values if update does not
          * specify them)
          * TODO: what if the perpspective is not in the cache? */
-        const cachedDetails = (await this.cache.getCachedPerspective(update.perspectiveId)) || {
-          details: {},
-        };
+        let cachedDetails = await this.cache.getCachedPerspective(update.perspectiveId);
+
+        if (!cachedDetails) {
+          /** if the perspective was not in the cache, ask the base layer for the initial details */
+          const currentDetails = this.base
+            ? await this.base.getPerspective(update.perspectiveId, { levels: 0 })
+            : { details: {} };
+
+          cachedDetails = {
+            details: currentDetails.details,
+            levels: 0,
+          };
+        }
 
         if (update.details.headId) {
           cachedDetails.details.headId = update.details.headId;
