@@ -32,6 +32,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: Boolean, attribute: 'read-only' })
   readOnly = false;
 
+  @property({ type: Boolean, attribute: 'show-info' })
+  showInfo = false;
+
   @property({ type: Number, attribute: 'root-level' })
   rootLevel = 0;
 
@@ -835,16 +838,15 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         @dragover=${(e) => this.draggingOver(e, node)}
         @drop=${(e) => this.handleDrop(e, node)}
       >
-        ${!this.readOnly
-          ? html`
-                <div class="evee-info" style=${`padding-top:${paddingTop}`}></div>
-                    <evees-info-popper
-                      parent-id=${node.parent ? node.parent.uref : this.parentId}
-                      uref=${uref}
-                      evee-color=${this.getColor()}
-                      @checkout-perspective=${(e) => this.handleNodePerspectiveCheckout(e, node)}
-                    ></evees-info-popper></div>
-                  `
+        ${!this.readOnly && this.showInfo
+          ? html` <div class="evee-info" style=${`padding-top:${paddingTop}`}>
+              <evees-info-popper
+                parent-id=${node.parent ? node.parent.uref : this.parentId}
+                uref=${uref}
+                evee-color=${this.getColor()}
+                @checkout-perspective=${(e) => this.handleNodePerspectiveCheckout(e, node)}
+              ></evees-info-popper>
+            </div>`
           : html`<div class="empty-evees-info"></div>`}
         <div class="node-content">
           ${nodeLense.render(node, {

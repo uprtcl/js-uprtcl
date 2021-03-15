@@ -38,6 +38,11 @@ export class EveesPerspectivesList extends servicesConnect(LitElement) {
 
   async load() {
     this.loadingPerspectives = true;
+
+    if (!this.evees.client.searchEngine) {
+      throw new Error(`search engine not defined`);
+    }
+
     const otherPerspectives = await this.evees.client.searchEngine.forks(this.perspectiveId);
 
     const perspectivesData: PerspectiveData[] = await Promise.all(

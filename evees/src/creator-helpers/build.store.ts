@@ -1,5 +1,5 @@
 import { CASStore } from '../cas/interfaces/cas-store';
-import { CASOnMemory } from '../cas/stores/cas.memory';
+import { CASOnMemory } from '../cas/stores/cas.cache.memory';
 import { CASRemote } from '../cas/interfaces/cas-remote';
 import { CASRouter } from '../cas/stores/cas.router';
 

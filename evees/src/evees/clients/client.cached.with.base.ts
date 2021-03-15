@@ -19,11 +19,9 @@ import { Proposals } from '../proposals/proposals';
 export class ClientCachedWithBase implements Client {
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
-  searchEngine!: SearchEngine;
   proposals?: Proposals | undefined;
 
   constructor(
-    public store: CASStore,
     protected cache: ClientCache,
     protected base?: Client,
     readonly name: string = 'OnMemoryClient'
@@ -41,6 +39,12 @@ export class ClientCachedWithBase implements Client {
         this.events.emit(ClientEvents.updated, perspectiveIds);
       });
     }
+  }
+
+  get searchEngine() {
+    if (this.base) {
+      return this.base.searchEngine;
+    } else return undefined;
   }
 
   async canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {

@@ -23,7 +23,7 @@ export enum ClientEvents {
 
 export interface Client {
   readonly store: CASStore;
-  readonly searchEngine: SearchEngine;
+  readonly searchEngine?: SearchEngine;
   readonly events?: EventEmitter;
   readonly proposals?: Proposals;
 
