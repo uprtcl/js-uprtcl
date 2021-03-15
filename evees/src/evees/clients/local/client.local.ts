@@ -6,6 +6,6 @@ import { CacheLocal } from './cache.local';
 
 export class ClientLocal extends ClientCachedWithBase {
   constructor(store: CASStore, protected base?: Client, readonly name: string = 'local') {
-    super(new CacheLocal(`${name}-cache`, store), store, base, `${name}-client`);
+    super(new CacheLocal(name, store), store, base, `${name}-client`);
   }
 }

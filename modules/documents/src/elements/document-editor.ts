@@ -246,8 +246,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       guardianId: parent ? parent.uref : undefined,
       remoteId: remoteId,
     });
-    this.localEvees.client.flush();
-
+    
     // Add node coordinates
     const coord = this.setNodeCoordinates(parent, ix);
 
@@ -336,8 +335,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       if (typeof el !== 'string') {
         if (el.object !== undefined) {
           /** element is an object from which a DocNode should be create */
-          const placeholder = this.createNode(el.object, node, elIndex);
-          return Promise.resolve(placeholder);
+          const uref = this.createNode(el.object, node, elIndex);
+          return Promise.resolve(uref);
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);

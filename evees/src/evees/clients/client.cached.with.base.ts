@@ -24,7 +24,7 @@ export class ClientCachedWithBase implements Client {
     protected cache: ClientCache,
     public store: CASStore,
     protected base?: Client,
-    readonly name: string = 'OnMemoryClient'
+    readonly name: string = 'client'
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);

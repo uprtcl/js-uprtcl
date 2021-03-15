@@ -7,7 +7,7 @@ export class CASCacheLocal implements CASCache {
   db: EntitiesDB;
 
   constructor(name: string) {
-    this.db = new EntitiesDB();
+    this.db = new EntitiesDB(name);
   }
 
   async getCachedEntity(hash: string): Promise<Entity | undefined> {
