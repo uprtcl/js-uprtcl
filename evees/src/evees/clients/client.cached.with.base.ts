@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events';
-import lodash from 'lodash-es';
 
 import {
   Update,
@@ -15,6 +14,7 @@ import { Entity, EntityCreate } from '../../cas/interfaces/entity';
 import { Client, ClientEvents } from '../interfaces/client';
 import { ClientCache } from './client.cache';
 import { Proposals } from '../proposals/proposals';
+import { head, update } from 'lodash';
 
 export class ClientCachedWithBase implements Client {
   /** A service to subsribe to udpate on perspectives */
@@ -161,7 +161,28 @@ export class ClientCachedWithBase implements Client {
         }
 
         /** keep original update properties add those new */
-        cachedUpdate.update = lodash.assign(cachedUpdate.update, update);
+        cachedUpdate.update = {
+          perspectiveId: update.perspectiveId,
+          details: {
+            headId: update.details.headId
+              ? update.details.headId
+              : cachedUpdate.update.details.headId,
+            canUpdate: update.details.canUpdate
+              ? update.details.canUpdate
+              : cachedUpdate.update.details.canUpdate,
+            guardianId: update.details.guardianId
+              ? update.details.guardianId
+              : cachedUpdate.update.details.guardianId,
+          },
+          oldDetails: {
+            ...cachedUpdate.update.oldDetails,
+            ...update.oldDetails,
+          },
+          linkChanges: {
+            ...cachedUpdate.update.linkChanges,
+            ...update.linkChanges,
+          },
+        };
 
         await this.cache.setCachedPerspective(update.perspectiveId, cachedUpdate);
       })
