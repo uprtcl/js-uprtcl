@@ -436,6 +436,7 @@ export class Evees {
         headId: head.id,
         guardianId,
       },
+      linkChanges: options.linkChanges,
     });
 
     // clean unused entities

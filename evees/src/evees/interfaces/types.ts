@@ -214,4 +214,5 @@ export interface UpdatePerspectiveData {
   amend?: boolean;
   onHeadId?: string;
   guardianId?: string;
+  linkChanges?: LinkChanges;
 }

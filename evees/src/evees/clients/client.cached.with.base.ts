@@ -51,8 +51,8 @@ export class ClientCachedWithBase implements Client {
   async canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
     if (!userId) {
       const cachedDetails = await this.cache.getCachedPerspective(perspectiveId);
-      if (cachedDetails && cachedDetails.details.canUpdate) {
-        return cachedDetails.details.canUpdate;
+      if (cachedDetails && cachedDetails.update.details.canUpdate) {
+        return cachedDetails.update.details.canUpdate;
       }
     }
 
@@ -73,7 +73,7 @@ export class ClientCachedWithBase implements Client {
         options.levels === cachedPerspective.levels ||
         !this.cacheEnabled
       ) {
-        return { details: { ...cachedPerspective.details } };
+        return { details: { ...cachedPerspective.update.details } };
       }
     }
 
@@ -86,7 +86,7 @@ export class ClientCachedWithBase implements Client {
     if (this.cacheEnabled) {
       /** cache result and slice */
       this.cache.setCachedPerspective(perspectiveId, {
-        details: result.details,
+        update: { perspectiveId, details: result.details },
         levels: options ? options.levels : undefined,
       });
 
@@ -96,7 +96,10 @@ export class ClientCachedWithBase implements Client {
 
         result.slice.perspectives.forEach((perspectiveAndDetails) => {
           this.cache.setCachedPerspective(perspectiveAndDetails.id, {
-            details: perspectiveAndDetails.details,
+            update: {
+              perspectiveId: perspectiveAndDetails.id,
+              details: perspectiveAndDetails.details,
+            },
             levels: options ? options.levels : undefined,
           });
         });
@@ -118,9 +121,12 @@ export class ClientCachedWithBase implements Client {
 
         /** set the current known details of that perspective, can update is set to true */
         this.cache.setCachedPerspective(newPerspective.perspective.id, {
-          details: {
-            ...newPerspective.update.details,
-            canUpdate: true,
+          update: {
+            perspectiveId: newPerspective.perspective.id,
+            details: {
+              ...newPerspective.update.details,
+              canUpdate: true,
+            },
           },
           levels: -1, // new perspectives are assumed to be fully on the cache
         });
@@ -136,28 +142,31 @@ export class ClientCachedWithBase implements Client {
         /** update the cache with the new head (keep previous values if update does not
          * specify them)
          * TODO: what if the perpspective is not in the cache? */
-        let cachedDetails = await this.cache.getCachedPerspective(update.perspectiveId);
+        let cachedUpdate = await this.cache.getCachedPerspective(update.perspectiveId);
 
-        if (!cachedDetails) {
+        if (!cachedUpdate) {
           /** if the perspective was not in the cache, ask the base layer for the initial details */
           const currentDetails = this.base
             ? await this.base.getPerspective(update.perspectiveId, { levels: 0 })
             : { details: {} };
 
-          cachedDetails = {
-            details: currentDetails.details,
+          cachedUpdate = {
+            update: {
+              perspectiveId: update.perspectiveId,
+              details: currentDetails.details,
+            },
             levels: 0,
           };
         }
 
         if (update.details.headId) {
-          cachedDetails.details.headId = update.details.headId;
+          cachedUpdate.update.details.headId = update.details.headId;
         }
         if (update.details.guardianId) {
-          cachedDetails.details.guardianId = update.details.guardianId;
+          cachedUpdate.update.details.guardianId = update.details.guardianId;
         }
 
-        await this.cache.setCachedPerspective(update.perspectiveId, cachedDetails);
+        await this.cache.setCachedPerspective(update.perspectiveId, cachedUpdate);
       })
     );
 

@@ -2,17 +2,17 @@ import { CASStore } from 'src/cas/interfaces/cas-store';
 import { Signed } from 'src/patterns/interfaces/signable';
 import { Logger } from '../../../utils/logger';
 import { NewPerspective, Update, EveesMutation, Perspective } from '../../interfaces/types';
-import { CachedDetails, ClientCache } from '../client.cache';
-import { EveesDB } from './cache.local.db';
+import { CachedUpdate, ClientCache } from '../client.cache';
+import { EveesCacheDB } from './cache.local.db';
 
 /** use local storage to sotre  */
 export class CacheLocal implements ClientCache {
   logger = new Logger('CacheLocal');
 
-  db: EveesDB;
+  db: EveesCacheDB;
 
   constructor(name: string, protected store: CASStore) {
-    this.db = new EveesDB(name);
+    this.db = new EveesCacheDB(name);
   }
 
   async clearCachedPerspective(perspectiveId: string): Promise<void> {
@@ -21,18 +21,36 @@ export class CacheLocal implements ClientCache {
     }
   }
 
-  async getCachedPerspective(perspectiveId: string): Promise<CachedDetails | undefined> {
-    return this.db.perspectives.get(perspectiveId);
+  async getCachedPerspective(perspectiveId: string): Promise<CachedUpdate | undefined> {
+    const localPerspective = await this.db.perspectives.get(perspectiveId);
+    if (!localPerspective) return undefined;
+
+    return {
+      update: {
+        perspectiveId: perspectiveId,
+        details: localPerspective.details,
+      },
+      levels: 0,
+    };
   }
 
-  async setCachedPerspective(perspectiveId: string, details: CachedDetails): Promise<void> {
+  async setCachedPerspective(perspectiveId: string, cachedUpdate: CachedUpdate): Promise<void> {
     const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
+
+    /** use the linkTo entry to mark a perspective of a given ecoystem */
+    const onEcosystem =
+      cachedUpdate.update.linkChanges &&
+      cachedUpdate.update.linkChanges.linksTo &&
+      cachedUpdate.update.linkChanges.linksTo.added.length > 0
+        ? cachedUpdate.update.linkChanges.linksTo.added[0]
+        : undefined;
 
     await this.db.perspectives.put({
       id: perspectiveId,
-      details: details.details,
-      levels: details.levels,
+      details: cachedUpdate.update.details,
+      levels: cachedUpdate.levels,
       context: perspective.object.payload.context,
+      onEcosystem,
     });
   }
 

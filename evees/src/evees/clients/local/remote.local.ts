@@ -9,7 +9,7 @@ import { AccessControl } from '../../interfaces/access-control';
 import { RemoteEvees } from '../../interfaces/remote.evees';
 import { PartialPerspective, Perspective } from '../../interfaces/types';
 import { LocalSearchEngine } from './search.engine.local';
-import { ClientLocal } from './client.local';
+import { ClientCachedLocal } from './client.cached.local';
 import { CacheLocal } from './cache.local';
 
 class LocalAccessControl implements AccessControl {
@@ -19,7 +19,7 @@ class LocalAccessControl implements AccessControl {
 }
 
 /** use local storage to sotre  */
-export class RemoteEveesLocal extends ClientLocal implements RemoteEvees {
+export class RemoteEveesLocal extends ClientCachedLocal implements RemoteEvees {
   logger = new Logger('RemoteEveesLocal');
   accessControl: AccessControl = new LocalAccessControl();
   store!: CASStore;
@@ -38,7 +38,7 @@ export class RemoteEveesLocal extends ClientLocal implements RemoteEvees {
   }
 
   constructor(store: CASStore, readonly casID: string, base?: Client) {
-    super(store, base, 'remote');
+    super(store, base, false, 'remote');
     this.searchEngineLocal = new LocalSearchEngine((this.cache as CacheLocal).db);
   }
 

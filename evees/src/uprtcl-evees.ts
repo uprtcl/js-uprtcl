@@ -137,7 +137,7 @@ export { AppElement, AppElements } from './creator-helpers/app.elements';
 /** Clients */
 export { ClientOnMemory } from './evees/clients/memory/client.memory';
 export { RemoteEveesLocal } from './evees/clients/local/remote.local';
-export { ClientLocal } from './evees/clients/local/client.local';
+export { ClientCachedLocal } from './evees/clients/local/client.cached.local';
 
 export { CASOnMemory } from './cas/stores/cas.memory';
 export { CASLocal } from './cas/stores/cas.local';

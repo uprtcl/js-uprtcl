@@ -12,13 +12,13 @@ import {
   ForkOf,
 } from '../../interfaces/types';
 
-import { EveesDB, PerspectiveLocal } from './cache.local.db';
+import { EveesCacheDB, PerspectiveLocal } from './cache.local.db';
 
 export class LocalSearchEngine implements SearchEngine {
   /** The evees service is needed to navigate a tree of perspectives stored on other remotes */
   private evees!: Evees;
 
-  constructor(readonly db: EveesDB) {}
+  constructor(readonly db: EveesCacheDB) {}
 
   public setEvees(evees: Evees) {
     this.evees = evees;

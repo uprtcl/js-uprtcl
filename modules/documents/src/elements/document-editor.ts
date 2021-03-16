@@ -287,6 +287,11 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         perspectiveId: node.uref,
         object: draft,
         amend: true,
+        linkChanges: {
+          linksTo: {
+            added: [this.uref],
+          },
+        },
       })
     );
   }

@@ -5,11 +5,8 @@ export interface PerspectiveLocal {
   id: string;
   context: string;
   details: PerspectiveDetails;
+  onEcosystem?: string;
   levels?: number;
-  children?: string[];
-  linksTo?: string[];
-  // ecosystem?: string[];
-  text?: string;
 }
 
 export interface NewPerspectiveLocal {
@@ -23,7 +20,7 @@ export interface UpdateLocal {
 }
 
 // temporary service for documents modile. Should be replaced by a LocalClient with version history.
-export class EveesDB extends Dexie {
+export class EveesCacheDB extends Dexie {
   perspectives: Dexie.Table<PerspectiveLocal, string>;
   newPerspectives: Dexie.Table<NewPerspectiveLocal, string>;
   updates: Dexie.Table<UpdateLocal, string>;
@@ -33,7 +30,7 @@ export class EveesDB extends Dexie {
     super(`${prefix}-evees-store`);
 
     this.version(0.1).stores({
-      perspectives: '&id,context,*children,*linksTo,*ecosystem,text',
+      perspectives: '&id,context,onEcosystem',
       newPerspectives: '&id',
       updates: '&id',
       deletedPerspectives: '&id',

@@ -1,14 +1,14 @@
 import { EveesMutation, NewPerspective, PerspectiveDetails, Update } from '../interfaces/types';
 
-export interface CachedDetails {
-  details: PerspectiveDetails;
+export interface CachedUpdate {
+  update: Update;
   levels?: number;
 }
 
 export interface ClientCache {
   clearCachedPerspective(perspectiveId: string): Promise<void>;
-  getCachedPerspective(perspectiveId: string): Promise<CachedDetails | undefined>;
-  setCachedPerspective(perspectiveId: string, details: CachedDetails): Promise<void>;
+  getCachedPerspective(perspectiveId: string): Promise<CachedUpdate | undefined>;
+  setCachedPerspective(perspectiveId: string, details: CachedUpdate): Promise<void>;
 
   newPerspective(newPerspective: NewPerspective): Promise<void>;
   addUpdate(update: Update): Promise<void>;
