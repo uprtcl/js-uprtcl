@@ -174,10 +174,6 @@ export class ClientCachedWithBase implements Client {
               ? update.details.guardianId
               : cachedUpdate.update.details.guardianId,
           },
-          oldDetails: {
-            ...cachedUpdate.update.oldDetails,
-            ...update.oldDetails,
-          },
           linkChanges: {
             ...cachedUpdate.update.linkChanges,
             ...update.linkChanges,

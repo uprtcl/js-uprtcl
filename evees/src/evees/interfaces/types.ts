@@ -95,6 +95,8 @@ export interface CreateEvee {
   remoteId?: string;
   object?: any;
   partialPerspective?: PartialPerspective;
+  /** receive the perspectiveId in case the perspective was already created */
+  perspectiveId?: string;
   guardianId?: string;
 }
 

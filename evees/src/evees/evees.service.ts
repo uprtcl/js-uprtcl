@@ -361,7 +361,9 @@ export class Evees {
 
     const remote = this.getRemote(remoteId);
 
-    const perspective = await remote.snapPerspective(partialPerspective ? partialPerspective : {});
+    const perspective = input.perspectiveId
+      ? await this.client.store.getEntity(input.perspectiveId)
+      : await remote.snapPerspective(partialPerspective ? partialPerspective : {});
 
     await this.newPerspective({
       perspective,
@@ -396,7 +398,8 @@ export class Evees {
     return this.getPerspectiveData(perspectiveId);
   }
 
-  async updatePerspectiveData(options: UpdatePerspectiveData) {
+  /** returns the entities on the trash */
+  async updatePerspectiveData(options: UpdatePerspectiveData): Promise<string[]> {
     const { perspectiveId, object, amend, onHeadId: onHeadIdIn, guardianId } = options;
     let onHeadId = onHeadIdIn;
 
@@ -440,7 +443,7 @@ export class Evees {
     });
 
     // clean unused entities
-    await this.client.store.removeEntities(removeEntities);
+    return removeEntities;
   }
 
   async deletePerspective(uref: string): Promise<void> {

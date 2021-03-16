@@ -1,4 +1,5 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
+import lodash from 'lodash-es';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -64,6 +65,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
+  /** a store of pending node udpates to debounce repeated ones*/
+  protected pendingUpdates: Map<string, NodeJS.Timeout> = new Map();
 
   constructor() {
     super();
@@ -250,11 +253,21 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const remoteId = parent.remoteId;
 
-    const uref = await this.localEvees.createEvee({
-      object: draft,
-      guardianId: parent ? parent.uref : undefined,
-      remoteId: remoteId,
-    });
+    /** snap is async because it performs a hash, should be fast enough for UX flow */
+    const perspective = await this.localEvees.getRemote(remoteId).snapPerspective({});
+    await this.localEvees.client.store.storeEntity(perspective);
+
+    /** create is sent asyncronously, the flow continues as if it were successful */
+    this.updateQueue.enqueue(() =>
+      this.localEvees.createEvee({
+        object: draft,
+        guardianId: parent ? parent.uref : undefined,
+        remoteId: remoteId,
+        perspectiveId: perspective.id,
+      })
+    );
+
+    if (LOGINFO) this.logger.log(`createNode()`, { perspective, draft });
 
     // Add node coordinates
     const coord = this.setNodeCoordinates(parent, ix);
@@ -263,7 +276,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     const level = this.getLevel(coord);
 
     return {
-      uref,
+      uref: perspective.id,
       remoteId,
       ix,
       parent,
@@ -278,22 +291,38 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     };
   }
 
+  debounceNodeUpdate(node: DocNode, draft: any) {
+    /** if there is a timeout to execute this update, delete it and create a new one*/
+    const timeout = this.pendingUpdates.get(node.uref);
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    /** create a timeout to execute (queue) this update */
+    this.pendingUpdates.set(
+      node.uref,
+      setTimeout(() => {
+        this.updateQueue.enqueue(() =>
+          this.localEvees.updatePerspectiveData({
+            perspectiveId: node.uref,
+            object: draft,
+            linkChanges: {
+              linksTo: {
+                added: [this.uref],
+                removed: [],
+              },
+            },
+          })
+        );
+      }, 2000)
+    );
+  }
+
   async updateNode(node: DocNode, draft: any) {
     // optimistically set the dratf
     node.draft = draft;
     // updates are enqueued
-    this.updateQueue.enqueue(() =>
-      this.localEvees.updatePerspectiveData({
-        perspectiveId: node.uref,
-        object: draft,
-        amend: true,
-        linkChanges: {
-          linksTo: {
-            added: [this.uref],
-          },
-        },
-      })
-    );
+    this.debounceNodeUpdate(node, draft);
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {
