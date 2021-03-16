@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import lodash from 'lodash-es';
 
 import {
   Update,
@@ -159,12 +160,8 @@ export class ClientCachedWithBase implements Client {
           };
         }
 
-        if (update.details.headId) {
-          cachedUpdate.update.details.headId = update.details.headId;
-        }
-        if (update.details.guardianId) {
-          cachedUpdate.update.details.guardianId = update.details.guardianId;
-        }
+        /** keep original update properties add those new */
+        cachedUpdate.update = lodash.assign(cachedUpdate.update, update);
 
         await this.cache.setCachedPerspective(update.perspectiveId, cachedUpdate);
       })
