@@ -6,7 +6,7 @@ import { CacheOnMemory } from './cache.memory';
 
 export class ClientOnMemory extends ClientCachedWithBase {
   constructor(
-    protected base: Client,
+    readonly base: Client,
     public store: CASStore,
     readonly name: string = 'OnMemoryClient'
   ) {

@@ -22,11 +22,11 @@ export class ClientCachedWithBase implements Client {
   proposals?: Proposals | undefined;
 
   constructor(
-    protected cache: ClientCache,
+    readonly cache: ClientCache,
     public store: CASStore,
-    protected base?: Client,
+    readonly base?: Client,
     readonly name: string = 'client',
-    protected cacheEnabled: boolean = true
+    readonly cacheEnabled: boolean = true
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
