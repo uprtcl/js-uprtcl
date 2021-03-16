@@ -10,6 +10,7 @@ import { RemoteEvees } from '../interfaces/remote.evees';
 import { ClientEvents } from '../interfaces/client';
 import { Commit, Perspective } from '../interfaces/types';
 import { RemoteLoggedEvents } from '../interfaces/remote.logged';
+import { Evees } from '../evees.service';
 
 export class EveesBaseElement<T extends object = object> extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-BASE-ELEMENT');
@@ -26,6 +27,9 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
   @internalProperty()
   isLogged: boolean = false;
 
+  @internalProperty()
+  localEvees!: Evees;
+
   canUpdate!: boolean;
   guardianId!: string | undefined;
 
@@ -36,7 +40,9 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
   protected remote!: RemoteEvees;
 
   async firstUpdated() {
-    this.remote = await this.evees.getPerspectiveRemote(this.uref);
+    this.setEvees();
+
+    this.remote = await this.localEvees.getPerspectiveRemote(this.uref);
 
     this.checkLogged();
 
@@ -48,10 +54,16 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
     await this.load();
     this.loading = false;
 
-    if (this.evees.client.events) {
-      this.evees.client.events.on(ClientEvents.updated, (perspectives) =>
+    if (this.localEvees.client.events) {
+      this.localEvees.client.events.on(ClientEvents.updated, (perspectives) =>
         this.perspectiveUpdated(perspectives)
       );
+    }
+  }
+
+  setEvees() {
+    if (!this.localEvees) {
+      this.localEvees = this.evees;
     }
   }
 
@@ -78,14 +90,14 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
 
     if (this.uref === undefined) return;
 
-    this.perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(this.uref);
-    const { details } = await this.evees.client.getPerspective(this.uref);
+    this.perspective = await this.localEvees.client.store.getEntity<Signed<Perspective>>(this.uref);
+    const { details } = await this.localEvees.client.getPerspective(this.uref);
     this.canUpdate = details.canUpdate !== undefined ? details.canUpdate : false;
     this.guardianId = details.guardianId;
 
     if (details.headId) {
-      this.head = await this.evees.client.store.getEntity<Signed<Commit>>(details.headId);
-      this.data = await this.evees.client.store.getEntity<T>(this.head.object.payload.dataId);
+      this.head = await this.localEvees.client.store.getEntity<Signed<Commit>>(details.headId);
+      this.data = await this.localEvees.client.store.getEntity<T>(this.head.object.payload.dataId);
     }
 
     await this.dataUpdated();
