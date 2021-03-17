@@ -172,6 +172,11 @@ export class EveesHttp implements RemoteEvees {
       this.logger.warn(`Error fetching perspective ${perspectiveId}`, e);
     }
 
+    // Mark the entities as coming from this remote casID
+    if (result.slice && result.slice.entities) {
+      result.slice.entities.forEach((e) => (e.casID = this.casID));
+    }
+
     return result;
   }
 

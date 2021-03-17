@@ -17,6 +17,7 @@ import {
   EveesMutation,
   UpdateDetails,
   UpdatePerspectiveData,
+  EveesMutationCreate,
 } from './interfaces/types';
 import { Entity } from '../cas/interfaces/entity';
 import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
@@ -311,11 +312,37 @@ export class Evees {
     return this.client.newPerspective(newPerspective);
   }
 
+  // index an update (injects metadata to the update object)
+  async indexUpdate(update: Update): Promise<void> {
+    await this.checkOldDetails(update);
+    await this.appendIndexing(update);
+  }
+
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async updatePerspective(update: Update) {
-    update = await this.checkOldDetails(update);
-    update = await this.appendIndexing(update);
+    await this.indexUpdate(update);
     return this.client.updatePerspective(update);
+  }
+
+  // add indexing data to all updates on a mutation
+  async update(mutation: EveesMutationCreate) {
+    if (mutation.newPerspectives) {
+      await Promise.all(
+        mutation.newPerspectives.map(async (np) => {
+          await this.indexUpdate(np.update);
+        })
+      );
+    }
+
+    if (mutation.updates) {
+      await Promise.all(
+        mutation.updates.map(async (update) => {
+          await this.indexUpdate(update);
+        })
+      );
+    }
+
+    this.client.update(mutation);
   }
 
   /**

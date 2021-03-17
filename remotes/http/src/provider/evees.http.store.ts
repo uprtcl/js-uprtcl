@@ -61,6 +61,8 @@ export class HttpStore implements CASRemote {
 
   async getEntities(hashes: string[]): Promise<EntityGetResult> {
     const entities = await Promise.all(hashes.map((hash) => this.get(hash)));
+    // mark the casID from which the entities are coming
+    entities.forEach((e) => (e.casID = this.casID));
     return { entities };
   }
 
