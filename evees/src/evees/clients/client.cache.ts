@@ -11,7 +11,7 @@ export interface ClientCache {
   setCachedPerspective(perspectiveId: string, details: CachedUpdate): Promise<void>;
 
   newPerspective(newPerspective: NewPerspective): Promise<void>;
-  addUpdate(update: Update): Promise<void>;
+  addUpdate(update: Update, timestamp: number): Promise<void>;
   deletedPerspective(perspectiveId: string);
 
   deleteNewPerspective(perspectiveId: string);

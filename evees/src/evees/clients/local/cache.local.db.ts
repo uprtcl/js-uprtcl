@@ -5,17 +5,26 @@ export interface PerspectiveLocal {
   id: string;
   context: string;
   details: PerspectiveDetails;
+  /** need to index to decide if delete a data entity */
+  dataId: string | undefined;
   onEcosystem?: string;
   levels?: number;
 }
 
 export interface NewPerspectiveLocal {
   id: string;
+  /** need to index to decide if delete a data entity */
+  dataId: string | undefined;
   newPerspective: NewPerspective;
 }
 
 export interface UpdateLocal {
+  /** the id is a combination of perspectiveId and newHeadId */
   id: string;
+  perspectiveId: string;
+  timextamp: number;
+  /** need to index to decide if delete a data entity */
+  dataId: string | undefined;
   update: Update;
 }
 
@@ -30,9 +39,9 @@ export class EveesCacheDB extends Dexie {
     super(`${prefix}-evees-store`);
 
     this.version(0.1).stores({
-      perspectives: '&id,context,onEcosystem',
-      newPerspectives: '&id',
-      updates: '&id',
+      perspectives: '&id,context,onEcosystem,dataId',
+      newPerspectives: '&id,dataId',
+      updates: '&id,perspectiveId,timexstamp,dataId',
       deletedPerspectives: '&id',
     });
 

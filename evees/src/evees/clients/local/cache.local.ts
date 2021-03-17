@@ -1,7 +1,14 @@
-import { CASStore } from 'src/cas/interfaces/cas-store';
-import { Signed } from 'src/patterns/interfaces/signable';
+import { CASStore } from '../../../cas/interfaces/cas-store';
+import { Signed } from '../../../patterns/interfaces/signable';
 import { Logger } from '../../../utils/logger';
-import { NewPerspective, Update, EveesMutation, Perspective } from '../../interfaces/types';
+import {
+  NewPerspective,
+  Update,
+  EveesMutation,
+  Perspective,
+  Slice,
+  Commit,
+} from '../../interfaces/types';
 import { CachedUpdate, ClientCache } from '../client.cache';
 import { EveesCacheDB } from './cache.local.db';
 
@@ -45,26 +52,52 @@ export class CacheLocal implements ClientCache {
         ? cachedUpdate.update.linkChanges.linksTo.added[0]
         : undefined;
 
+    let dataId: string | undefined = undefined;
+
+    if (cachedUpdate.update.details.headId) {
+      const head = await this.store.getEntity<Signed<Commit>>(cachedUpdate.update.details.headId);
+      dataId = head.object.payload.dataId;
+    }
+
     await this.db.perspectives.put({
       id: perspectiveId,
       details: cachedUpdate.update.details,
       levels: cachedUpdate.levels,
       context: perspective.object.payload.context,
       onEcosystem,
+      dataId,
     });
   }
 
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
+    let dataId: string | undefined = undefined;
+
+    if (newPerspective.update.details.headId) {
+      const head = await this.store.getEntity<Signed<Commit>>(newPerspective.update.details.headId);
+      dataId = head.object.payload.dataId;
+    }
+
     await this.db.newPerspectives.put({
       id: newPerspective.perspective.id,
       newPerspective,
+      dataId,
     });
   }
 
-  async addUpdate(update: Update): Promise<void> {
+  async addUpdate(update: Update, timestamp: number): Promise<void> {
+    let dataId: string | undefined = undefined;
+
+    if (update.details.headId) {
+      const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
+      dataId = head.object.payload.dataId;
+    }
+
     await this.db.updates.put({
-      id: update.perspectiveId,
+      id: update.perspectiveId + update.details.headId,
+      perspectiveId: update.perspectiveId,
+      timextamp: timestamp,
       update,
+      dataId,
     });
   }
 
@@ -102,6 +135,72 @@ export class CacheLocal implements ClientCache {
     };
   }
 
+  /** clear the cache and the entities in the store associated to the provided
+   * perspecties */
+  async clearPerspective(perspectiveId): Promise<void> {
+    const clearUpdates: Update[] = [];
+
+    const newPerspective = await this.db.newPerspectives.get(perspectiveId);
+    if (newPerspective) {
+      await this.db.newPerspectives.delete(perspectiveId);
+      await this.db.perspectives.delete(perspectiveId);
+      clearUpdates.push(newPerspective.newPerspective.update);
+    }
+
+    const updatesLocal = await this.db.updates
+      .where('perspectiveId')
+      .equals(perspectiveId)
+      .toArray();
+
+    await Promise.all(
+      updatesLocal.map(async (updateLocal) => {
+        await this.db.updates.delete(updateLocal.id);
+        await this.db.perspectives.delete(updateLocal.id);
+        clearUpdates.push(updateLocal.update);
+      })
+    );
+
+    const clearEntitiesIfOrphan: string[] = [];
+    const clearEntities: string[] = [];
+
+    await Promise.all(
+      clearUpdates.map(async (update) => {
+        if (update.details.headId) {
+          clearEntities.push(update.details.headId);
+          const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
+          /** data should be removed if there are no other commits using it :/ */
+          clearEntitiesIfOrphan.push(head.object.payload.dataId);
+        }
+      })
+    );
+
+    /** now that all newPerspectives and updates are removed, see if clearIfOrphan can be deleted */
+    await Promise.all(
+      clearEntitiesIfOrphan.map(async (id) => {
+        const onNewPerspectives = await this.db.newPerspectives
+          .where('dataId')
+          .equals(id)
+          .primaryKeys();
+        const onUpdates = await this.db.updates.where('dataId').equals(id).primaryKeys();
+        const onCachedPerspectives = await this.db.perspectives
+          .where('dataId')
+          .equals(id)
+          .primaryKeys();
+
+        if (
+          onNewPerspectives.length === 0 &&
+          onUpdates.length === 0 &&
+          onCachedPerspectives.length === 0
+        ) {
+          clearEntities.push(id);
+        }
+      })
+    );
+
+    /** removeEntities from the store */
+    await this.store.removeEntities(clearEntities);
+  }
+
   async clear(): Promise<void> {
     await Promise.all([
       this.db.newPerspectives.clear(),
@@ -111,13 +210,29 @@ export class CacheLocal implements ClientCache {
     ]);
   }
 
-  async getOnEcosystem(uref: string): Promise<string[]> {
+  async clearSlice(slice: Slice): Promise<void> {}
+
+  async getUnder(uref: string): Promise<string[]> {
     return this.db.perspectives.where('onEcosystem').equals(uref).primaryKeys();
   }
 
-  async getNewPerspective(uref: string): Promise<NewPerspective | undefined> {
-    const newPerspectiveLocal = await this.db.newPerspectives.get(uref);
+  async getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined> {
+    const newPerspectiveLocal = await this.db.newPerspectives.get(perspectiveId);
     if (!newPerspectiveLocal) return undefined;
     return newPerspectiveLocal.newPerspective;
+  }
+
+  async getLastUpdate(perspectiveId: string): Promise<Update | undefined> {
+    const updates = await this.db.updates
+      .where('perspectiveId')
+      .equals(perspectiveId)
+      .sortBy('timexstamp');
+
+    const last = updates.pop();
+    if (!last) {
+      return undefined;
+    }
+
+    return last.update;
   }
 }

@@ -7,6 +7,7 @@ import {
   PerspectiveGetResult,
   EveesMutation,
   EveesMutationCreate,
+  Commit,
 } from '../interfaces/types';
 import { CASStore } from '../../cas/interfaces/cas-store';
 import { Entity, EntityCreate } from '../../cas/interfaces/entity';
@@ -15,6 +16,8 @@ import { Client, ClientEvents } from '../interfaces/client';
 import { ClientCache } from './client.cache';
 import { Proposals } from '../proposals/proposals';
 import { head, update } from 'lodash';
+import { Signer } from 'crypto';
+import { Signed } from 'src/patterns/interfaces/signable';
 
 export class ClientCachedWithBase implements Client {
   /** A service to subsribe to udpate on perspectives */
@@ -138,7 +141,14 @@ export class ClientCachedWithBase implements Client {
   async updatePerspectives(updates: Update[]): Promise<void> {
     await Promise.all(
       updates.map(async (update) => {
-        this.cache.addUpdate(update);
+        let timexstamp: number | undefined = undefined;
+
+        if (update.details.headId) {
+          const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
+          timexstamp = head.object.payload.timestamp;
+        }
+
+        this.cache.addUpdate(update, timexstamp ? timexstamp : Date.now());
 
         /** update the cache with the new head (keep previous values if update does not
          * specify them)
