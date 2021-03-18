@@ -21,6 +21,7 @@ export {
   SearchResult,
   UpdateDetails,
   ForkOf,
+  UpdatePerspectiveData,
 } from './evees/interfaces/types';
 
 /** interfaces */
@@ -61,13 +62,15 @@ export { ProposalsList } from './evees/elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './evees/elements/evees-perspective-icon';
 
 export {
-  UpdateContentEvent,
-  UpdateContentArgs,
+  UpdatePerspectiveDataEvent,
   ContentUpdatedEvent,
   SpliceChildrenEvent,
   ProposalCreatedEvent,
+  CreatePerspectiveEvent,
   CONTENT_UPDATED_TAG,
   PROPOSAL_CREATED_TAG,
+  CREATE_PERSPECTIVE_TAG,
+  UPDATE_PERSPECTIVE_DATA_TAG,
 } from './evees/elements/events';
 export { EveesDiffExplorer } from './evees/elements/evees-diff-explorer';
 

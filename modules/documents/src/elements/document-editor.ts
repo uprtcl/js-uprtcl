@@ -1,5 +1,4 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
-import lodash from 'lodash-es';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -16,6 +15,10 @@ import {
   CommitType,
   Evees,
   AsyncQueue,
+  UpdatePerspectiveData,
+  UpdatePerspectiveDataEvent,
+  CreateEvee,
+  CreatePerspectiveEvent,
 } from '@uprtcl/evees';
 
 import { TextType, DocNode, CustomBlocks } from '../types';
@@ -43,6 +46,10 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'parent-id' })
   parentId!: string;
 
+  /** if true, content updates are emited instead of sent to the localEvees */
+  @property({ type: Boolean, attribute: 'emit-update' })
+  emitUpdates: boolean = false;
+
   @property({ type: String, attribute: 'default-type' })
   defaultType: string = PerspectiveType;
 
@@ -61,17 +68,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   } = {};
 
   doc: DocNode | undefined = undefined;
-  updateQueue: AsyncQueue;
 
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
-  /** a store of pending node udpates to debounce repeated ones*/
-  protected pendingUpdates: Map<string, NodeJS.Timeout> = new Map();
-
-  constructor() {
-    super();
-    this.updateQueue = new AsyncQueue();
-  }
 
   async firstUpdated() {
     const documentsModule = this.evees.modules.get(DocumentsModule.id);
@@ -255,17 +254,25 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     /** snap is async because it performs a hash, should be fast enough for UX flow */
     const perspective = await this.localEvees.getRemote(remoteId).snapPerspective({});
-    await this.localEvees.client.store.storeEntity(perspective);
+    const newEvee: CreateEvee = {
+      object: draft,
+      guardianId: parent ? parent.uref : undefined,
+      remoteId: remoteId,
+      perspectiveId: perspective.id,
+      perspective: perspective,
+    };
 
-    /** create is sent asyncronously, the flow continues as if it were successful */
-    this.updateQueue.enqueue(() =>
-      this.localEvees.createEvee({
-        object: draft,
-        guardianId: parent ? parent.uref : undefined,
-        remoteId: remoteId,
-        perspectiveId: perspective.id,
-      })
-    );
+    if (this.emitUpdates) {
+      this.dispatchEvent(
+        new CreatePerspectiveEvent({ detail: newEvee, bubbles: true, composed: true })
+      );
+    } else {
+      if (newEvee.perspective) {
+        await this.localEvees.client.store.storeEntity(newEvee.perspective);
+      }
+      /** create is sent asyncronously, the flow continues as if it were successful */
+      this.localEvees.createEvee(newEvee);
+    }
 
     if (LOGINFO) this.logger.log(`createNode()`, { perspective, draft });
 
@@ -291,38 +298,35 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     };
   }
 
-  debounceNodeUpdate(node: DocNode, draft: any) {
-    /** if there is a timeout to execute this update, delete it and create a new one*/
-    const timeout = this.pendingUpdates.get(node.uref);
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-
-    /** create a timeout to execute (queue) this update */
-    this.pendingUpdates.set(
-      node.uref,
-      setTimeout(() => {
-        this.updateQueue.enqueue(() =>
-          this.localEvees.updatePerspectiveData({
-            perspectiveId: node.uref,
-            object: draft,
-            linkChanges: {
-              linksTo: {
-                added: [this.uref],
-                removed: [],
-              },
-            },
-          })
-        );
-      }, 2000)
-    );
-  }
-
   async updateNode(node: DocNode, draft: any) {
     // optimistically set the dratf
     node.draft = draft;
     // updates are enqueued
-    this.debounceNodeUpdate(node, draft);
+
+    const parents: string[] = [];
+    let parent = node.parent;
+    while (parent !== undefined) {
+      parents.push(parent.uref);
+      parent = parent.parent;
+    }
+
+    const update: UpdatePerspectiveData = {
+      perspectiveId: node.uref,
+      object: draft,
+      indexData: {
+        onEcosystem: {
+          added: parents,
+        },
+      },
+    };
+
+    if (this.emitUpdates) {
+      this.dispatchEvent(
+        new UpdatePerspectiveDataEvent({ detail: update, bubbles: true, composed: true })
+      );
+    } else {
+      this.localEvees.updatePerspectiveData(update);
+    }
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {

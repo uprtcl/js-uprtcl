@@ -12,7 +12,7 @@ import {
 import { CachedUpdate, ClientCache } from '../client.cache';
 import { EveesCacheDB } from './cache.local.db';
 
-/** use local storage to sotre  */
+/** use local storage as cache of ClientCachedWithBase */
 export class CacheLocal implements ClientCache {
   logger = new Logger('CacheLocal');
 
@@ -46,10 +46,11 @@ export class CacheLocal implements ClientCache {
 
     /** use the linkTo entry to mark a perspective of a given ecoystem */
     const onEcosystem =
-      cachedUpdate.update.linkChanges &&
-      cachedUpdate.update.linkChanges.linksTo &&
-      cachedUpdate.update.linkChanges.linksTo.added.length > 0
-        ? cachedUpdate.update.linkChanges.linksTo.added[0]
+      cachedUpdate.update.indexData &&
+      cachedUpdate.update.indexData.linkChanges &&
+      cachedUpdate.update.indexData.linkChanges.onEcosystem &&
+      cachedUpdate.update.indexData.linkChanges.onEcosystem.added.length > 0
+        ? cachedUpdate.update.indexData.linkChanges.onEcosystem.added
         : undefined;
 
     let dataId: string | undefined = undefined;

@@ -251,7 +251,10 @@ export class Evees {
       const has = this.hasBehavior(data.object, 'text');
 
       if (has) {
-        update.text = this.behaviorFirst(data.object, 'text');
+        if (!update.indexData) {
+          update.indexData = {};
+        }
+        update.indexData.text = this.behaviorFirst(data.object, 'text');
       }
     }
 
@@ -280,9 +283,13 @@ export class Evees {
 
         const { added, removed } = arrayDiff(oldChildren, children);
 
+        if (!update.indexData) {
+          update.indexData = {};
+        }
+
         /** set the details */
-        update.linkChanges = {
-          ...update.linkChanges,
+        update.indexData.linkChanges = {
+          ...update.indexData.linkChanges,
           [patternName]: {
             added,
             removed,
@@ -466,7 +473,7 @@ export class Evees {
         headId: head.id,
         guardianId,
       },
-      linkChanges: options.linkChanges,
+      indexData: options.indexData,
     });
 
     // clean unused entities

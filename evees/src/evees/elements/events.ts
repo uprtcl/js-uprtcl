@@ -1,11 +1,9 @@
+import { Entity } from '../../cas/interfaces/entity';
+import { CreateEvee, NewPerspective, UpdatePerspectiveData } from '../interfaces/types';
 import { Proposal } from '../proposals/types';
 
 export type ContentUpdatedArgs = {
   uref: string;
-};
-
-export type UpdateContentArgs = {
-  dataId: string;
 };
 
 export type SpliceChildrenArgs = {
@@ -29,7 +27,10 @@ export interface ProposalCreatedDetail {
   proposal: Proposal;
 }
 
-export const UPDATE_CONTENT_TAG = 'update-content';
+export const UPDATE_PERSPECTIVE_DATA_TAG = 'update-perspective-data';
+export const CREATE_PERSPECTIVE_TAG = 'create-perspective';
+export const CREATE_ENTITY_TAG = 'create-entity';
+
 export const SPLICE_CHILDREN_TAG = 'splice-children';
 export const LIFT_CHILDREN_TAG = 'lift-children';
 export const CONTENT_UPDATED_TAG = 'content-updated';
@@ -41,9 +42,21 @@ export class ProposalCreatedEvent extends CustomEvent<ProposalCreatedDetail> {
   }
 }
 
-export class UpdateContentEvent extends CustomEvent<UpdateContentArgs> {
-  constructor(init: CustomEventInit<UpdateContentArgs>) {
-    super(UPDATE_CONTENT_TAG, init);
+export class UpdatePerspectiveDataEvent extends CustomEvent<UpdatePerspectiveData> {
+  constructor(init: CustomEventInit<UpdatePerspectiveData>) {
+    super(UPDATE_PERSPECTIVE_DATA_TAG, init);
+  }
+}
+
+export class CreatePerspectiveEvent extends CustomEvent<CreateEvee> {
+  constructor(init: CustomEventInit<CreateEvee>) {
+    super(CREATE_PERSPECTIVE_TAG, init);
+  }
+}
+
+export class CreateEntityEvent extends CustomEvent<Entity> {
+  constructor(init: CustomEventInit<Entity>) {
+    super(CREATE_ENTITY_TAG, init);
   }
 }
 

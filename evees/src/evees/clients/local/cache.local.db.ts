@@ -7,7 +7,7 @@ export interface PerspectiveLocal {
   details: PerspectiveDetails;
   /** need to index to decide if delete a data entity */
   dataId: string | undefined;
-  onEcosystem?: string;
+  onEcosystem?: string[];
   levels?: number;
 }
 
@@ -39,7 +39,7 @@ export class EveesCacheDB extends Dexie {
     super(`${prefix}-evees-store`);
 
     this.version(0.1).stores({
-      perspectives: '&id,context,onEcosystem,dataId',
+      perspectives: '&id,context,*onEcosystem,dataId',
       newPerspectives: '&id,dataId',
       updates: '&id,perspectiveId,timexstamp,dataId',
       deletedPerspectives: '&id',
