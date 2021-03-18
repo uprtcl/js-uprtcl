@@ -230,13 +230,13 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
           fill: white;
         }
         .grey-color {
-          color: var(--gray, gray);
+          color: var(--gray-dark, gray);
         }
         .blue-color {
           color: var(--primary, blue);
         }
         .grey-background {
-          background-color: var(--gray, gray);
+          background-color: var(--gray-dark, gray);
         }
         .blue-background {
           background-color: var(--primary, blue);

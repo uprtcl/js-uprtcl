@@ -79,7 +79,7 @@ export class UprtclButton extends LitElement {
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 0rem 1.5rem;
+          padding: var(--padding, 0rem 1.5rem);
         }
         .icon-container {
           height: 100%;
