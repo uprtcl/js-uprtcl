@@ -44,14 +44,21 @@ export class CacheLocal implements ClientCache {
   async setCachedPerspective(perspectiveId: string, cachedUpdate: CachedUpdate): Promise<void> {
     const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
 
+    const current = await this.db.perspectives.get(perspectiveId);
+
     /** use the linkTo entry to mark a perspective of a given ecoystem */
-    const onEcosystem =
+    const addedOnEcosystem =
       cachedUpdate.update.indexData &&
       cachedUpdate.update.indexData.linkChanges &&
       cachedUpdate.update.indexData.linkChanges.onEcosystem &&
       cachedUpdate.update.indexData.linkChanges.onEcosystem.added.length > 0
         ? cachedUpdate.update.indexData.linkChanges.onEcosystem.added
-        : undefined;
+        : [];
+
+    const currentOnEcosystem = current ? (current.onEcosystem ? current.onEcosystem : []) : [];
+    const newOnEcosystem = currentOnEcosystem.concat(
+      addedOnEcosystem.filter((e) => !currentOnEcosystem.includes(e))
+    );
 
     let dataId: string | undefined = undefined;
 
@@ -65,7 +72,7 @@ export class CacheLocal implements ClientCache {
       details: cachedUpdate.update.details,
       levels: cachedUpdate.levels,
       context: perspective.object.payload.context,
-      onEcosystem,
+      onEcosystem: newOnEcosystem,
       dataId,
     });
   }

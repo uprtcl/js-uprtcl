@@ -47,7 +47,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   parentId!: string;
 
   /** if true, content updates are emited instead of sent to the localEvees */
-  @property({ type: Boolean, attribute: 'emit-update' })
+  @property({ type: Boolean, attribute: 'emit-updates' })
   emitUpdates: boolean = false;
 
   @property({ type: String, attribute: 'default-type' })
@@ -303,10 +303,12 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     node.draft = draft;
     // updates are enqueued
 
-    const parents: string[] = [];
+    const parents: string[] = [node.uref];
     let parent = node.parent;
     while (parent !== undefined) {
-      parents.push(parent.uref);
+      if (!parents.includes(parent.uref)) {
+        parents.push(parent.uref);
+      }
       parent = parent.parent;
     }
 
@@ -314,8 +316,11 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       perspectiveId: node.uref,
       object: draft,
       indexData: {
-        onEcosystem: {
-          added: parents,
+        linkChanges: {
+          onEcosystem: {
+            added: parents,
+            removed: [],
+          },
         },
       },
     };
