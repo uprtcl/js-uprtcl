@@ -224,6 +224,11 @@ export class CacheLocal implements ClientCache {
     return this.db.perspectives.where('onEcosystem').equals(uref).primaryKeys();
   }
 
+  async getOnEcosystems(perspectiveId: string): Promise<string[]> {
+    const perspective = await this.db.perspectives.get(perspectiveId);
+    return perspective && perspective.onEcosystem ? perspective.onEcosystem : [];
+  }
+
   async getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined> {
     const newPerspectiveLocal = await this.db.newPerspectives.get(perspectiveId);
     if (!newPerspectiveLocal) return undefined;
