@@ -185,7 +185,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
       guardianId: this.uref,
     };
 
-    this.eveesPull = await this.evees.clone('PullClient');
+    this.eveesPull = this.evees.clone('PullClient');
     const merger = new RecursiveContextMergeStrategy(this.eveesPull);
 
     await merger.mergePerspectivesExternal(this.uref, fromUref, {
@@ -221,7 +221,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     const { details: toDetails } = await this.evees.client.getPerspective(toPerspectiveId);
     const { details: fromDetails } = await this.evees.client.getPerspective(fromPerspectiveId);
 
-    const eveesMerge = await this.evees.clone('MergeClient');
+    const eveesMerge = this.evees.clone('MergeClient');
     const merger = new RecursiveContextMergeStrategy(eveesMerge);
     await merger.mergePerspectivesExternal(toPerspectiveId, fromPerspectiveId, config);
 

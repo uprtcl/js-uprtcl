@@ -25,7 +25,7 @@ import { Signed } from '../patterns/interfaces/signable';
 import { ErrorWithCode } from '../utils/error';
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 import { RemoteEvees } from './interfaces/remote.evees';
-import { getHome } from './default.perspectives';
+import { createCommit, getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
 
@@ -59,21 +59,26 @@ export class Evees {
     readonly modules: Map<string, EveesContentModule>
   ) {}
 
+  clone(name: string = 'NewClient', client?: Client): Evees {
+    const store = client ? client.store : new CASOnMemory(this.client.store);
+    client = client || new ClientOnMemory(this.client, store, name);
+    return new Evees(client, this.recognizer, this.remotes, this.stores, this.config, this.modules);
+  }
+
   /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
-  async clone(
+  async cloneAndUpdate(
     name: string = 'NewClient',
     client?: Client,
     mutation?: EveesMutation
   ): Promise<Evees> {
-    const store = client ? client.store : new CASOnMemory(this.client.store);
-    client = client || new ClientOnMemory(this.client, store, name);
+    const evees = this.clone(name, client);
 
     if (mutation) {
-      await client.update(mutation);
+      await evees.client.update(mutation);
     }
 
-    return new Evees(client, this.recognizer, this.remotes, this.stores, this.config, this.modules);
+    return evees;
   }
 
   findRemote<T extends RemoteEvees>(query: string): T {
@@ -640,20 +645,7 @@ export class Evees {
   }
 
   async createCommit(commit: CreateCommit, remote: string): Promise<Secured<Commit>> {
-    const message = commit.message !== undefined ? commit.message : '';
-    const timestamp = commit.timestamp !== undefined ? commit.timestamp : Date.now();
-    const creatorsIds = commit.creatorsIds !== undefined ? commit.creatorsIds : [];
-    const parentsIds = commit.parentsIds !== undefined ? commit.parentsIds : [];
-
-    const commitData: Commit = {
-      creatorsIds: creatorsIds,
-      dataId: commit.dataId,
-      message: message,
-      timestamp: timestamp,
-      parentsIds: parentsIds,
-    };
-
-    const commitObject = signObject(commitData);
+    const commitObject = createCommit(commit);
     return this.client.store.storeEntity({ object: commitObject, remote });
   }
 

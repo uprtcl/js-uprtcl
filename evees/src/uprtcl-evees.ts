@@ -62,15 +62,15 @@ export { ProposalsList } from './evees/elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './evees/elements/evees-perspective-icon';
 
 export {
-  UpdatePerspectiveDataEvent,
+  UpdatePerspectiveEvent,
   ContentUpdatedEvent,
   SpliceChildrenEvent,
   ProposalCreatedEvent,
-  CreatePerspectiveEvent,
+  NewPerspectiveEvent,
   CONTENT_UPDATED_TAG,
   PROPOSAL_CREATED_TAG,
-  CREATE_PERSPECTIVE_TAG,
-  UPDATE_PERSPECTIVE_DATA_TAG,
+  NEW_PERSPECTIVE_TAG,
+  UPDATE_PERSPECTIVE_TAG,
 } from './evees/elements/events';
 export { EveesDiffExplorer } from './evees/elements/evees-diff-explorer';
 

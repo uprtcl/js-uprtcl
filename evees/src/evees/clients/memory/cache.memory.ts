@@ -60,6 +60,20 @@ export class CacheOnMemory implements ClientCache {
     return Array.from(this.deletedPerspectives.values());
   }
 
+  async getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined> {
+    return this.newPerspectives.get(perspectiveId);
+  }
+
+  async getLastUpdate(perspectiveId: string): Promise<Update | undefined> {
+    const updates = await this.getUpdates();
+    /** assumed last in array is last */
+    return updates.filter((u) => u.perspectiveId === perspectiveId).pop();
+  }
+
+  async clearPerspective(perspectiveId: string) {
+    throw new Error('Method not implemented');
+  }
+
   async diff(): Promise<EveesMutation> {
     const newPerspectives = Array.from(this.newPerspectives.values());
     const updates = Array.prototype.concat.apply([], Array.from(this.updates.values()));

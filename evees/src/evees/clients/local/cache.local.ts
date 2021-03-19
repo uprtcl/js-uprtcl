@@ -16,7 +16,7 @@ import { EveesCacheDB } from './cache.local.db';
 export class CacheLocal implements ClientCache {
   logger = new Logger('CacheLocal');
 
-  db: EveesCacheDB;
+  readonly db: EveesCacheDB;
 
   constructor(name: string, protected store: CASStore) {
     this.db = new EveesCacheDB(name);

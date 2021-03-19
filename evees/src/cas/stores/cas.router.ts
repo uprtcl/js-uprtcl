@@ -121,7 +121,11 @@ export class CASRouter implements CASStore {
   }
 
   public async ready(): Promise<void> {
-    await Promise.all(Array.from(this.storesMap.values()).map((source) => source.ready()));
+    await Promise.all(
+      Array.from(this.storesMap.values()).map((source) =>
+        source.ready ? source.ready() : Promise.resolve()
+      )
+    );
   }
 
   public getAllCASIds(): string[] {

@@ -7,6 +7,7 @@ import {
   EveesMutationCreate,
   PerspectiveGetResult,
   GetPerspectiveOptions,
+  SearchOptions,
 } from './types';
 import { SearchEngine } from './search.engine';
 import { EventEmitter } from 'events';
@@ -14,6 +15,7 @@ import { Proposals } from '../proposals/proposals';
 
 export enum ClientEvents {
   updated = 'updated',
+  ecosystemUpdated = 'ecosystem-updated',
 }
 
 // All evees clients must call the .on('') method with in the following cases
@@ -43,13 +45,16 @@ export interface Client {
   updatePerspective(update: Update): Promise<void>;
 
   /** get all the changes relative to the underlying client(s) */
-  diff(): Promise<EveesMutation>;
+  diff(options?: SearchOptions): Promise<EveesMutation>;
   /** sync all the temporary changes made on this client with the base layer */
-  flush(): Promise<void>;
+  flush(options?: SearchOptions): Promise<void>;
   /** force refresh the perspective details and deletes the cached proposals and userPerspectives. */
   refresh(): Promise<void>;
   /** delete all changes done and cached in this client. */
   clear?(): Promise<void>;
+
+  /** await for all update transactions received to be processed (visible to read queries) */
+  ready?(): Promise<void>;
 
   /** a custom method that search other perspectives based on the logged user,
    * its kept aside from the searchEngine.otherPerspectives method because we need

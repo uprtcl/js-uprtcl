@@ -8,6 +8,7 @@ import {
   EveesMutation,
   EveesMutationCreate,
   Commit,
+  SearchOptions,
 } from '../interfaces/types';
 import { CASStore } from '../../cas/interfaces/cas-store';
 import { Entity, EntityCreate } from '../../cas/interfaces/entity';
@@ -15,24 +16,31 @@ import { Entity, EntityCreate } from '../../cas/interfaces/entity';
 import { Client, ClientEvents } from '../interfaces/client';
 import { ClientCache } from './client.cache';
 import { Proposals } from '../proposals/proposals';
-import { head, update } from 'lodash';
-import { Signer } from 'crypto';
 import { Signed } from 'src/patterns/interfaces/signable';
+import { AsyncQueue } from 'src/utils/async';
+import { SearchEngine } from '../interfaces/search.engine';
 
 export class ClientCachedWithBase implements Client {
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
   proposals?: Proposals | undefined;
+  /** a search engine that will override that of the base layer is provided */
+  searchEngineLocal?: SearchEngine;
+  protected cache!: ClientCache;
+
+  /** forces sequentiality between calls to update methods and
+   * let readers wat for all updates to be processed */
+  private updateQueue: AsyncQueue;
 
   constructor(
-    readonly cache: ClientCache,
     public store: CASStore,
     readonly base?: Client,
     readonly name: string = 'client',
-    readonly cacheEnabled: boolean = true
+    readonly readCacheEnabled: boolean = true
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
+    this.updateQueue = new AsyncQueue();
 
     if (this.base && this.base.events) {
       this.base.events.on(ClientEvents.updated, (perspectiveIds: string[]) => {
@@ -47,12 +55,26 @@ export class ClientCachedWithBase implements Client {
   }
 
   get searchEngine() {
+    if (this.searchEngineLocal) {
+      return this.searchEngineLocal;
+    }
+
     if (this.base) {
       return this.base.searchEngine;
-    } else return undefined;
+    }
+
+    return undefined;
+  }
+
+  async ready(): Promise<void> {
+    if (this.updateQueue._items.length > 0) {
+      await this.updateQueue._items[this.updateQueue._items.length - 1].action();
+    }
   }
 
   async canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
+    await this.ready();
+
     if (!userId) {
       const cachedDetails = await this.cache.getCachedPerspective(perspectiveId);
       if (cachedDetails && cachedDetails.update.details.canUpdate) {
@@ -67,6 +89,8 @@ export class ClientCachedWithBase implements Client {
     perspectiveId: string,
     options?: GetPerspectiveOptions
   ): Promise<PerspectiveGetResult> {
+    await this.ready();
+
     const cachedPerspective = await this.cache.getCachedPerspective(perspectiveId);
     if (cachedPerspective) {
       /** skip asking the base client only if we already search for the requested levels under
@@ -75,7 +99,7 @@ export class ClientCachedWithBase implements Client {
         !options ||
         options.levels === undefined ||
         options.levels === cachedPerspective.levels ||
-        !this.cacheEnabled
+        !this.readCacheEnabled
       ) {
         return { details: { ...cachedPerspective.update.details } };
       }
@@ -87,7 +111,7 @@ export class ClientCachedWithBase implements Client {
 
     const result = await this.base.getPerspective(perspectiveId, options);
 
-    if (this.cacheEnabled) {
+    if (this.readCacheEnabled) {
       /** cache result and slice */
       this.cache.setCachedPerspective(perspectiveId, {
         update: { perspectiveId, details: result.details },
@@ -114,84 +138,88 @@ export class ClientCachedWithBase implements Client {
   }
   async createPerspectives(newPerspectives: NewPerspective[]): Promise<void> {
     /** store perspective details */
-    await Promise.all(
-      newPerspectives.map(async (newPerspective) => {
-        await this.store.storeEntity({
-          object: newPerspective.perspective.object,
-          remote: newPerspective.perspective.object.payload.remote,
-        });
+    await this.updateQueue.enqueue(() =>
+      Promise.all(
+        newPerspectives.map(async (newPerspective) => {
+          await this.store.storeEntity({
+            object: newPerspective.perspective.object,
+            remote: newPerspective.perspective.object.payload.remote,
+          });
 
-        this.cache.newPerspective(newPerspective);
+          this.cache.newPerspective(newPerspective);
 
-        /** set the current known details of that perspective, can update is set to true */
-        this.cache.setCachedPerspective(newPerspective.perspective.id, {
-          update: {
-            perspectiveId: newPerspective.perspective.id,
-            details: {
-              ...newPerspective.update.details,
-              canUpdate: true,
+          /** set the current known details of that perspective, can update is set to true */
+          this.cache.setCachedPerspective(newPerspective.perspective.id, {
+            update: {
+              perspectiveId: newPerspective.perspective.id,
+              details: {
+                ...newPerspective.update.details,
+                canUpdate: true,
+              },
             },
-          },
-          levels: -1, // new perspectives are assumed to be fully on the cache
-        });
-      })
+            levels: -1, // new perspectives are assumed to be fully on the cache
+          });
+        })
+      )
     );
   }
 
   async updatePerspectives(updates: Update[]): Promise<void> {
-    await Promise.all(
-      updates.map(async (update) => {
-        let timexstamp: number | undefined = undefined;
+    await this.updateQueue.enqueue(() =>
+      Promise.all(
+        updates.map(async (update) => {
+          let timexstamp: number | undefined = undefined;
 
-        if (update.details.headId) {
-          const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
-          timexstamp = head.object.payload.timestamp;
-        }
+          if (update.details.headId) {
+            const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
+            timexstamp = head.object.payload.timestamp;
+          }
 
-        this.cache.addUpdate(update, timexstamp ? timexstamp : Date.now());
+          this.cache.addUpdate(update, timexstamp ? timexstamp : Date.now());
 
-        /** update the cache with the new head (keep previous values if update does not
-         * specify them)
-         * TODO: what if the perpspective is not in the cache? */
-        let cachedUpdate = await this.cache.getCachedPerspective(update.perspectiveId);
+          /** update the cache with the new head (keep previous values if update does not
+           * specify them)
+           * TODO: what if the perpspective is not in the cache? */
+          let cachedUpdate = await this.cache.getCachedPerspective(update.perspectiveId);
 
-        if (!cachedUpdate) {
-          /** if the perspective was not in the cache, ask the base layer for the initial details */
-          const currentDetails = this.base
-            ? await this.base.getPerspective(update.perspectiveId, { levels: 0 })
-            : { details: {} };
+          if (!cachedUpdate) {
+            /** if the perspective was not in the cache, ask the base layer for the initial details */
+            const currentDetails = this.base
+              ? await this.base.getPerspective(update.perspectiveId, { levels: 0 })
+              : { details: {} };
 
-          cachedUpdate = {
-            update: {
-              perspectiveId: update.perspectiveId,
-              details: currentDetails.details,
+            cachedUpdate = {
+              update: {
+                perspectiveId: update.perspectiveId,
+                details: currentDetails.details,
+              },
+              levels: 0,
+            };
+          }
+
+          /** keep original update properties add those new */
+          cachedUpdate.update = {
+            perspectiveId: update.perspectiveId,
+            details: {
+              headId: update.details.headId
+                ? update.details.headId
+                : cachedUpdate.update.details.headId,
+              canUpdate: update.details.canUpdate
+                ? update.details.canUpdate
+                : cachedUpdate.update.details.canUpdate,
+              guardianId: update.details.guardianId
+                ? update.details.guardianId
+                : cachedUpdate.update.details.guardianId,
             },
-            levels: 0,
+            indexData: {
+              ...cachedUpdate.update.indexData,
+              ...update.indexData,
+            },
           };
-        }
 
-        /** keep original update properties add those new */
-        cachedUpdate.update = {
-          perspectiveId: update.perspectiveId,
-          details: {
-            headId: update.details.headId
-              ? update.details.headId
-              : cachedUpdate.update.details.headId,
-            canUpdate: update.details.canUpdate
-              ? update.details.canUpdate
-              : cachedUpdate.update.details.canUpdate,
-            guardianId: update.details.guardianId
-              ? update.details.guardianId
-              : cachedUpdate.update.details.guardianId,
-          },
-          indexData: {
-            ...cachedUpdate.update.indexData,
-            ...update.indexData,
-          },
-        };
-
-        await this.cache.setCachedPerspective(update.perspectiveId, cachedUpdate);
-      })
+          await this.cache.setCachedPerspective(update.perspectiveId, cachedUpdate);
+        })
+      )
     );
 
     this.events.emit(
@@ -201,15 +229,16 @@ export class ClientCachedWithBase implements Client {
   }
 
   async deletePerspectives(perspectiveIds: string[]): Promise<void> {
-    /** store perspective details */
-    await Promise.all(
-      perspectiveIds.map(async (perspectiveId) => {
-        this.cache.deletedPerspective(perspectiveId);
-        /** set the current known details of that perspective, can update is set to true */
+    await this.updateQueue.enqueue(() =>
+      Promise.all(
+        perspectiveIds.map(async (perspectiveId) => {
+          this.cache.deletedPerspective(perspectiveId);
+          /** set the current known details of that perspective, can update is set to true */
 
-        this.cache.deleteNewPerspective(perspectiveId);
-        this.cache.clearCachedPerspective(perspectiveId);
-      })
+          this.cache.deleteNewPerspective(perspectiveId);
+          this.cache.clearCachedPerspective(perspectiveId);
+        })
+      )
     );
   }
 
@@ -246,25 +275,28 @@ export class ClientCachedWithBase implements Client {
   }
 
   async flush(): Promise<void> {
-    if (!this.base) {
-      throw new Error('base not defined');
-    }
+    await this.ready();
 
-    await this.store.flush();
+    await this.updateQueue.enqueue(async () => {
+      if (!this.base) {
+        throw new Error('base not defined');
+      }
 
-    const newPerspectives = await this.cache.getNewPerspectives();
-    const updates = await this.cache.getUpdates();
-    const deletedPerspectives = await this.cache.getDeletedPerspective();
+      await this.store.flush();
 
-    await this.base.update({
-      newPerspectives,
-      updates,
-      deletedPerspectives,
+      const newPerspectives = await this.cache.getNewPerspectives();
+      const updates = await this.cache.getUpdates();
+      const deletedPerspectives = await this.cache.getDeletedPerspective();
+
+      await this.base.update({
+        newPerspectives,
+        updates,
+        deletedPerspectives,
+      });
+
+      await this.base.flush();
+      await this.clear();
     });
-
-    await this.base.flush();
-
-    await this.clear();
   }
 
   async clear(): Promise<void> {
@@ -272,8 +304,8 @@ export class ClientCachedWithBase implements Client {
   }
 
   /** a mutation with all the changes made relative to the base client */
-  async diff(): Promise<EveesMutation> {
-    return this.cache.diff();
+  async diff(options?: SearchOptions): Promise<EveesMutation> {
+    throw new Error('not implemented');
   }
 
   /** it gets the logged user perspectives (base layers are user aware) */

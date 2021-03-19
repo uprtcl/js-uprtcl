@@ -10,6 +10,7 @@ export class ClientOnMemory extends ClientCachedWithBase {
     public store: CASStore,
     readonly name: string = 'OnMemoryClient'
   ) {
-    super(new CacheOnMemory(), base.store, base, name);
+    super(base.store, base, name);
+    this.cache = new CacheOnMemory();
   }
 }

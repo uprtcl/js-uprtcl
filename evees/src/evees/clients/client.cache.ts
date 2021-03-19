@@ -17,8 +17,14 @@ export interface ClientCache {
   deleteNewPerspective(perspectiveId: string);
 
   getNewPerspectives(): Promise<NewPerspective[]>;
+  getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined>;
+
   getUpdates(): Promise<Update[]>;
+  getLastUpdate(perspectiveId: string): Promise<Update | undefined>;
+
   getDeletedPerspective(): Promise<string[]>;
+
+  clearPerspective(perspectiveId: string);
 
   diff(): Promise<EveesMutation>;
   clear(): Promise<void>;

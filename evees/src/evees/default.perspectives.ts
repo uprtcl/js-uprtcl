@@ -1,9 +1,11 @@
 import { Secured } from '../cas/utils/cid-hash';
 import { CidConfig, defaultCidConfig } from '../cas/interfaces/cid-config';
-import { deriveSecured } from '../cas/utils/signed';
+import { deriveSecured, signObject } from '../cas/utils/signed';
+import { Signed } from '../patterns/interfaces/signable';
 
 import { RemoteEvees } from './interfaces/remote.evees';
-import { PartialPerspective, Perspective } from './interfaces/types';
+import { Commit, PartialPerspective, Perspective } from './interfaces/types';
+import { CreateCommit } from './evees.service';
 
 export const snapDefaultPerspective = async (
   remote: RemoteEvees,
@@ -89,4 +91,21 @@ export const getConceptPerspective = async (
   };
 
   return deriveSecured(perspective, cidConfig, casID);
+};
+
+export const createCommit = (commit: CreateCommit): Signed<Commit> => {
+  const message = commit.message !== undefined ? commit.message : '';
+  const timestamp = commit.timestamp !== undefined ? commit.timestamp : Date.now();
+  const creatorsIds = commit.creatorsIds !== undefined ? commit.creatorsIds : [];
+  const parentsIds = commit.parentsIds !== undefined ? commit.parentsIds : [];
+
+  const commitData: Commit = {
+    creatorsIds: creatorsIds,
+    dataId: commit.dataId,
+    message: message,
+    timestamp: timestamp,
+    parentsIds: parentsIds,
+  };
+
+  return signObject(commitData);
 };

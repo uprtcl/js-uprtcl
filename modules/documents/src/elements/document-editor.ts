@@ -14,11 +14,9 @@ import {
   PerspectiveType,
   CommitType,
   Evees,
-  AsyncQueue,
   UpdatePerspectiveData,
-  UpdatePerspectiveDataEvent,
   CreateEvee,
-  CreatePerspectiveEvent,
+  AsyncQueue,
 } from '@uprtcl/evees';
 
 import { TextType, DocNode, CustomBlocks } from '../types';
@@ -71,6 +69,18 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
+
+  /** a store of pending udpates to debounce repeated ones*/
+  protected pendingUpdates: Map<
+    string,
+    { action: Function; timeout: NodeJS.Timeout; called: boolean }
+  > = new Map();
+  updateQueue: AsyncQueue;
+
+  constructor() {
+    super();
+    this.updateQueue = new AsyncQueue();
+  }
 
   async firstUpdated() {
     const documentsModule = this.evees.modules.get(DocumentsModule.id);
@@ -262,17 +272,22 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       perspective: perspective,
     };
 
-    if (this.emitUpdates) {
-      this.dispatchEvent(
-        new CreatePerspectiveEvent({ detail: newEvee, bubbles: true, composed: true })
-      );
-    } else {
-      if (newEvee.perspective) {
-        await this.localEvees.client.store.storeEntity(newEvee.perspective);
-      }
-      /** create is sent asyncronously, the flow continues as if it were successful */
-      this.localEvees.createEvee(newEvee);
+    if (newEvee.perspective) {
+      await this.localEvees.client.store.storeEntity(newEvee.perspective);
     }
+    /** create is sent asyncronously, the flow continues as if it were successful */
+
+    await this.localEvees.client.store.storeEntity(perspective);
+
+    /** create is sent asyncronously, the flow continues as if it were successful */
+    this.updateQueue.enqueue(() =>
+      this.localEvees.createEvee({
+        object: draft,
+        guardianId: parent ? parent.uref : undefined,
+        remoteId: remoteId,
+        perspectiveId: perspective.id,
+      })
+    );
 
     if (LOGINFO) this.logger.log(`createNode()`, { perspective, draft });
 
@@ -298,10 +313,34 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     };
   }
 
-  async updateNode(node: DocNode, draft: any) {
-    // optimistically set the dratf
-    node.draft = draft;
-    // updates are enqueued
+  async flushPendingUpdates() {
+    /** execute pending updates */
+    Array.from(this.pendingUpdates.values()).map((e) => {
+      if (!e.called) {
+        clearTimeout(e.timeout);
+        e.action();
+      }
+    });
+
+    /** await the last queued action is executed */
+    if (this.updateQueue._items.length > 0) {
+      await this.updateQueue._items[this.updateQueue._items.length - 1].action();
+    }
+  }
+
+  executePending(perspectiveId: string) {
+    const pending = this.pendingUpdates.get(perspectiveId);
+    if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
+    pending.called = true;
+    pending.action();
+  }
+
+  debounceNodeUpdate(node: DocNode, draft: any) {
+    /** if there is a timeout to execute this update, delete it and create a new one*/
+    const pending = this.pendingUpdates.get(node.uref);
+    if (pending && !pending.called && pending.timeout) {
+      clearTimeout(pending.timeout);
+    }
 
     const parents: string[] = [node.uref];
     let parent = node.parent;
@@ -325,13 +364,37 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       },
     };
 
-    if (this.emitUpdates) {
-      this.dispatchEvent(
-        new UpdatePerspectiveDataEvent({ detail: update, bubbles: true, composed: true })
+    const action = () =>
+      this.updateQueue.enqueue(async () =>
+        this.localEvees.updatePerspectiveData({
+          perspectiveId: node.uref,
+          object: draft,
+          indexData: {
+            linkChanges: {
+              onEcosystem: {
+                added: [this.uref],
+                removed: [],
+              },
+            },
+          },
+        })
       );
-    } else {
-      this.localEvees.updatePerspectiveData(update);
-    }
+
+    const newTimeout = setTimeout(() => this.executePending(update.perspectiveId), 2000);
+
+    /** create a timeout to execute (queue) this update */
+    this.pendingUpdates.set(node.uref, {
+      timeout: newTimeout,
+      action,
+      called: false,
+    });
+  }
+
+  async updateNode(node: DocNode, draft: any) {
+    // optimistically set the dratf
+    node.draft = draft;
+    // updates are enqueued
+    this.debounceNodeUpdate(node, draft);
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {
