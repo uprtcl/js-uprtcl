@@ -24,8 +24,16 @@ export class LocalSearchEngine implements SearchEngine {
     this.evees = evees;
   }
 
-  explore(options: SearchOptions): Promise<SearchResult> {
-    throw new Error('Method not implemented.');
+  async explore(options: SearchOptions): Promise<SearchResult> {
+    const underId = options.under ? options.under[0].id : undefined;
+    if (!underId) {
+      throw new Error(`UnderId not defined`);
+    }
+    const perspectiveIds = await this.db.perspectives
+      .where('onEcosystem')
+      .equals(underId)
+      .primaryKeys();
+    return { perspectiveIds };
   }
 
   locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {

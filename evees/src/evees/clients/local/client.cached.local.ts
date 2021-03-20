@@ -1,10 +1,11 @@
 import lodash from 'lodash-es';
 
-import { Entity } from '../../../cas/interfaces/entity';
 import { Commit, EveesMutation, Perspective, SearchOptions } from '../../../evees/interfaces/types';
-import { CASStore } from '../../../cas/interfaces/cas-store';
-import { createCommit } from '../../../evees/default.perspectives';
 import { Signed } from '../../../patterns/interfaces/signable';
+import { Entity } from '../../../cas/interfaces/entity';
+import { CASStore } from '../../../cas/interfaces/cas-store';
+import { CASLocal } from '../../../cas/stores/cas.local';
+import { createCommit } from '../../../evees/default.perspectives';
 
 import { Client } from '../../interfaces/client';
 import { ClientCachedWithBase } from '../client.cached.with.base';
@@ -14,13 +15,23 @@ import { LocalSearchEngine } from './search.engine.local';
 
 export class ClientCachedLocal extends ClientCachedWithBase {
   constructor(
-    store: CASStore,
+    store?: CASStore,
     readonly base?: Client,
     readonly readCacheEnabled: boolean = true,
     readonly name: string = 'local'
   ) {
-    super(store, base, `${name}-client`, readCacheEnabled);
-    this.cache = new CacheLocal(name, store);
+    super(base, `${name}-client`, readCacheEnabled);
+
+    if (store) {
+      this.store = store;
+    } else {
+      if (!this.base) {
+        throw new Error(`Base must be defined if not store is provided`);
+      }
+      this.store = new CASLocal('local', this.base.store, false);
+    }
+
+    this.cache = new CacheLocal(name, this.store);
     this.searchEngineLocal = new LocalSearchEngine((this.cache as CacheLocal).db);
   }
 
@@ -59,7 +70,8 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     return mutation;
   }
 
-  /** takes all changes under a given page, squash them as new commits and remove them from the drafts client */
+  /** Overrides **
+   * takes all changes under a given page, squash them as new commits and remove them from the drafts client */
   async flush(options?: SearchOptions) {
     await this.ready();
 

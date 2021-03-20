@@ -27,13 +27,13 @@ export class ClientCachedWithBase implements Client {
   /** a search engine that will override that of the base layer is provided */
   searchEngineLocal?: SearchEngine;
   protected cache!: ClientCache;
+  store!: CASStore;
 
   /** forces sequentiality between calls to update methods and
    * let readers wat for all updates to be processed */
   private updateQueue: AsyncQueue;
 
   constructor(
-    public store: CASStore,
     readonly base?: Client,
     readonly name: string = 'client',
     readonly readCacheEnabled: boolean = true

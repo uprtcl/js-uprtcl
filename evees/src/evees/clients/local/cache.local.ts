@@ -145,7 +145,7 @@ export class CacheLocal implements ClientCache {
 
   /** clear the cache and the entities in the store associated to the provided
    * perspecties */
-  async clearPerspective(perspectiveId): Promise<void> {
+  async clearPerspective(perspectiveId: string): Promise<void> {
     const clearUpdates: Update[] = [];
 
     const newPerspective = await this.db.newPerspectives.get(perspectiveId);
