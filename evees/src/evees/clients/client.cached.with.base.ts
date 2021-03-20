@@ -305,7 +305,7 @@ export class ClientCachedWithBase implements Client {
 
   /** a mutation with all the changes made relative to the base client */
   async diff(options?: SearchOptions): Promise<EveesMutation> {
-    throw new Error('not implemented');
+    return this.cache.diff();
   }
 
   /** it gets the logged user perspectives (base layers are user aware) */
