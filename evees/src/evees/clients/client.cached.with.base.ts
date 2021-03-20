@@ -218,6 +218,15 @@ export class ClientCachedWithBase implements Client {
           };
 
           await this.cache.setCachedPerspective(update.perspectiveId, cachedUpdate);
+
+          /** emit update */
+          if (this.searchEngine) {
+            const parents = await this.searchEngine.locate(update.perspectiveId, false);
+            this.events.emit(
+              ClientEvents.ecosystemUpdated,
+              parents.map((parent) => parent.parentId)
+            );
+          }
         })
       )
     );
