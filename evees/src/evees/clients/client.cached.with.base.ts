@@ -274,7 +274,7 @@ export class ClientCachedWithBase implements Client {
     return this.store.hashEntities(entities);
   }
 
-  async flush(): Promise<void> {
+  async flush(options?: SearchOptions, recurse: boolean = true): Promise<void> {
     await this.ready();
 
     await this.updateQueue.enqueue(async () => {
@@ -282,19 +282,16 @@ export class ClientCachedWithBase implements Client {
         throw new Error('base not defined');
       }
 
+      // TODO: flush only entities related to the options... oh god!
       await this.store.flush();
 
-      const newPerspectives = await this.cache.getNewPerspectives();
-      const updates = await this.cache.getUpdates();
-      const deletedPerspectives = await this.cache.getDeletedPerspective();
+      const diff = await this.diff(options);
+      await this.base.update(diff);
 
-      await this.base.update({
-        newPerspectives,
-        updates,
-        deletedPerspectives,
-      });
+      if (recurse) {
+        await this.base.flush(options);
+      }
 
-      await this.base.flush();
       await this.clear();
     });
   }
