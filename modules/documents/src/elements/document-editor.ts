@@ -323,7 +323,10 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         () =>
           new Promise<void>((resolve) => {
             setTimeout(() => {
-              this.saving = false;
+              if (this.pendingUpdates.size === 0) {
+                // WIP
+                this.saving = false;
+              }
               resolve();
             }, 100);
           })
