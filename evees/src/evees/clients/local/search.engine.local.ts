@@ -36,8 +36,17 @@ export class LocalSearchEngine implements SearchEngine {
     return { perspectiveIds };
   }
 
-  locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
-    throw new Error('Method not implemented.');
+  async locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
+    const perspective = await this.db.perspectives.get(perspectiveId);
+    if (perspective && perspective.onEcosystem) {
+      return perspective.onEcosystem.map((e) => {
+        return {
+          parentId: perspectiveId,
+          childId: e,
+        };
+      });
+    }
+    return [];
   }
 
   async getPerspectiveLocal(perspectiveId): Promise<PerspectiveLocal> {

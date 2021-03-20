@@ -58,6 +58,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   localEvees!: Evees;
 
   @internalProperty()
+  elementId!: string;
+
+  @internalProperty()
   reloading = true;
 
   @internalProperty()
@@ -74,10 +77,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   protected customBlocks!: CustomBlocks;
 
   /** a store of pending udpates to debounce repeated ones*/
-  protected pendingUpdates: Map<
-    string,
-    { action: Function; timeout: NodeJS.Timeout; called: boolean }
-  > = new Map();
+  protected pendingUpdates: Map<string, { action: Function; timeout: NodeJS.Timeout }> = new Map();
   updateQueue: AsyncQueue;
 
   constructor() {
@@ -86,6 +86,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async firstUpdated() {
+    this.elementId = `documents-editor-${this.uref}`;
+    document.addEventListener('click', this.handleDocClick);
+
     const documentsModule = this.evees.modules.get(DocumentsModule.id);
     this.customBlocks = documentsModule ? documentsModule.config.customBlocks : undefined;
     this.editableRemotesIds = this.evees.config.editableRemotesIds
@@ -103,12 +106,29 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     this.reloading = false;
   }
 
+  handleDocClick = (event) => {
+    const ix = event.composedPath().findIndex((el: any) => el.id === this.elementId);
+    if (ix === -1) {
+      if (LOGINFO) this.logger.log('clicked outside');
+      this.clickedOutside();
+    }
+  };
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener('click', this.handleDocClick);
+  }
+
+  clickedOutside() {
+    this.flushPendingUpdates();
+  }
+
   updated(changedProperties) {
-    if (LOGINFO)
-      this.logger.log('updated()', {
-        uref: this.uref,
-        changedProperties,
-      });
+    // if (LOGINFO)
+    //   this.logger.log('updated()', {
+    //     uref: this.uref,
+    //     changedProperties,
+    //   });
 
     let reload = false;
 
@@ -323,35 +343,43 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     this.updateQueue.enqueue(async () => {
       await task();
       /** check if last task after executing it */
-      const somePending =
-        Array.from(this.pendingUpdates.values()).findIndex((e) => !e.called) !== -1;
-      if (this.updateQueue.size === 0 && !somePending) {
-        this.saving = false;
-      }
+      this.checkSaved();
     });
+  }
+
+  checkSaved() {
+    if (LOGINFO)
+      this.logger.log('checkSaved()', {
+        pendingUpdates: this.pendingUpdates,
+        updateQueue: this.updateQueue,
+      });
+    const somePending = this.pendingUpdates.size > 0;
+    if (this.updateQueue.size === 0 && !somePending) {
+      this.saving = false;
+    }
   }
 
   async flushPendingUpdates() {
     if (LOGINFO) this.logger.log('flushPendingUpdates()', { pendingUpdates: this.pendingUpdates });
     /** execute pending updates */
     Array.from(this.pendingUpdates.values()).map((e) => {
-      if (!e.called) {
-        clearTimeout(e.timeout);
-        e.action();
-      }
+      clearTimeout(e.timeout);
+      e.action();
     });
 
     /** await the last queued action is executed */
     if (this.updateQueue._items.length > 0) {
       await this.updateQueue._items[this.updateQueue._items.length - 1].action();
     }
+
+    this.checkSaved();
   }
 
   executePending(perspectiveId: string) {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
-    pending.called = true;
     pending.action();
+    this.pendingUpdates.delete(perspectiveId);
   }
 
   debounceNodeUpdate(node: DocNode, draft: any) {
@@ -360,7 +388,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     /** if there is a timeout to execute this update, delete it and create a new one*/
     const pending = this.pendingUpdates.get(node.uref);
-    if (pending && !pending.called && pending.timeout) {
+    if (pending && pending.timeout) {
       clearTimeout(pending.timeout);
     }
 
@@ -410,7 +438,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     this.pendingUpdates.set(node.uref, {
       timeout: newTimeout,
       action,
-      called: false,
     });
   }
 
@@ -1047,6 +1074,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     return html`
       <div
+        id=${this.elementId}
         style=${styleMap({
           backgroundColor: node.focused ? SELECTED_BACKGROUND : 'transparent',
         })}
