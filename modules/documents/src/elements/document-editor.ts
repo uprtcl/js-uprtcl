@@ -61,6 +61,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   reloading = true;
 
   @internalProperty()
+  saving = false;
+
+  @internalProperty()
   checkedOutPerspectives: {
     [key: string]: { firstUref: string; newUref: string };
   } = {};
@@ -280,7 +283,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     await this.localEvees.client.store.storeEntity(perspective);
 
     /** create is sent asyncronously, the flow continues as if it were successful */
-    this.updateQueue.enqueue(() =>
+    this.enqueueTask(() =>
       this.localEvees.createEvee({
         object: draft,
         guardianId: parent ? parent.uref : undefined,
@@ -313,6 +316,22 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     };
   }
 
+  async enqueueTask(task: () => Promise<any>) {
+    if (this.updateQueue.size === 0) {
+      /** enqueue a task that will toggle the saving flag */
+      this.updateQueue.enqueue(
+        () =>
+          new Promise<void>((resolve) => {
+            setTimeout(() => {
+              this.saving = false;
+              resolve();
+            }, 100);
+          })
+      );
+    }
+    this.updateQueue.enqueue(task);
+  }
+
   async flushPendingUpdates() {
     /** execute pending updates */
     Array.from(this.pendingUpdates.values()).map((e) => {
@@ -336,6 +355,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   debounceNodeUpdate(node: DocNode, draft: any) {
+    this.saving = true;
+
     /** if there is a timeout to execute this update, delete it and create a new one*/
     const pending = this.pendingUpdates.get(node.uref);
     if (pending && !pending.called && pending.timeout) {
@@ -365,7 +386,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     };
 
     const action = () =>
-      this.updateQueue.enqueue(async () =>
+      this.enqueueTask(() =>
         this.localEvees.updatePerspectiveData({
           perspectiveId: node.uref,
           object: draft,
@@ -1051,6 +1072,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     }
 
     return html`
+      <div>${this.saving ? `Saving` : 'Saved'}</div>
       <div class=${editorClasses.join(' ')}>
         ${this.renderDocNode(this.doc)} ${this.renderDocumentEnd()}
       </div>
