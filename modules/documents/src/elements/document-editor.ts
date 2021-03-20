@@ -24,7 +24,7 @@ import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
 import { DocumentsModule } from '../documents.module';
 
-const LOGINFO = false;
+const LOGINFO = true;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
 export class DocumentEditor extends servicesConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
@@ -283,14 +283,17 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     await this.localEvees.client.store.storeEntity(perspective);
 
     /** create is sent asyncronously, the flow continues as if it were successful */
-    this.enqueueTask(() =>
-      this.localEvees.createEvee({
+    this.enqueueTask(async () => {
+      const creteEvee: CreateEvee = {
         object: draft,
         guardianId: parent ? parent.uref : undefined,
         remoteId: remoteId,
         perspectiveId: perspective.id,
-      })
-    );
+      };
+
+      if (LOGINFO) this.logger.log('exec enqueued - createEvee()', { creteEvee });
+      this.localEvees.createEvee(creteEvee);
+    });
 
     if (LOGINFO) this.logger.log(`createNode()`, { perspective, draft });
 
@@ -317,25 +320,19 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async enqueueTask(task: () => Promise<any>) {
-    if (this.updateQueue.size === 0) {
-      /** enqueue a task that will toggle the saving flag */
-      this.updateQueue.enqueue(
-        () =>
-          new Promise<void>((resolve) => {
-            setTimeout(() => {
-              if (this.pendingUpdates.size === 0) {
-                // WIP
-                this.saving = false;
-              }
-              resolve();
-            }, 100);
-          })
-      );
-    }
-    this.updateQueue.enqueue(task);
+    this.updateQueue.enqueue(async () => {
+      await task();
+      /** check if last task after executing it */
+      const somePending =
+        Array.from(this.pendingUpdates.values()).findIndex((e) => !e.called) !== -1;
+      if (this.updateQueue.size === 0 && !somePending) {
+        this.saving = false;
+      }
+    });
   }
 
   async flushPendingUpdates() {
+    if (LOGINFO) this.logger.log('flushPendingUpdates()', { pendingUpdates: this.pendingUpdates });
     /** execute pending updates */
     Array.from(this.pendingUpdates.values()).map((e) => {
       if (!e.called) {
@@ -358,6 +355,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   debounceNodeUpdate(node: DocNode, draft: any) {
+    if (LOGINFO) this.logger.log('debounceNodeUpdate()', { node, draft });
     this.saving = true;
 
     /** if there is a timeout to execute this update, delete it and create a new one*/
@@ -389,8 +387,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     };
 
     const action = () =>
-      this.enqueueTask(() =>
-        this.localEvees.updatePerspectiveData({
+      this.enqueueTask(async () => {
+        const updateData: UpdatePerspectiveData = {
           perspectiveId: node.uref,
           object: draft,
           indexData: {
@@ -401,8 +399,10 @@ export class DocumentEditor extends servicesConnect(LitElement) {
               },
             },
           },
-        })
-      );
+        };
+        if (LOGINFO) this.logger.log('exec enqueued - updatePerspectiveData()', { updateData });
+        this.localEvees.updatePerspectiveData(updateData);
+      });
 
     const newTimeout = setTimeout(() => this.executePending(update.perspectiveId), 2000);
 
@@ -946,7 +946,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   renderTopRow(node: DocNode) {
-    if (LOGINFO) this.logger.log('renderTopRow()', { node });
+    // if (LOGINFO) this.logger.log('renderTopRow()', { node });
     /** the uref to which the parent is pointing at */
 
     const nodeLense = this.localEvees.behaviorFirst(node.draft, 'docNodeLenses')[0];
@@ -1062,7 +1062,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   render() {
-    if (LOGINFO) this.logger.log('render()', { doc: this.doc });
+    // if (LOGINFO) this.logger.log('render()', { doc: this.doc });
 
     if (this.reloading || this.doc === undefined) {
       return html` <uprtcl-loading></uprtcl-loading> `;
@@ -1075,7 +1075,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     }
 
     return html`
-      <div>${this.saving ? `Saving` : 'Saved'}</div>
+      <div class="saving-status">${this.saving ? `Saving...` : 'Saved'}</div>
       <div class=${editorClasses.join(' ')}>
         ${this.renderDocNode(this.doc)} ${this.renderDocumentEnd()}
       </div>
@@ -1090,6 +1090,14 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         display: flex;
         flex-direction: column;
         text-align: left;
+        position: relative;
+      }
+
+      .saving-status {
+        position: absolute;
+        top: -2rem;
+        left: 1.5rem;
+        color: #cccccc;
       }
 
       * {
