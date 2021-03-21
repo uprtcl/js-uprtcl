@@ -221,7 +221,6 @@ export interface UpdateDetails {
 export interface UpdatePerspectiveData {
   perspectiveId: string;
   object: any;
-  amend?: boolean;
   onHeadId?: string;
   guardianId?: string;
   indexData?: IndexData;

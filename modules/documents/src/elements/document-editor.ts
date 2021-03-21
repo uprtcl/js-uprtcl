@@ -58,13 +58,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   localEvees!: Evees;
 
   @internalProperty()
-  elementId!: string;
-
-  @internalProperty()
   reloading = true;
-
-  @internalProperty()
-  saving = false;
 
   @internalProperty()
   checkedOutPerspectives: {
@@ -76,19 +70,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
 
-  /** a store of pending udpates to debounce repeated ones*/
-  protected pendingUpdates: Map<string, { action: Function; timeout: NodeJS.Timeout }> = new Map();
-  updateQueue: AsyncQueue;
-
-  constructor() {
-    super();
-    this.updateQueue = new AsyncQueue();
-  }
-
   async firstUpdated() {
-    this.elementId = `documents-editor-${this.uref}`;
-    document.addEventListener('click', this.handleDocClick);
-
     const documentsModule = this.evees.modules.get(DocumentsModule.id);
     this.customBlocks = documentsModule ? documentsModule.config.customBlocks : undefined;
     this.editableRemotesIds = this.evees.config.editableRemotesIds
@@ -104,23 +86,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     await this.loadDoc();
     this.reloading = false;
-  }
-
-  handleDocClick = (event) => {
-    const ix = event.composedPath().findIndex((el: any) => el.id === this.elementId);
-    if (ix === -1) {
-      if (LOGINFO) this.logger.log('clicked outside');
-      this.clickedOutside();
-    }
-  };
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    document.removeEventListener('click', this.handleDocClick);
-  }
-
-  clickedOutside() {
-    this.flushPendingUpdates();
   }
 
   updated(changedProperties) {
@@ -303,17 +268,15 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     await this.localEvees.client.store.storeEntity(perspective);
 
     /** create is sent asyncronously, the flow continues as if it were successful */
-    this.enqueueTask(async () => {
-      const creteEvee: CreateEvee = {
-        object: draft,
-        guardianId: parent ? parent.uref : undefined,
-        remoteId: remoteId,
-        perspectiveId: perspective.id,
-      };
 
-      if (LOGINFO) this.logger.log('exec enqueued - createEvee()', { creteEvee });
-      this.localEvees.createEvee(creteEvee);
-    });
+    const creteEvee: CreateEvee = {
+      object: draft,
+      guardianId: parent ? parent.uref : undefined,
+      remoteId: remoteId,
+      perspectiveId: perspective.id,
+    };
+
+    this.localEvees.createEvee(creteEvee);
 
     if (LOGINFO) this.logger.log(`createNode()`, { perspective, draft });
 
@@ -339,58 +302,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     };
   }
 
-  async enqueueTask(task: () => Promise<any>) {
-    this.updateQueue.enqueue(async () => {
-      await task();
-      /** check if last task after executing it */
-      this.checkSaved();
-    });
-  }
-
-  checkSaved() {
-    if (LOGINFO)
-      this.logger.log('checkSaved()', {
-        pendingUpdates: this.pendingUpdates,
-        updateQueue: this.updateQueue,
-      });
-    const somePending = this.pendingUpdates.size > 0;
-    if (this.updateQueue.size === 0 && !somePending) {
-      this.saving = false;
-    }
-  }
-
-  async flushPendingUpdates() {
-    if (LOGINFO) this.logger.log('flushPendingUpdates()', { pendingUpdates: this.pendingUpdates });
-    /** execute pending updates */
-    Array.from(this.pendingUpdates.values()).map((e) => {
-      clearTimeout(e.timeout);
-      e.action();
-    });
-
-    /** await the last queued action is executed */
-    if (this.updateQueue._items.length > 0) {
-      await this.updateQueue._items[this.updateQueue._items.length - 1].action();
-    }
-
-    this.checkSaved();
-  }
-
-  executePending(perspectiveId: string) {
-    const pending = this.pendingUpdates.get(perspectiveId);
-    if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
-    pending.action();
-    this.pendingUpdates.delete(perspectiveId);
-  }
-
-  debounceNodeUpdate(node: DocNode, draft: any) {
-    if (LOGINFO) this.logger.log('debounceNodeUpdate()', { node, draft });
-    this.saving = true;
-
-    /** if there is a timeout to execute this update, delete it and create a new one*/
-    const pending = this.pendingUpdates.get(node.uref);
-    if (pending && pending.timeout) {
-      clearTimeout(pending.timeout);
-    }
+  async updateNode(node: DocNode, draft: any) {
+    // optimistically set the dratf
+    node.draft = draft;
 
     const parents: string[] = [node.uref];
     let parent = node.parent;
@@ -414,38 +328,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       },
     };
 
-    const action = () =>
-      this.enqueueTask(async () => {
-        const updateData: UpdatePerspectiveData = {
-          perspectiveId: node.uref,
-          object: draft,
-          indexData: {
-            linkChanges: {
-              onEcosystem: {
-                added: [this.uref],
-                removed: [],
-              },
-            },
-          },
-        };
-        if (LOGINFO) this.logger.log('exec enqueued - updatePerspectiveData()', { updateData });
-        this.localEvees.updatePerspectiveData(updateData);
-      });
-
-    const newTimeout = setTimeout(() => this.executePending(update.perspectiveId), 2000);
-
-    /** create a timeout to execute (queue) this update */
-    this.pendingUpdates.set(node.uref, {
-      timeout: newTimeout,
-      action,
-    });
-  }
-
-  async updateNode(node: DocNode, draft: any) {
-    // optimistically set the dratf
-    node.draft = draft;
-    // updates are enqueued
-    this.debounceNodeUpdate(node, draft);
+    if (LOGINFO) this.logger.log('updatePerspectiveData()', { update });
+    this.localEvees.updatePerspectiveData(update);
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {
@@ -1074,7 +958,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     return html`
       <div
-        id=${this.elementId}
         style=${styleMap({
           backgroundColor: node.focused ? SELECTED_BACKGROUND : 'transparent',
         })}
@@ -1103,7 +986,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     }
 
     return html`
-      <div class="saving-status">${this.saving ? `Saving...` : 'Saved'}</div>
       <div class=${editorClasses.join(' ')}>
         ${this.renderDocNode(this.doc)} ${this.renderDocumentEnd()}
       </div>
@@ -1119,13 +1001,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         flex-direction: column;
         text-align: left;
         position: relative;
-      }
-
-      .saving-status {
-        position: absolute;
-        top: -2rem;
-        left: 1.5rem;
-        color: #cccccc;
       }
 
       * {

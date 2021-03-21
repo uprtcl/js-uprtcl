@@ -27,7 +27,7 @@ export {
 /** interfaces */
 export { EveesContentModule } from './evees/interfaces/evees.content.module';
 
-export { Evees } from './evees/evees.service';
+export { Evees, EveesEvents } from './evees/evees.service';
 export { RemoteEvees } from './evees/interfaces/remote.evees';
 export { SearchEngine } from './evees/interfaces/search.engine';
 export { Client, ClientEvents } from './evees/interfaces/client';
@@ -142,6 +142,7 @@ export { ClientOnMemory } from './evees/clients/memory/client.memory';
 export { RemoteEveesLocal } from './evees/clients/local/remote.local';
 export { ClientCachedLocal } from './evees/clients/local/client.cached.local';
 export { CacheLocal } from './evees/clients/local/cache.local';
+export { ClientCachedWithBase, ClientCachedEvents } from './evees/clients/client.cached.with.base';
 
 export { CASOnMemory } from './cas/stores/cas.memory';
 export { CASLocal } from './cas/stores/cas.local';
