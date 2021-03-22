@@ -66,7 +66,7 @@ export class Evees {
   /** debounce updates to the same perspective */
   protected debounce: number = 0;
   protected pendingUpdates: Map<string, { action: Function; timeout: NodeJS.Timeout }> = new Map();
-  private clientPending: boolean = false;
+  protected clientPending: boolean = false;
 
   constructor(
     readonly client: Client,
@@ -476,25 +476,27 @@ export class Evees {
   executePending(perspectiveId: string) {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
-    this.logger.log('executePending()', perspectiveId);
+
+    this.logger.log('executePending()', {
+      perspectiveId,
+      pendingUpdates: this.pendingUpdates,
+      clientPending: this.clientPending,
+    });
 
     pending.action();
     this.pendingUpdates.delete(perspectiveId);
-
-    if (this.pendingUpdates.size === 0 && !this.clientPending) {
-      this.logger.log(`event : ${EveesEvents.pending}`, false);
-      this.events.emit(EveesEvents.pending, false);
-    }
   }
 
   /** await for action, and listen */
   async clientTransaction(action: () => Promise<any>) {
     this.clientPending = true;
     const result = await action();
+
     if (this.client.ready) {
       this.client.ready().then(() => {
         if (this.pendingUpdates.size === 0) {
           this.clientPending = false;
+          this.logger.log(`${EveesEvents.pending} event:`, false);
           this.events.emit(EveesEvents.pending, false);
         }
       });
@@ -560,11 +562,14 @@ export class Evees {
 
       this.logger.log('updatePerspectiveData() - createCommit after', head);
 
-      const update = {
+      const update: Update = {
         perspectiveId,
         details: {
           headId: head.id,
           guardianId,
+        },
+        oldDetails: {
+          headId: onHeadId,
         },
         indexData: options.indexData,
       };
