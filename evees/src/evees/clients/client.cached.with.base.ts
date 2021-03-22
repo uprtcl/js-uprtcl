@@ -57,6 +57,7 @@ export class ClientCachedWithBase implements Client {
           this.cache.clearCachedPerspective(id);
         });
 
+        this.logger.log(`${this.name} event : ${ClientEvents.updated}`, perspectiveIds);
         this.events.emit(ClientEvents.updated, perspectiveIds);
       });
     }
@@ -239,12 +240,14 @@ export class ClientCachedWithBase implements Client {
     /** emit update */
     if (this.searchEngine) {
       const parents = await this.searchEngine.locate(update.perspectiveId, false);
-      this.events.emit(
-        ClientEvents.ecosystemUpdated,
-        parents.map((parent) => parent.parentId)
-      );
+
+      const parentsIds = parents.map((parent) => parent.parentId);
+      this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, parentsIds);
+
+      this.events.emit(ClientEvents.ecosystemUpdated, parentsIds);
     }
 
+    this.logger.log(`${this.name} event : ${ClientEvents.updated}`, [update.perspectiveId]);
     this.events.emit(ClientEvents.updated, [update.perspectiveId]);
   }
 
@@ -256,12 +259,14 @@ export class ClientCachedWithBase implements Client {
 
   async enqueueTask(task: () => Promise<any>) {
     if (LOGINFO) this.logger.log(`${this.name} enqueueTask()`, { task });
+    this.logger.log(`${this.name} event : ${ClientCachedEvents.pending}`, true);
     this.events.emit(ClientCachedEvents.pending, true);
 
     this.updateQueue.enqueue(async () => {
       await task();
       /** check if this was the last pending task after executing it */
       if (this.updateQueue.size === 0) {
+        this.logger.log(`${this.name} event : ${ClientCachedEvents.pending}`, false);
         this.events.emit(ClientCachedEvents.pending, false);
       }
     });

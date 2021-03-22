@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import { Logger } from '../../utils/logger';
 import { CASStore } from '../../cas/interfaces/cas-store';
 import { RemoteEvees } from '../interfaces/remote.evees';
 import { ProposalEvents, Proposals } from '../proposals/proposals';
@@ -7,6 +8,7 @@ import { BaseRouter } from './base.router';
 
 /** create a proposal on each remote associated to a router */
 export class ProposalsRouter extends BaseRouter implements Proposals {
+  logger = new Logger('ProposalsRouter');
   events: EventEmitter;
 
   constructor(remotes: RemoteEvees[], store: CASStore) {
@@ -18,9 +20,10 @@ export class ProposalsRouter extends BaseRouter implements Proposals {
     // forward proposal created events
     remotes.forEach((remote) => {
       if (remote.proposals && remote.proposals.events) {
-        remote.proposals.events.on(ProposalEvents.created, (ids: string[]) =>
-          this.events.emit(ProposalEvents.created, ids)
-        );
+        remote.proposals.events.on(ProposalEvents.created, (ids: string[]) => {
+          this.logger.log(`event : ${ProposalEvents.created}`, { ids });
+          this.events.emit(ProposalEvents.created, ids);
+        });
       }
     });
   }

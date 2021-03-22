@@ -4,7 +4,7 @@ import { CASOnMemory } from '../cas/stores/cas.memory';
 import { signObject } from '../cas/utils/signed';
 import { Secured } from '../cas/utils/cid-hash';
 import { CASRemote } from '../cas/interfaces/cas-remote';
-import { Client } from './interfaces/client';
+import { Client, ClientEvents } from './interfaces/client';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
@@ -66,6 +66,7 @@ export class Evees {
   /** debounce updates to the same perspective */
   protected debounce: number = 0;
   protected pendingUpdates: Map<string, { action: Function; timeout: NodeJS.Timeout }> = new Map();
+  private clientPending: boolean = false;
 
   constructor(
     readonly client: Client,
@@ -341,7 +342,7 @@ export class Evees {
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async newPerspective(newPerspective: NewPerspective) {
     newPerspective.update = await this.appendIndexing(newPerspective.update);
-    return this.client.newPerspective(newPerspective);
+    return this.clientTransaction(() => this.client.newPerspective(newPerspective));
   }
 
   // index an update (injects metadata to the update object)
@@ -352,8 +353,9 @@ export class Evees {
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async updatePerspective(update: Update) {
+    this.logger.log('updatePerspective()', update);
     await this.indexUpdate(update);
-    return this.client.updatePerspective(update);
+    return this.clientTransaction(() => this.client.updatePerspective(update));
   }
 
   // add indexing data to all updates on a mutation
@@ -374,7 +376,7 @@ export class Evees {
       );
     }
 
-    this.client.update(mutation);
+    return this.clientTransaction(() => this.client.update(mutation));
   }
 
   /**
@@ -479,9 +481,25 @@ export class Evees {
     pending.action();
     this.pendingUpdates.delete(perspectiveId);
 
-    if (this.pendingUpdates.size === 0) {
+    if (this.pendingUpdates.size === 0 && !this.clientPending) {
+      this.logger.log(`event : ${EveesEvents.pending}`, false);
       this.events.emit(EveesEvents.pending, false);
     }
+  }
+
+  /** await for action, and listen */
+  async clientTransaction(action: () => Promise<any>) {
+    this.clientPending = true;
+    const result = await action();
+    if (this.client.ready) {
+      this.client.ready().then(() => {
+        if (this.pendingUpdates.size === 0) {
+          this.clientPending = false;
+          this.events.emit(EveesEvents.pending, false);
+        }
+      });
+    }
+    return result;
   }
 
   public setDebounce(debounce: number) {
@@ -502,6 +520,7 @@ export class Evees {
 
     const newTimeout = setTimeout(() => this.executePending(perspectiveId), this.debounce);
 
+    this.logger.log(`event : ${EveesEvents.pending}`, true);
     this.events.emit(EveesEvents.pending, true);
 
     /** create a timeout to execute (queue) this update */
@@ -522,6 +541,8 @@ export class Evees {
       const remote = await this.getPerspectiveRemote(perspectiveId);
       const data = await this.client.store.storeEntity({ object, remote: remote.id });
 
+      this.logger.log('updatePerspectiveData() - storeEntity data', data);
+
       if (!onHeadId) {
         const { details } = await this.client.getPerspective(perspectiveId);
         onHeadId = details.headId;
@@ -536,6 +557,8 @@ export class Evees {
         },
         remote.id
       );
+
+      this.logger.log('updatePerspectiveData() - createCommit after', head);
 
       const update = {
         perspectiveId,
@@ -553,7 +576,7 @@ export class Evees {
   }
 
   async deletePerspective(uref: string): Promise<void> {
-    return this.client.deletePerspective(uref);
+    return this.clientTransaction(() => this.client.deletePerspective(uref));
   }
 
   async getPerspectiveChildren(uref: string): Promise<string[]> {
