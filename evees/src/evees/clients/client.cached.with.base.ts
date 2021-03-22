@@ -40,6 +40,7 @@ export class ClientCachedWithBase implements Client {
 
   /** forces sequentiality between calls to update methods */
   private updateQueue: AsyncQueue;
+  private lastQueued: Promise<any> | undefined = undefined;
 
   constructor(
     readonly base?: Client,
@@ -76,8 +77,8 @@ export class ClientCachedWithBase implements Client {
   }
 
   async ready(): Promise<void> {
-    if (this.updateQueue._items.length > 0) {
-      await this.updateQueue._items[this.updateQueue._items.length - 1].action();
+    if (this.lastQueued) {
+      await this.lastQueued;
     }
   }
 
@@ -149,7 +150,7 @@ export class ClientCachedWithBase implements Client {
   async createPerspectives(newPerspectives: NewPerspective[]): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} createPerspectives()`, newPerspectives);
     /** store perspective details */
-    await this.updateQueue.enqueue(() => {
+    await this.enqueueTask(() => {
       if (LOGINFO) this.logger.log(`${this.name} createPerspectives() - exec`, newPerspectives);
       return Promise.all(
         newPerspectives.map(async (newPerspective) => {
@@ -174,15 +175,6 @@ export class ClientCachedWithBase implements Client {
         })
       );
     });
-  }
-
-  async flushPendingUpdates() {
-    if (LOGINFO)
-      this.logger.log(`${this.name} flushPendingUpdates()`, { updateQueue: this.updateQueue });
-    /** await the last queued action is executed */
-    if (this.updateQueue._items.length > 0) {
-      await this.updateQueue._items[this.updateQueue._items.length - 1].action();
-    }
   }
 
   async updatePerspectiveEffective(update) {
@@ -257,12 +249,12 @@ export class ClientCachedWithBase implements Client {
     this.enqueueTask(() => this.updatePerspectiveEffective(update));
   }
 
-  async enqueueTask(task: () => Promise<any>) {
+  async enqueueTask(task: () => Promise<any>): Promise<any> {
     if (LOGINFO) this.logger.log(`${this.name} enqueueTask()`, { task });
     this.logger.log(`${this.name} event : ${ClientCachedEvents.pending}`, true);
     this.events.emit(ClientCachedEvents.pending, true);
 
-    this.updateQueue.enqueue(async () => {
+    const queueRun = this.updateQueue.enqueue(async () => {
       await task();
       /** check if this was the last pending task after executing it */
       if (this.updateQueue.size === 0) {
@@ -270,6 +262,9 @@ export class ClientCachedWithBase implements Client {
         this.events.emit(ClientCachedEvents.pending, false);
       }
     });
+
+    this.lastQueued = queueRun;
+    return queueRun;
   }
 
   async updatePerspectives(updates: Update[]): Promise<void> {
@@ -279,7 +274,7 @@ export class ClientCachedWithBase implements Client {
 
   async deletePerspectives(perspectiveIds: string[]): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} deletePerspectives()`, { perspectiveIds });
-    await this.updateQueue.enqueue(() =>
+    await this.enqueueTask(() =>
       Promise.all(
         perspectiveIds.map(async (perspectiveId) => {
           this.cache.deletedPerspective(perspectiveId);
@@ -328,9 +323,8 @@ export class ClientCachedWithBase implements Client {
 
   async flush(options?: SearchOptions, recurse: boolean = true): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} flush()`, { updateQueue: this.updateQueue });
-    await this.ready();
 
-    await this.updateQueue.enqueue(async () => {
+    await this.enqueueTask(async () => {
       if (!this.base) {
         throw new Error('base not defined');
       }

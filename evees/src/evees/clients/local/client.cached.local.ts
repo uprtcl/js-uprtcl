@@ -1,6 +1,12 @@
 import lodash from 'lodash-es';
 
-import { Commit, EveesMutation, Perspective, SearchOptions } from '../../../evees/interfaces/types';
+import {
+  Commit,
+  EveesMutation,
+  Perspective,
+  SearchOptions,
+  Update,
+} from '../../../evees/interfaces/types';
 import { Signed } from '../../../patterns/interfaces/signable';
 import { Entity } from '../../../cas/interfaces/entity';
 import { CASStore } from '../../../cas/interfaces/cas-store';
@@ -71,10 +77,9 @@ export class ClientCachedLocal extends ClientCachedWithBase {
   }
 
   /** Overrides **
-   * takes all changes under a given page, squash them as new commits and remove them from the drafts client */
+   * takes all changes under a given page, squash them as new commits
+   * and remove them from the drafts client */
   async flush(options?: SearchOptions) {
-    await this.ready();
-
     const pageMutation = await this.diff(options);
 
     const allUpdates = pageMutation.newPerspectives
@@ -87,48 +92,15 @@ export class ClientCachedLocal extends ClientCachedWithBase {
           throw new Error('base client not defined for flush');
         }
 
-        const perspectiveId = update.perspectiveId;
+        const newUpdate = await this.squashUpdate(update);
+
+        /** if newPerspective, send as new perspective to the base (even if it had other updates) */
         const newPerspective = pageMutation.newPerspectives.find(
-          (np) => np.perspective.id === perspectiveId
+          (np) => np.perspective.id === update.perspectiveId
         );
 
-        /** keep everyhing except for the headId which was squashed */
-        const newUpdate = lodash.cloneDeep(update);
-
-        let data: Entity<any> | undefined = undefined;
-
-        if (update.details.headId) {
-          const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
-          data = head ? await this.store.getEntity<any>(head.object.payload.dataId) : undefined;
-        }
-
-        const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
-        const remoteId = perspective.object.payload.remote;
-
-        await this.base.store.storeEntity(perspective);
-
-        let headId: string | undefined = undefined;
-        if (data) {
-          const dataId = await this.base.store.storeEntity({
-            object: data.object,
-            remote: remoteId,
-          });
-
-          const headObject = await createCommit({
-            dataId: dataId.id,
-          });
-
-          const head = await this.base.store.storeEntity({
-            object: headObject,
-            remote: remoteId,
-          });
-
-          headId = head.id;
-        }
-
-        newUpdate.details.headId = headId;
-
         if (newPerspective !== undefined) {
+          const perspective = await this.store.getEntity<Signed<Perspective>>(update.perspectiveId);
           await this.base.newPerspective({
             perspective,
             update: newUpdate,
@@ -151,5 +123,50 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     await Promise.all(
       allUpdates.map(async (update) => this.cache.clearPerspective(update.perspectiveId))
     );
+  }
+
+  async squashUpdate(update): Promise<Update> {
+    if (!this.base) {
+      throw new Error('base client not defined for flush');
+    }
+
+    const perspectiveId = update.perspectiveId;
+
+    let data: Entity<any> | undefined = undefined;
+
+    if (update.details.headId) {
+      const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
+      data = head ? await this.store.getEntity<any>(head.object.payload.dataId) : undefined;
+    }
+
+    const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
+    const remoteId = perspective.object.payload.remote;
+
+    await this.base.store.storeEntity(perspective);
+
+    let headId: string | undefined = undefined;
+    if (data) {
+      const dataId = await this.base.store.storeEntity({
+        object: data.object,
+        remote: remoteId,
+      });
+
+      const headObject = await createCommit({
+        dataId: dataId.id,
+      });
+
+      const head = await this.base.store.storeEntity({
+        object: headObject,
+        remote: remoteId,
+      });
+
+      headId = head.id;
+    }
+
+    /** keep everyhing except for the headId which was squashed */
+    const newUpdate = lodash.cloneDeep(update);
+    newUpdate.details.headId = headId;
+
+    return newUpdate;
   }
 }

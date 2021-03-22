@@ -85,11 +85,14 @@ export class EveesHttp implements RemoteEvees {
       await this.updatePerspectives(mutation.updates);
     }
   }
+
   diff(): Promise<EveesMutation> {
     throw new Error('Method not implemented.');
   }
+
   async flush(): Promise<void> {}
   async refresh(): Promise<void> {}
+
   async getUserPerspectives(perspectiveId: string): Promise<string[]> {
     return [];
   }

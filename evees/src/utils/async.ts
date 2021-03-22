@@ -16,8 +16,8 @@ interface ActionItem {
 
 // Based on https://stackoverflow.com/a/63208885/1943661
 export class AsyncQueue {
-  _items: ActionItem[] = [];
-  _pendingPromise: boolean = false;
+  private _items: ActionItem[] = [];
+  private _pendingPromise: boolean = false;
 
   get size() {
     return this._items.length;
@@ -38,12 +38,13 @@ export class AsyncQueue {
     });
   }
 
-  async dequeue(): Promise<ActionItem | undefined> {
+  async dequeue(): Promise<boolean | undefined> {
     if (this._pendingPromise) return;
 
+    /* the item remains in the array until it is exectuted */
     let item = this.dequeueAction();
 
-    if (!item) return undefined;
+    if (!item) return false;
 
     try {
       this._pendingPromise = true;
@@ -59,6 +60,6 @@ export class AsyncQueue {
       this.dequeue();
     }
 
-    return item;
+    return true;
   }
 }
