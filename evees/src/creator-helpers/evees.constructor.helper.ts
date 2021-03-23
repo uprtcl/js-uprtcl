@@ -31,7 +31,7 @@ export const eveesConstructorHelper = (
   });
 
   const recognizer = buildRecognizer(modules, patterns);
-  const evees = buildEvees(remotes, store, recognizer, modules, config);
+  const evees = buildEvees(remotes, stores, store, recognizer, modules, config);
   registerComponents(evees);
 
   return evees;

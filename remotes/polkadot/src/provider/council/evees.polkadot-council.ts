@@ -113,6 +113,9 @@ export class EveesPolkadotCouncil implements RemoteEvees {
   refresh(): Promise<void> {
     throw new Error('Method not implemented.');
   }
+  clear(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
   getUserPerspectives(perspectiveId: string): Promise<string[]> {
     throw new Error('Method not implemented.');
   }

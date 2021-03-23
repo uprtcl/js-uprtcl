@@ -1,4 +1,5 @@
 import {
+  ForkOf,
   GetPerspectiveOptions,
   ParentAndChild,
   SearchForkOptions,
@@ -14,5 +15,5 @@ export interface SearchEngine {
   ): Promise<SearchResult>;
   /** inverse search, who's child is this?' */
   locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]>;
-  forks(perspectiveId: string, searchOptions?: SearchForkOptions): Promise<string[]>;
+  forks(perspectiveId: string, searchOptions?: SearchForkOptions): Promise<ForkOf[]>;
 }

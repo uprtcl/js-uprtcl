@@ -33,11 +33,12 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.uref = this.firstRef;
     this.remote = this.evees.remotes[0];
     this.editRemote = this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
-    this.checkLoggedEdit();
+
+    this.checkLoggedOnEdit();
 
     if (this.editRemote.events) {
       this.editRemote.events.on(RemoteLoggedEvents.logged_status_changed, () =>
-        this.checkLoggedEdit()
+        this.checkLoggedOnEdit()
       );
     }
 
@@ -56,7 +57,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     }
   }
 
-  async checkLoggedEdit() {
+  async checkLoggedOnEdit() {
     this.isLoggedEdit = await this.editRemote.isLogged();
   }
 
@@ -64,8 +65,12 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     await super.load();
 
     /** it's assumed that there is only one fork per user on the remote  */
+    if (!this.editRemote.searchEngine) {
+      throw new Error(`search engine not defined for remote ${this.editRemote.id}`);
+    }
+
     const drafts = await this.editRemote.searchEngine.forks(this.firstRef);
-    this.mineId = drafts.length > 0 ? drafts[0] : undefined;
+    this.mineId = drafts.length > 0 ? drafts[0].forkId : undefined;
     this.logger.log('BaseDraft -- load() set mineId', this.mineId);
 
     this.checkCase();
@@ -225,13 +230,13 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
           fill: white;
         }
         .grey-color {
-          color: var(--gray, gray);
+          color: var(--gray-dark, gray);
         }
         .blue-color {
           color: var(--primary, blue);
         }
         .grey-background {
-          background-color: var(--gray, gray);
+          background-color: var(--gray-dark, gray);
         }
         .blue-background {
           background-color: var(--primary, blue);

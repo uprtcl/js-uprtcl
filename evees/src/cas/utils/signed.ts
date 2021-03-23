@@ -1,7 +1,5 @@
-import { CidConfig, defaultCidConfig } from '../interfaces/cid-config';
+import { CidConfig } from '../interfaces/cid-config';
 import { Signed } from '../../patterns/interfaces/signable';
-
-import { Entity } from '../interfaces/entity';
 
 import { deriveEntity, Secured } from './cid-hash';
 
@@ -17,8 +15,9 @@ export function signObject<T>(object: T): Signed<T> {
 
 export async function deriveSecured<O>(
   object: O,
-  config: CidConfig = defaultCidConfig
+  config: CidConfig,
+  casID: string
 ): Promise<Secured<O>> {
   const signed = signObject(object);
-  return deriveEntity(signed, config);
+  return deriveEntity(signed, config, casID);
 }

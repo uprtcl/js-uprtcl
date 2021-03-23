@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import { Logger } from 'src/utils/logger';
 import { CASStore } from '../../cas/interfaces/cas-store';
 import { Client, ClientEvents } from '../interfaces/client';
 import { RemoteEvees } from '../interfaces/remote.evees';
@@ -17,6 +18,8 @@ import { ProposalsRouter } from './proposals.router';
 import { SearchEngineRouter } from './search.router';
 
 export class RemoteRouter extends BaseRouter implements Client {
+  logger = new Logger('RemoteRouter');
+
   proposals?: Proposals | undefined;
   searchEngine!: SearchEngine;
   events: EventEmitter;
@@ -32,9 +35,10 @@ export class RemoteRouter extends BaseRouter implements Client {
 
     this.remotes.forEach((remote) => {
       if (remote.events) {
-        remote.events.on(ClientEvents.updated, (perspectiveIds) =>
-          this.events.emit(ClientEvents.updated, perspectiveIds)
-        );
+        remote.events.on(ClientEvents.updated, (perspectiveIds) => {
+          this.logger.log(`event : ${ClientEvents.updated}`, { remote, perspectiveIds });
+          this.events.emit(ClientEvents.updated, perspectiveIds);
+        });
       }
     });
   }
@@ -68,6 +72,7 @@ export class RemoteRouter extends BaseRouter implements Client {
       deletedPerspectives: [],
       newPerspectives: [],
       updates: [],
+      entities: [],
     };
   }
 
@@ -91,6 +96,8 @@ export class RemoteRouter extends BaseRouter implements Client {
   async flush() {}
 
   async refresh() {}
+
+  async clear(): Promise<void> {}
 
   /** get all user perspectives on all registered remotes */
   async getUserPerspectives(perspectiveId: string) {

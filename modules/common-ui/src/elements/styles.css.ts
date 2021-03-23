@@ -6,13 +6,14 @@ export const styles = css`
     --white: #ffffff;
     --black: #000000;
     --black-transparent: rgba(3, 3, 3, 0.25);
-    --gray: #333333;
+    --gray-dark: #333333;
+    --gray-light: #828282;
     --border-radius-complete: 100vh;
   }
   .button-text {
     font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     text-decoration: none;
-    font-family: Roboto, sans-serif;
+    font-family: Inter;
     font-size: 14px;
     font-weight: 500;
     font-stretch: 100%;

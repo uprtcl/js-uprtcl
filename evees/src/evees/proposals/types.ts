@@ -1,4 +1,4 @@
-import { EveesMutation } from '../interfaces/types';
+import { EveesMutationCreate } from '../interfaces/types';
 export interface Proposal {
   creatorId?: string;
   timestamp?: number;
@@ -6,5 +6,5 @@ export interface Proposal {
   fromPerspectiveId?: string;
   toHeadId?: string;
   fromHeadId?: string;
-  mutation: EveesMutation;
+  mutation: EveesMutationCreate;
 }
