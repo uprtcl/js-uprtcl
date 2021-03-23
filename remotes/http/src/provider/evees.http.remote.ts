@@ -27,6 +27,7 @@ import { EveesHttpSearchEngine } from './evees.search-engine.http';
 import { PostResult } from '@uprtcl/http-provider/dist/types/http.connection';
 
 const evees_api = 'evees-v1';
+const LOGINFO = true;
 
 export class EveesHttp implements RemoteEvees {
   logger = new Logger('HTTP-EVEES-PROVIDER');
@@ -69,10 +70,13 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async snapPerspective(perspective: PartialPerspective): Promise<Secured<Perspective>> {
+    if (LOGINFO) this.logger.log('snapPerspective()', perspective);
     return snapDefaultPerspective(this, perspective);
   }
 
   async update(mutation: EveesMutationCreate) {
+    if (LOGINFO) this.logger.log('update()', mutation);
+
     if (mutation.newPerspectives) {
       await this.newPerspectives(mutation.newPerspectives);
     }
@@ -98,6 +102,8 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async newPerspectives(perspectivesData: NewPerspective[]) {
+    if (LOGINFO) this.logger.log('newPerspectives()', perspectivesData);
+
     if (perspectivesData.length === 0) {
       return;
     }
@@ -116,14 +122,9 @@ export class EveesHttp implements RemoteEvees {
     this.newPerspectives([perspectiveData]);
   }
 
-  async createPerspectiveBatch(newPerspectivesData: NewPerspective[]): Promise<void> {
-    const promises = newPerspectivesData.map((perspectiveData) =>
-      this.newPerspective(perspectiveData)
-    );
-    await Promise.all(promises);
-  }
-
   async updatePerspectives(updates: Update[]): Promise<void> {
+    if (LOGINFO) this.logger.log('updatePerspectives()', updates);
+
     if (updates.length === 0) {
       return;
     }
@@ -138,6 +139,8 @@ export class EveesHttp implements RemoteEvees {
   }
 
   async deletePerspectives(perspectiveIds: string[]): Promise<PostResult> {
+    if (LOGINFO) this.logger.log('deletePerspectives()', perspectiveIds);
+
     if (perspectiveIds.length === 0) {
       return { result: 'success', message: '', elementIds: [] };
     }
@@ -154,6 +157,8 @@ export class EveesHttp implements RemoteEvees {
       entities: true,
     }
   ): Promise<PerspectiveGetResult> {
+    if (LOGINFO) this.logger.log('getPerspective()', perspectiveId);
+
     let result: PerspectiveGetResult = {
       details: {},
     };
@@ -178,6 +183,8 @@ export class EveesHttp implements RemoteEvees {
     } catch (e) {
       this.logger.warn(`Error fetching perspective ${perspectiveId}`, e);
     }
+
+    if (LOGINFO) this.logger.log('getPerspective() - result', result);
 
     return result;
   }

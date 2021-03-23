@@ -12,6 +12,7 @@ import { Entity } from '../../../cas/interfaces/entity';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { CASLocal } from '../../../cas/stores/cas.local';
 import { createCommit } from '../../../evees/default.perspectives';
+import { Logger } from '../../../utils/logger';
 
 import { Client } from '../../interfaces/client';
 import { ClientCachedWithBase } from '../client.cached.with.base';
@@ -20,6 +21,8 @@ import { CacheLocal } from './cache.local';
 import { LocalSearchEngine } from './search.engine.local';
 
 export class ClientCachedLocal extends ClientCachedWithBase {
+  logger = new Logger('ClientCachedLocal');
+
   constructor(
     store?: CASStore,
     readonly base?: Client,

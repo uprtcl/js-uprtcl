@@ -246,7 +246,7 @@ export class ClientCachedWithBase implements Client {
   /** debounced update */
   async updatePerspective(update: Update) {
     if (LOGINFO) this.logger.log(`${this.name} updatePerspective()`, { update });
-    this.enqueueTask(() => this.updatePerspectiveEffective(update));
+    await this.enqueueTask(() => this.updatePerspectiveEffective(update));
   }
 
   async enqueueTask(task: () => Promise<any>): Promise<any> {

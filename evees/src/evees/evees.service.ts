@@ -342,7 +342,7 @@ export class Evees {
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async newPerspective(newPerspective: NewPerspective) {
     newPerspective.update = await this.appendIndexing(newPerspective.update);
-    return this.clientTransaction(() => this.client.newPerspective(newPerspective));
+    return this.client.newPerspective(newPerspective);
   }
 
   // index an update (injects metadata to the update object)
@@ -355,7 +355,7 @@ export class Evees {
   async updatePerspective(update: Update) {
     this.logger.log('updatePerspective()', update);
     await this.indexUpdate(update);
-    return this.clientTransaction(() => this.client.updatePerspective(update));
+    return this.client.updatePerspective(update);
   }
 
   // add indexing data to all updates on a mutation
@@ -376,7 +376,7 @@ export class Evees {
       );
     }
 
-    return this.clientTransaction(() => this.client.update(mutation));
+    return this.client.update(mutation);
   }
 
   /**
@@ -436,6 +436,7 @@ export class Evees {
         },
       },
     });
+
     return perspective.id;
   }
 
@@ -473,7 +474,7 @@ export class Evees {
     return this.client.flush();
   }
 
-  executePending(perspectiveId: string) {
+  async executePending(perspectiveId: string) {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
 
@@ -483,25 +484,13 @@ export class Evees {
       clientPending: this.clientPending,
     });
 
-    pending.action();
+    await pending.action();
     this.pendingUpdates.delete(perspectiveId);
-  }
 
-  /** await for action, and listen */
-  async clientTransaction(action: () => Promise<any>) {
-    this.clientPending = true;
-    const result = await action();
-
-    if (this.client.ready) {
-      this.client.ready().then(() => {
-        if (this.pendingUpdates.size === 0) {
-          this.clientPending = false;
-          this.logger.log(`${EveesEvents.pending} event:`, false);
-          this.events.emit(EveesEvents.pending, false);
-        }
-      });
+    if (this.pendingUpdates.size === 0) {
+      this.logger.log(`event : ${EveesEvents.pending}`, false);
+      this.events.emit(EveesEvents.pending, false);
     }
-    return result;
   }
 
   public setDebounce(debounce: number) {
@@ -574,14 +563,14 @@ export class Evees {
         indexData: options.indexData,
       };
 
-      this.updatePerspective(update);
+      return this.updatePerspective(update);
     };
 
     return this.updatePerspectiveDebounce(options.perspectiveId, action);
   }
 
   async deletePerspective(uref: string): Promise<void> {
-    return this.clientTransaction(() => this.client.deletePerspective(uref));
+    return this.client.deletePerspective(uref);
   }
 
   async getPerspectiveChildren(uref: string): Promise<string[]> {
