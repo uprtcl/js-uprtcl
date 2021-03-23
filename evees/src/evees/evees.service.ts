@@ -462,9 +462,9 @@ export class Evees {
 
   async flushPendingUpdates() {
     await Promise.all(
-      Array.from(this.pendingUpdates.values()).map((e) => {
+      Array.from(this.pendingUpdates.entries()).map(([perspectiveId, e]) => {
         clearTimeout(e.timeout);
-        return e.action();
+        return this.executePending(perspectiveId);
       })
     );
   }
@@ -484,8 +484,8 @@ export class Evees {
       clientPending: this.clientPending,
     });
 
-    await pending.action();
     this.pendingUpdates.delete(perspectiveId);
+    await pending.action();
 
     if (this.pendingUpdates.size === 0) {
       this.logger.log(`event : ${EveesEvents.pending}`, false);
