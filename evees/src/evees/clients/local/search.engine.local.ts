@@ -41,8 +41,8 @@ export class LocalSearchEngine implements SearchEngine {
     if (perspective && perspective.onEcosystem) {
       return perspective.onEcosystem.map((e) => {
         return {
-          parentId: perspectiveId,
-          childId: e,
+          parentId: e,
+          childId: perspectiveId,
         };
       });
     }

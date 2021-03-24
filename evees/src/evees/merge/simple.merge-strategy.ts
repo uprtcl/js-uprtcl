@@ -100,9 +100,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDatasDefined = newDatas.map((data) => (data === undefined ? emptyEntity : data));
 
-    const ancestorId = toCommitId
-      ? await findMostRecentCommonAncestor(this.evees.client)(commitsIds)
-      : undefined;
+    const ancestorId: string | undefined = undefined;
+    if (toCommitId) {
+      try {
+        await findMostRecentCommonAncestor(this.evees.client)(commitsIds);
+      } catch (e) {
+        console.error(`Error in findMostRecentCommonAncestor`, { commitsIds, e });
+      }
+    }
 
     const ancestorData = ancestorId ? await this.evees.getCommitData(ancestorId) : emptyEntity;
 
