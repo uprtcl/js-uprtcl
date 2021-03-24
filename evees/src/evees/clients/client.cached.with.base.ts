@@ -162,17 +162,11 @@ export class ClientCachedWithBase implements Client {
           this.cache.newPerspective(newPerspective);
 
           /** set the current known details of that perspective, can update is set to true */
+          const update = newPerspective.update;
+          update.details.canUpdate = true;
+
           this.cache.setCachedPerspective(newPerspective.perspective.id, {
-            update: {
-              ...{
-                details: {
-                  ...newPerspective.update.details,
-                  canUpdate: true,
-                },
-              },
-              ...newPerspective.update,
-              ...{ perspectiveId: newPerspective.perspective.id },
-            },
+            update: update,
             levels: -1, // new perspectives are assumed to be fully on the cache
           });
         })
@@ -205,10 +199,8 @@ export class ClientCachedWithBase implements Client {
 
       cachedUpdate = {
         update: {
-          ...{
-            details: currentDetails.details,
-          },
-          ...update,
+          perspectiveId: update.perspectiveId,
+          details: currentDetails.details,
         },
         levels: 0,
       };
