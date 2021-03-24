@@ -1,3 +1,4 @@
+import { IndexDataHelper } from 'src/evees/index.data.helper';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { Signed } from '../../../patterns/interfaces/signable';
 import { Logger } from '../../../utils/logger';
@@ -47,13 +48,7 @@ export class CacheLocal implements ClientCache {
     const current = await this.db.perspectives.get(perspectiveId);
 
     /** use the linkTo entry to mark a perspective of a given ecoystem */
-    const addedOnEcosystem =
-      cachedUpdate.update.indexData &&
-      cachedUpdate.update.indexData.linkChanges &&
-      cachedUpdate.update.indexData.linkChanges.onEcosystem &&
-      cachedUpdate.update.indexData.linkChanges.onEcosystem.added.length > 0
-        ? cachedUpdate.update.indexData.linkChanges.onEcosystem.added
-        : [];
+    const addedOnEcosystem = IndexDataHelper.getAddedOnEcosystem(cachedUpdate.update.indexData);
 
     const currentOnEcosystem = current ? (current.onEcosystem ? current.onEcosystem : []) : [];
     const newOnEcosystem = currentOnEcosystem.concat(

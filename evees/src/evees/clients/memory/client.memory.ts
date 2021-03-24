@@ -4,6 +4,7 @@ import { Client } from '../../../evees/interfaces/client';
 
 import { ClientCachedWithBase } from '../client.cached.with.base';
 import { CacheOnMemory } from './cache.memory';
+import { IndexDataHelper } from 'src/evees/index.data.helper';
 
 export class ClientOnMemory extends ClientCachedWithBase {
   logger = new Logger('ClientOnMemory');
@@ -16,5 +17,17 @@ export class ClientOnMemory extends ClientCachedWithBase {
     super(base, name);
     this.store = base.store;
     this.cache = new CacheOnMemory();
+  }
+
+  async addOnEcosystem(onEcosystem: string[]) {
+    const updates = await this.cache.getUpdates();
+    updates.map((update) => {
+      IndexDataHelper.addOnEcosystem(onEcosystem, update.indexData);
+    });
+
+    const perspectives = await this.cache.getNewPerspectives();
+    perspectives.map((newPerspective) => {
+      IndexDataHelper.addOnEcosystem(onEcosystem, newPerspective.update.indexData);
+    });
   }
 }

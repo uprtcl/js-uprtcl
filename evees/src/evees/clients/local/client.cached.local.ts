@@ -19,6 +19,7 @@ import { ClientCachedWithBase } from '../client.cached.with.base';
 
 import { CacheLocal } from './cache.local';
 import { LocalSearchEngine } from './search.engine.local';
+import { IndexDataHelper } from 'src/evees/index.data.helper';
 
 export class ClientCachedLocal extends ClientCachedWithBase {
   logger = new Logger('ClientCachedLocal');
@@ -41,7 +42,12 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     }
 
     this.cache = new CacheLocal(name, this.store);
-    this.searchEngineLocal = new LocalSearchEngine((this.cache as CacheLocal).db);
+    this.searchEngineLocal = new LocalSearchEngine(this.cacheLocal.db);
+  }
+
+  /** retype cache as CacheLocal */
+  get cacheLocal() {
+    return this.cache as CacheLocal;
   }
 
   /** returns an EveesMutation with the new perspectives and **last** update under a given page

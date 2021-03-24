@@ -164,11 +164,14 @@ export class ClientCachedWithBase implements Client {
           /** set the current known details of that perspective, can update is set to true */
           this.cache.setCachedPerspective(newPerspective.perspective.id, {
             update: {
-              perspectiveId: newPerspective.perspective.id,
-              details: {
-                ...newPerspective.update.details,
-                canUpdate: true,
+              ...{
+                details: {
+                  ...newPerspective.update.details,
+                  canUpdate: true,
+                },
               },
+              ...newPerspective.update,
+              ...{ perspectiveId: newPerspective.perspective.id },
             },
             levels: -1, // new perspectives are assumed to be fully on the cache
           });
@@ -177,7 +180,7 @@ export class ClientCachedWithBase implements Client {
     });
   }
 
-  async updatePerspectiveEffective(update) {
+  async updatePerspectiveEffective(update: Update) {
     if (LOGINFO) this.logger.log(`${this.name} updatePerspectiveEffective()`, { update });
 
     let timexstamp: number | undefined = undefined;
@@ -202,8 +205,10 @@ export class ClientCachedWithBase implements Client {
 
       cachedUpdate = {
         update: {
-          perspectiveId: update.perspectiveId,
-          details: currentDetails.details,
+          ...{
+            details: currentDetails.details,
+          },
+          ...update,
         },
         levels: 0,
       };
