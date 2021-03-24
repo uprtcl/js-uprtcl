@@ -182,6 +182,18 @@ export class AppElements {
     await Promise.all(
       element.children.map(async (child, ix) => {
         const childId = dataChildren[ix];
+        if (!childId) {
+          /** if perspective does not exist maybe the user removed part of the scheleton */
+          if (child.optional !== true) {
+            throw new Error(
+              `Child not found for expected element ${
+                element.perspective ? element.perspective.id : ''
+              }`
+            );
+          }
+          return;
+        }
+
         const perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(childId);
 
         if (!perspective) {
