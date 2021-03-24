@@ -11,9 +11,7 @@ export const styles = css`
     --border-radius-complete: 100vh;
   }
   .button-text {
-    font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     text-decoration: none;
-    font-family: Inter;
     font-size: 14px;
     font-weight: 500;
     font-stretch: 100%;
