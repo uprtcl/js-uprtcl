@@ -106,6 +106,7 @@ export interface CreateEvee {
   perspectiveId?: string;
   perspective?: Secured<Perspective>;
   guardianId?: string;
+  indexData?: IndexData;
 }
 
 export interface GetPerspectiveOptions {

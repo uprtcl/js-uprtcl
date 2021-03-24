@@ -27,7 +27,7 @@ import { EveesHttpSearchEngine } from './evees.search-engine.http';
 import { PostResult } from '@uprtcl/http-provider/dist/types/http.connection';
 
 const evees_api = 'evees-v1';
-const LOGINFO = true;
+const LOGINFO = false;
 
 export class EveesHttp implements RemoteEvees {
   logger = new Logger('HTTP-EVEES-PROVIDER');

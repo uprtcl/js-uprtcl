@@ -21,7 +21,7 @@ import { Signed } from 'src/patterns/interfaces/signable';
 import { AsyncQueue } from 'src/utils/async';
 import { SearchEngine } from '../interfaces/search.engine';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export enum ClientCachedEvents {
   pending = 'changes-pending',
@@ -58,7 +58,8 @@ export class ClientCachedWithBase implements Client {
           this.cache.clearCachedPerspective(id);
         });
 
-        this.logger.log(`${this.name} event : ${ClientEvents.updated}`, perspectiveIds);
+        if (LOGINFO)
+          this.logger.log(`${this.name} event : ${ClientEvents.updated}`, perspectiveIds);
         this.events.emit(ClientEvents.updated, perspectiveIds);
       });
     }
@@ -231,12 +232,14 @@ export class ClientCachedWithBase implements Client {
       const parents = await this.searchEngine.locate(update.perspectiveId, false);
 
       const parentsIds = parents.map((parent) => parent.parentId);
-      this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, parentsIds);
+      if (LOGINFO)
+        this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, parentsIds);
 
       this.events.emit(ClientEvents.ecosystemUpdated, parentsIds);
     }
 
-    this.logger.log(`${this.name} event : ${ClientEvents.updated}`, [update.perspectiveId]);
+    if (LOGINFO)
+      this.logger.log(`${this.name} event : ${ClientEvents.updated}`, [update.perspectiveId]);
     this.events.emit(ClientEvents.updated, [update.perspectiveId]);
   }
 
@@ -248,14 +251,14 @@ export class ClientCachedWithBase implements Client {
 
   async enqueueTask(task: () => Promise<any>): Promise<any> {
     if (LOGINFO) this.logger.log(`${this.name} enqueueTask()`, { task });
-    this.logger.log(`${this.name} event : ${ClientCachedEvents.pending}`, true);
+    if (LOGINFO) this.logger.log(`${this.name} event : ${ClientCachedEvents.pending}`, true);
     this.events.emit(ClientCachedEvents.pending, true);
 
     const queueRun = this.updateQueue.enqueue(async () => {
       await task();
       /** check if this was the last pending task after executing it */
       if (this.updateQueue.size === 0) {
-        this.logger.log(`${this.name} event : ${ClientCachedEvents.pending}`, false);
+        if (LOGINFO) this.logger.log(`${this.name} event : ${ClientCachedEvents.pending}`, false);
         this.events.emit(ClientCachedEvents.pending, false);
       }
     });

@@ -35,6 +35,8 @@ import { createCommit, getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
 
+const LOGINFO = false;
+
 export interface CreateCommit {
   dataId: string;
   parentsIds?: string[];
@@ -353,7 +355,7 @@ export class Evees {
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async updatePerspective(update: Update) {
-    this.logger.log('updatePerspective()', update);
+    if (LOGINFO) this.logger.log('updatePerspective()', update);
     await this.indexUpdate(update);
     return this.client.updatePerspective(update);
   }
@@ -389,7 +391,7 @@ export class Evees {
    */
   async createEvee(input: CreateEvee): Promise<string> {
     let { remoteId } = input;
-    const { object, partialPerspective, guardianId } = input;
+    const { object, partialPerspective, guardianId, indexData } = input;
 
     if (!remoteId) {
       if (!guardianId) {
@@ -434,6 +436,7 @@ export class Evees {
           headId,
           guardianId,
         },
+        indexData,
       },
     });
 
@@ -478,17 +481,18 @@ export class Evees {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
 
-    this.logger.log('executePending()', {
-      perspectiveId,
-      pendingUpdates: this.pendingUpdates,
-      clientPending: this.clientPending,
-    });
+    if (LOGINFO)
+      this.logger.log('executePending()', {
+        perspectiveId,
+        pendingUpdates: this.pendingUpdates,
+        clientPending: this.clientPending,
+      });
 
     this.pendingUpdates.delete(perspectiveId);
     await pending.action();
 
     if (this.pendingUpdates.size === 0) {
-      this.logger.log(`event : ${EveesEvents.pending}`, false);
+      if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, false);
       this.events.emit(EveesEvents.pending, false);
     }
   }
@@ -503,7 +507,7 @@ export class Evees {
     }
 
     const pending = this.pendingUpdates.get(perspectiveId);
-    this.logger.log('updatePerspectiveDebounce()', { perspectiveId, pending, action });
+    if (LOGINFO) this.logger.log('updatePerspectiveDebounce()', { perspectiveId, pending, action });
 
     if (pending && pending.timeout) {
       clearTimeout(pending.timeout);
@@ -511,7 +515,7 @@ export class Evees {
 
     const newTimeout = setTimeout(() => this.executePending(perspectiveId), this.debounce);
 
-    this.logger.log(`event : ${EveesEvents.pending}`, true);
+    if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, true);
     this.events.emit(EveesEvents.pending, true);
 
     /** create a timeout to execute (queue) this update */
@@ -523,7 +527,7 @@ export class Evees {
 
   /** returns the entities on the trash */
   async updatePerspectiveData(options: UpdatePerspectiveData): Promise<void> {
-    this.logger.log('updatePerspectiveData()', options);
+    if (LOGINFO) this.logger.log('updatePerspectiveData()', options);
 
     const action = async () => {
       const { perspectiveId, object, onHeadId: onHeadIdIn, guardianId } = options;
@@ -532,7 +536,7 @@ export class Evees {
       const remote = await this.getPerspectiveRemote(perspectiveId);
       const data = await this.client.store.storeEntity({ object, remote: remote.id });
 
-      this.logger.log('updatePerspectiveData() - storeEntity data', data);
+      if (LOGINFO) this.logger.log('updatePerspectiveData() - storeEntity data', data);
 
       if (!onHeadId) {
         const { details } = await this.client.getPerspective(perspectiveId);
@@ -549,7 +553,7 @@ export class Evees {
         remote.id
       );
 
-      this.logger.log('updatePerspectiveData() - createCommit after', head);
+      if (LOGINFO) this.logger.log('updatePerspectiveData() - createCommit after', head);
 
       const update: Update = {
         perspectiveId,

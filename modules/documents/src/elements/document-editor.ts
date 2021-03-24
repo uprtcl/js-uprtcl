@@ -16,7 +16,6 @@ import {
   Evees,
   UpdatePerspectiveData,
   CreateEvee,
-  AsyncQueue,
 } from '@uprtcl/evees';
 
 import { TextType, DocNode, CustomBlocks } from '../types';
@@ -24,8 +23,9 @@ import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
 import { DocumentsModule } from '../documents.module';
 
-const LOGINFO = true;
+const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
+
 export class DocumentEditor extends servicesConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
 
@@ -268,12 +268,28 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     await this.localEvees.client.store.storeEntity(perspective);
 
     /** create is sent asyncronously, the flow continues as if it were successful */
+    const parents: string[] = [parent.uref];
+    let grandParent = parent.parent;
+    while (grandParent !== undefined) {
+      if (!parents.includes(grandParent.uref)) {
+        parents.push(grandParent.uref);
+      }
+      grandParent = grandParent.parent;
+    }
 
     const creteEvee: CreateEvee = {
       object: draft,
       guardianId: parent ? parent.uref : undefined,
       remoteId: remoteId,
       perspectiveId: perspective.id,
+      indexData: {
+        linkChanges: {
+          onEcosystem: {
+            added: parents,
+            removed: [],
+          },
+        },
+      },
     };
 
     this.localEvees.createEvee(creteEvee);
