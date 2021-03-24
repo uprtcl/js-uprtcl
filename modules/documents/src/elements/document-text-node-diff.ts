@@ -4,7 +4,7 @@ import { arrayDiff, Client, Logger, servicesConnect } from '@uprtcl/evees';
 
 import { TextNode } from '../types';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export class TextNodeDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');

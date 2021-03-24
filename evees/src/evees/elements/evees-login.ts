@@ -27,7 +27,7 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
     const loggedList = await Promise.all(this.evees.remotes.map((remote) => remote.isLogged()));
     this.logged = !loggedList.includes(false);
 
-    await Promise.all(this.evees.remotes.map((r) => r.ready()));
+    await Promise.all(this.evees.remotes.map((r) => (r.ready ? r.ready() : Promise.resolve())));
 
     this.loading = false;
   }

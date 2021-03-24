@@ -6,6 +6,7 @@ import {
   Perspective,
   Signed,
   SearchResult,
+  ForkOf,
 } from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
@@ -21,7 +22,7 @@ export class EveesOrbitDBSearchEngine implements SearchEngine {
   async locate(perspectiveId: string, forks = false): Promise<ParentAndChild[]> {
     throw new Error('Method not implemented.');
   }
-  async forks(perspectiveId: string): Promise<string[]> {
+  async forks(perspectiveId: string): Promise<ForkOf[]> {
     const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
     const context = perspective.object.payload.context;
     const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {

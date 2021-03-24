@@ -100,9 +100,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDatasDefined = newDatas.map((data) => (data === undefined ? emptyEntity : data));
 
-    const ancestorId = toCommitId
-      ? await findMostRecentCommonAncestor(this.evees.client)(commitsIds)
-      : undefined;
+    const ancestorId: string | undefined = undefined;
+    if (toCommitId) {
+      try {
+        await findMostRecentCommonAncestor(this.evees.client)(commitsIds);
+      } catch (e) {
+        console.error(`Error in findMostRecentCommonAncestor`, { commitsIds, e });
+      }
+    }
 
     const ancestorData = ancestorId ? await this.evees.getCommitData(ancestorId) : emptyEntity;
 
@@ -117,7 +122,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       return toCommitIdOrg;
     }
 
-    this.evees.client.store.storeEntity({ object: mergedObject, remote });
+    await this.evees.client.store.storeEntity({ object: mergedObject, remote });
 
     /** some commits might be undefined */
     const parentsIds = commitsIds.filter((commit) => !!commit);
@@ -129,7 +134,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     };
 
     const securedCommit = await this.evees.createCommit(newCommit, remote);
-    this.evees.client.store.storeEntity({ object: securedCommit, remote });
+    await this.evees.client.store.storeEntity({ object: securedCommit, remote });
 
     return securedCommit.id;
   }

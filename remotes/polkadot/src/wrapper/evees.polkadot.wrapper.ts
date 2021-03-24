@@ -1,4 +1,4 @@
-import { IpfsStore, PinnerConfig } from '@uprtcl/ipfs-provider';
+import { IpfsStore, PinnerCached } from '@uprtcl/ipfs-provider';
 import { EveesBlockchain } from '@uprtcl/evees-blockchain';
 import { CidConfig, RemoteEvees } from '@uprtcl/evees';
 import { EveesOrbitDBSearchEngine, PerspectiveStore, getContextAcl } from '@uprtcl/evees-orbitdb';
@@ -18,7 +18,7 @@ export class EveesPolkadotWrapper {
 
   constructor(
     protected ipfs: any,
-    protected pinnerConfig: PinnerConfig,
+    protected pinner: PinnerCached,
     protected ipfsCidConfig: CidConfig = {
       version: 1,
       type: 'sha2-256',
@@ -32,7 +32,7 @@ export class EveesPolkadotWrapper {
     const pkdConnection = new PolkadotConnection(connections.connections, connections.current);
     await pkdConnection.ready();
 
-    this.ipfsStore = new IpfsStore(this.ipfsCidConfig, this.ipfs, this.pinnerConfig);
+    this.ipfsStore = new IpfsStore(this.ipfsCidConfig, this.ipfs, this.pinner);
     await this.ipfsStore.ready();
 
     this.pkdEveesConnection = new EveesPolkadotConnection(pkdConnection);
@@ -44,7 +44,7 @@ export class EveesPolkadotWrapper {
       [PerspectiveStore],
       [getContextAcl([identity])],
       identity,
-      this.pinnerConfig,
+      this.pinner,
       this.ipfs
     );
 

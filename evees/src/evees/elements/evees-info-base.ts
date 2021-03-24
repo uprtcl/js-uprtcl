@@ -26,7 +26,7 @@ interface PerspectiveData {
   canUpdate?: Boolean;
   permissions?: any;
   head?: Entity<Commit>;
-  data?: Entity<any>;
+  data?: Entity;
 }
 
 /** An evees info base component, it starts from the first-uref */

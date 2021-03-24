@@ -3,6 +3,7 @@ import { html, css, LitElement, property, internalProperty, query } from 'lit-el
 import {
   ClientEvents,
   combineMutations,
+  Entity,
   Evees,
   EveesDiffExplorer,
   Logger,
@@ -97,17 +98,20 @@ export class EditableWiki extends servicesConnect(LitElement) {
     if (forks.length > 0) {
       // build
       const mutations = await Promise.all(
-        forks.map(async (forkId) => {
-          const mergeEvees = this.evees.clone(`TempMergeClientFor-${forkId}`);
+        forks.map(async (fork) => {
+          const mergeEvees = await this.evees.clone(`TempMergeClientFor-${fork.forkId}`);
           const merger = new RecursiveContextMergeStrategy(mergeEvees);
-          await merger.mergePerspectivesExternal(this.uref, forkId, { forceOwner: true });
+          await merger.mergePerspectivesExternal(fork.ofPerspectiveId, fork.forkId, {
+            forceOwner: true,
+          });
+
           return mergeEvees.client.diff();
         })
       );
 
       const mutation = combineMutations(mutations);
 
-      this.mergeEvees = this.evees.clone('WikiMergeClient', undefined, mutation);
+      this.mergeEvees = await this.evees.clone('WikiMergeClient', undefined, mutation);
       this.hasChanges = mutation.updates.length > 0;
     }
   }
@@ -157,15 +161,18 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
     const mutation = await this.mergeEvees.client.diff();
 
-    /** the entities associated to the proposal are preemptively persisted on the CASRemote */
-    await this.mergeEvees.client.store.flush();
-
     const proposal: Proposal = {
       toPerspectiveId: this.uref,
       mutation,
     };
+
     await this.evees.client.proposals.createProposal(proposal);
     await this.evees.client.flush();
+
+    // TBD if we should wipe local changes after proposal was created
+    // const casRemote = this.evees.getCASRemote(this.editRemote.casID);
+    // if (casRemote.clear) await casRemote.clear();
+    // if (this.editRemote.clear) await this.editRemote.clear();
 
     this.creatingProposal = false;
   }

@@ -11,10 +11,14 @@ import {
   EntityGetResult,
   CASRemote,
   hashObject,
+  EntityCreate,
+  validateEntities,
+  cidConfigOf,
+  defaultCidConfig,
 } from '@uprtcl/evees';
 
-import { IpfsConnectionOptions, PinnerConfig } from './types';
-import { PinnedCacheDB } from './pinner.cache';
+import { IpfsConnectionOptions } from './types';
+import { PinnerCached } from './pinner.cached';
 
 export interface PutConfig {
   format: string;
@@ -23,14 +27,6 @@ export interface PutConfig {
   pin?: boolean;
 }
 
-export const defaultCidConfig: CidConfig = {
-  version: 1,
-  type: 'sha2-256',
-  codec: 'raw',
-  base: 'base58btc',
-};
-
-const TIMEOUT = 10000;
 const ENABLE_LOG = true;
 
 const promiseWithTimeout = (promise: Promise<any>, timeout: number): Promise<any> => {
@@ -45,20 +41,17 @@ const promiseWithTimeout = (promise: Promise<any>, timeout: number): Promise<any
 
 export class IpfsStore extends Connection implements CASRemote {
   logger = new Logger('IpfsStore');
-  pinnedCache?: PinnedCacheDB;
 
   casID = 'ipfs';
+  readonly isLocal = false;
 
   constructor(
     public cidConfig: CidConfig = defaultCidConfig,
     protected client?: any,
-    protected pinnerConfig?: PinnerConfig,
+    protected pinner?: PinnerCached,
     connectionOptions: ConnectionOptions = {}
   ) {
     super(connectionOptions);
-    this.pinnedCache = this.pinnerConfig
-      ? new PinnedCacheDB(`pinned-at-${this.pinnerConfig.url}`)
-      : undefined;
   }
 
   /**
@@ -66,11 +59,13 @@ export class IpfsStore extends Connection implements CASRemote {
    */
   public async connect(ipfsOptions?: IpfsConnectionOptions): Promise<void> {
     if (!this.client) {
-      this.client = new IPFS.create();
+      this.client = IPFS.create();
     }
   }
 
-  private async putIpfs(object: object): Promise<Entity<any>> {
+  private async putIpfs(object: object, cidConfig?: CidConfig): Promise<Entity> {
+    cidConfig = cidConfig || this.cidConfig;
+
     const sorted = sortObject(object);
     const buffer = CBOR.encode(sorted);
     if (ENABLE_LOG) {
@@ -78,15 +73,15 @@ export class IpfsStore extends Connection implements CASRemote {
     }
 
     let putConfig: PutConfig = {
-      format: this.cidConfig.codec,
-      hashAlg: this.cidConfig.type,
-      cidVersion: this.cidConfig.version,
+      format: cidConfig.codec,
+      hashAlg: cidConfig.type,
+      cidVersion: cidConfig.version,
       pin: true,
     };
 
     /** recursively try */
     const result = await this.client.dag.put(Buffer.from(buffer), putConfig);
-    let hashString = result.toString(this.cidConfig.base);
+    let hashString = result.toString(cidConfig.base);
 
     if (ENABLE_LOG) {
       this.logger.log('Object stored', {
@@ -96,31 +91,20 @@ export class IpfsStore extends Connection implements CASRemote {
         hashString,
       });
     }
-    if (this.pinnedCache) {
-      const config = this.pinnerConfig as PinnerConfig;
-      const cache = this.pinnedCache as PinnedCacheDB;
 
-      this.pinnedCache.pinned.get(hashString).then((pinned) => {
-        if (!pinned) {
-          if (ENABLE_LOG) {
-            this.logger.log(`pinning`, hashString);
-          }
-          fetch(`${config.url}/pin_hash?cid=${hashString}`).then((response) => {
-            cache.pinned.put({ id: hashString });
-          });
-        }
-      });
-    }
+    if (this.pinner) this.pinner.pin(hashString);
+
     return {
       id: hashString,
       object,
+      casID: this.casID,
     };
   }
 
   /**
    * Retrieves the object with the given hash from IPFS
    */
-  async get(hash: string): Promise<Entity<any>> {
+  async get(hash: string): Promise<Entity> {
     /** recursively try */
     if (!hash) throw new Error('hash undefined or empty');
 
@@ -131,31 +115,40 @@ export class IpfsStore extends Connection implements CASRemote {
       if (ENABLE_LOG) {
         this.logger.log(`Object retrieved ${hash}`, { raw, object });
       }
-      return { id: hash, object };
+      return { id: hash, object, casID: this.casID };
     } catch (e) {
       throw new Error(`Error reading ${hash}`);
     }
   }
 
-  async hash(object: object) {
+  async hash(entityCreate: EntityCreate): Promise<Entity> {
+    const cidConfig = entityCreate.id ? cidConfigOf(entityCreate.id) : this.cidConfig;
+
     /** optimistically hash based on the CidConfig without asking the server */
-    const id = await hashObject(object, this.cidConfig);
+    const id = await hashObject(entityCreate.object, cidConfig);
     return {
       id,
-      object,
+      object: entityCreate.object,
+      casID: this.casID,
     };
   }
 
-  async cacheEntities(entities: Entity<any>[]): Promise<void> {}
+  async cacheEntities(entities: Entity[]): Promise<void> {}
 
-  storeEntities(objects: any[]): Promise<Entity<any>[]> {
-    throw new Error('Use storeObjects on CASRemotes');
+  async storeEntities(entitiesCreate: EntityCreate[]): Promise<Entity[]> {
+    const entities = await Promise.all(
+      entitiesCreate.map((entityCreate) => {
+        const cidConfig = entityCreate.id ? cidConfigOf(entityCreate.id) : this.cidConfig;
+        return this.putIpfs(entityCreate.object, cidConfig);
+      })
+    );
+
+    validateEntities(entities, entitiesCreate);
+
+    return entities;
   }
-  storeObjects(objects: object[]): Promise<Entity<any>[]> {
-    return Promise.all(objects.map((object) => this.putIpfs(object)));
-  }
-  hashEntities(objects: any[]): Promise<Entity<any>[]> {
-    return Promise.all(objects.map((object) => this.hash(object.object)));
+  hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
+    return Promise.all(entities.map((entity) => this.hash(entity)));
   }
   async getEntities(hashes: string[]): Promise<EntityGetResult> {
     const entities = await Promise.all(hashes.map((hash) => this.get(hash)));
@@ -164,13 +157,17 @@ export class IpfsStore extends Connection implements CASRemote {
 
   async flush(): Promise<void> {}
 
-  async getEntity(hash: string): Promise<Entity<any>> {
+  async diff(): Promise<Entity<any>[]> {
+    return [];
+  }
+
+  async getEntity(hash: string): Promise<Entity> {
     const { entities } = await this.getEntities([hash]);
     return entities[0];
   }
-  async storeEntity(object: any): Promise<string> {
-    const entities = await this.storeEntities([object]);
-    return entities[0].id;
+  async storeEntity(entity: Entity): Promise<Entity> {
+    const entities = await this.storeEntities([entity]);
+    return entities[0];
   }
   async hashEntity<T = any>(object: any): Promise<Entity<T>> {
     const entities = await this.hashEntities([object]);

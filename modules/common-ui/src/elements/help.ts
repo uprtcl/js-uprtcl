@@ -23,7 +23,7 @@ export class UprtclHelp extends LitElement {
     return css`
       .help-content {
         padding: 1rem 1rem;
-        color: var(--gray);
+        color: var(--gray-dark);
         background: var(--white);
         text-transform: none;
         font-weight: normal;

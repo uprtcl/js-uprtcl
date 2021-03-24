@@ -4,6 +4,7 @@ import {
   ParentAndChild,
   SearchResult,
   GetPerspectiveOptions,
+  ForkOf,
 } from '@uprtcl/evees';
 import { HttpConnection } from '@uprtcl/http-provider';
 
@@ -28,7 +29,7 @@ export class EveesHttpSearchEngine implements SearchEngine {
       forks,
     });
   }
-  forks(perspectiveId: string): Promise<string[]> {
+  forks(perspectiveId: string): Promise<ForkOf[]> {
     throw new Error('Method not implemented.');
   }
   proposals(perspectiveId: string): Promise<string[]> {

@@ -2,9 +2,8 @@ import { TemplateResult } from 'lit-element';
 
 import { Behaviour } from '../../patterns/interfaces/behaviour';
 import { Secured } from '../../cas/utils/cid-hash';
-import { Entity } from '../../cas/interfaces/entity';
+import { Entity, EntityCreate } from '../../cas/interfaces/entity';
 
-import { Client } from './client';
 import { RemoteEvees } from './remote.evees';
 import { Evees } from '../evees.service';
 
@@ -45,10 +44,14 @@ export interface Commit {
 export interface Update {
   perspectiveId: string;
   details: PerspectiveDetails;
-  linkChanges?: LinkChanges;
-  text?: string;
   oldDetails?: PerspectiveDetails;
   fromPerspectiveId?: string;
+  indexData?: IndexData;
+}
+
+export interface IndexData {
+  linkChanges?: LinkChanges;
+  text?: string;
 }
 
 /** Each update can optionally include the changes in the way a persective is
@@ -62,6 +65,10 @@ export interface LinkChanges {
     removed: string[];
   };
   linksTo?: {
+    added: string[];
+    removed: string[];
+  };
+  onEcosystem?: {
     added: string[];
     removed: string[];
   };
@@ -95,7 +102,11 @@ export interface CreateEvee {
   remoteId?: string;
   object?: any;
   partialPerspective?: PartialPerspective;
+  /** receive the perspectiveId in case the perspective was already created */
+  perspectiveId?: string;
+  perspective?: Secured<Perspective>;
   guardianId?: string;
+  indexData?: IndexData;
 }
 
 export interface GetPerspectiveOptions {
@@ -110,7 +121,7 @@ export interface PerspectiveAndDetails {
 
 export interface Slice {
   perspectives: PerspectiveAndDetails[];
-  entities: Entity<any>[];
+  entities: Entity[];
 }
 
 export interface PerspectiveGetResult {
@@ -122,12 +133,14 @@ export interface EveesMutation {
   newPerspectives: NewPerspective[];
   updates: Update[];
   deletedPerspectives: string[];
+  entities: Entity[];
 }
 
 export interface EveesMutationCreate {
   newPerspectives?: NewPerspective[];
   updates?: Update[];
   deletedPerspectives?: string[];
+  entities?: EntityCreate[];
 }
 
 export interface SearchOptionsJoin {
@@ -159,7 +172,7 @@ export interface SearchOptions {
 }
 
 export interface SearchForkOptions {
-  leves?: number;
+  levels?: number;
 }
 
 export interface SearchResult {
@@ -171,6 +184,12 @@ export interface SearchResult {
 export interface ParentAndChild {
   parentId: string;
   childId: string;
+}
+
+export interface ForkOf {
+  forkId: string;
+  ofPerspectiveId: string;
+  atHeadId?: string;
 }
 
 export interface DiffLens {
@@ -195,7 +214,15 @@ export interface EveesConfig {
 
 export interface UpdateDetails {
   path: string[];
-  newData: Entity<any>;
-  oldData?: Entity<any>;
+  newData: Entity;
+  oldData?: Entity;
   update: Update;
+}
+
+export interface UpdatePerspectiveData {
+  perspectiveId: string;
+  object: any;
+  onHeadId?: string;
+  guardianId?: string;
+  indexData?: IndexData;
 }

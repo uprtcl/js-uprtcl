@@ -3,7 +3,7 @@ import { Commit, RemoteEvees, Perspective, Secured } from '@uprtcl/evees';
 export interface EveeData {
   perspective: Secured<Perspective>;
   commit: Secured<Commit> | undefined;
-  Data: Entity<any> | undefined;
+  Data: Entity | undefined;
 }
 
 export class EveesReader {

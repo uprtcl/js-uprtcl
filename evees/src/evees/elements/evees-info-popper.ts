@@ -42,7 +42,7 @@ export class EveesInfoPopper extends servicesConnect(LitElement) {
   eveeColor!: string;
 
   @property({ type: Object })
-  eveesInfoConfig!: EveesInfoConfig;
+  eveesInfoConfig: EveesInfoConfig = {};
 
   @property({ attribute: false })
   officialId!: string;
