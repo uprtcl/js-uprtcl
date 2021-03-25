@@ -889,16 +889,16 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     if (node.draft.type === TextType.Title) {
       switch (node.level) {
         case 0:
-          paddingTop = '20px';
+          paddingTop = '2px';
           break;
         case 1:
-          paddingTop = '14px';
+          paddingTop = '2px';
           break;
         case 2:
-          paddingTop = '10px';
+          paddingTop = '2px';
           break;
         default:
-          paddingTop = '0px';
+          paddingTop = '2px';
           break;
       }
     }
