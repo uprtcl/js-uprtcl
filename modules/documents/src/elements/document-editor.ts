@@ -913,7 +913,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         @dragover=${(e) => this.draggingOver(e, node)}
         @drop=${(e) => this.handleDrop(e, node)}
       >
-        ${!this.readOnly && this.showInfo
+        ${this.showInfo
           ? html` <div class="evee-info" style=${`padding-top:${paddingTop}`}>
               ${this.getEveeInfo ? this.getEveeInfo(uref) : ''}
             </div>`
