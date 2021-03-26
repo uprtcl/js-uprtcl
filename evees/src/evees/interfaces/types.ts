@@ -146,7 +146,6 @@ export interface EveesMutationCreate {
 export interface SearchOptionsJoin {
   type?: 'AND' | 'OR' | 'XOR';
   negation?: boolean;
-  levels?: number; // valid for under only...
   id: string;
 }
 
@@ -164,10 +163,6 @@ export interface SearchOptions {
   text?: {
     value: string;
     levels?: number;
-  };
-  forks?: {
-    include: boolean;
-    independent: boolean;
   };
   orderBy?: string;
   pagination?: {
