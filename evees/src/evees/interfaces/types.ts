@@ -112,6 +112,7 @@ export interface CreateEvee {
 export interface GetPerspectiveOptions {
   levels?: number;
   entities?: boolean;
+  details?: boolean;
 }
 
 export interface PerspectiveAndDetails {
