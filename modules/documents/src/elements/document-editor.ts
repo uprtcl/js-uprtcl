@@ -1,4 +1,4 @@
-import { LitElement, property, html, css, internalProperty } from 'lit-element';
+import { LitElement, property, html, css, internalProperty, TemplateResult } from 'lit-element';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
@@ -54,11 +54,11 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
-  @property({ type: Function })
-  getEveeInfo!: Function;
-
-  @property({ type: Object, attribute: false })
+  @internalProperty()
   localEvees!: Evees;
+
+  @internalProperty()
+  getEveeInfo!: (uref: string, parentId?: string) => TemplateResult;
 
   @internalProperty()
   reloading = true;
@@ -915,7 +915,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       >
         ${this.showInfo
           ? html` <div class="evee-info" style=${`padding-top:${paddingTop}`}>
-              ${this.getEveeInfo ? this.getEveeInfo(uref) : ''}
+              ${this.getEveeInfo
+                ? this.getEveeInfo(uref, node.parent ? node.parent.uref : undefined)
+                : ''}
             </div>`
           : html`<div class="empty-evees-info"></div>`}
         <div class="node-content">
