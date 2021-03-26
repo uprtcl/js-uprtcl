@@ -67,7 +67,11 @@ export class CASRouter implements CASStore {
       })
     );
 
-    return Array.prototype.concat([], entitiesPerRemote);
+    return Array.prototype.concat.apply([], entitiesPerRemote);
+  }
+
+  async removeEntities(hashes: string[]) {
+    throw new Error('not implemented');
   }
 
   async hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
@@ -80,7 +84,7 @@ export class CASRouter implements CASStore {
       })
     );
 
-    return Array.prototype.concat([], entitiesPerRemote);
+    return Array.prototype.concat.apply([], entitiesPerRemote);
   }
 
   async storeEntity(entity: EntityCreate): Promise<Entity> {
@@ -117,7 +121,11 @@ export class CASRouter implements CASStore {
   }
 
   public async ready(): Promise<void> {
-    await Promise.all(Array.from(this.storesMap.values()).map((source) => source.ready()));
+    await Promise.all(
+      Array.from(this.storesMap.values()).map((source) =>
+        source.ready ? source.ready() : Promise.resolve()
+      )
+    );
   }
 
   public getAllCASIds(): string[] {

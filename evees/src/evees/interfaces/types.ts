@@ -4,7 +4,6 @@ import { Behaviour } from '../../patterns/interfaces/behaviour';
 import { Secured } from '../../cas/utils/cid-hash';
 import { Entity, EntityCreate } from '../../cas/interfaces/entity';
 
-import { Client } from './client';
 import { RemoteEvees } from './remote.evees';
 import { Evees } from '../evees.service';
 
@@ -45,10 +44,14 @@ export interface Commit {
 export interface Update {
   perspectiveId: string;
   details: PerspectiveDetails;
-  linkChanges?: LinkChanges;
-  text?: string;
   oldDetails?: PerspectiveDetails;
   fromPerspectiveId?: string;
+  indexData?: IndexData;
+}
+
+export interface IndexData {
+  linkChanges?: LinkChanges;
+  text?: string;
 }
 
 /** Each update can optionally include the changes in the way a persective is
@@ -62,6 +65,10 @@ export interface LinkChanges {
     removed: string[];
   };
   linksTo?: {
+    added: string[];
+    removed: string[];
+  };
+  onEcosystem?: {
     added: string[];
     removed: string[];
   };
@@ -95,7 +102,11 @@ export interface CreateEvee {
   remoteId?: string;
   object?: any;
   partialPerspective?: PartialPerspective;
+  /** receive the perspectiveId in case the perspective was already created */
+  perspectiveId?: string;
+  perspective?: Secured<Perspective>;
   guardianId?: string;
+  indexData?: IndexData;
 }
 
 export interface GetPerspectiveOptions {
@@ -206,4 +217,12 @@ export interface UpdateDetails {
   newData: Entity;
   oldData?: Entity;
   update: Update;
+}
+
+export interface UpdatePerspectiveData {
+  perspectiveId: string;
+  object: any;
+  onHeadId?: string;
+  guardianId?: string;
+  indexData?: IndexData;
 }

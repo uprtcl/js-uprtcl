@@ -6,7 +6,7 @@ import { servicesConnect } from '../../container/multi-connect.mixin';
 import { Evees } from '../evees.service';
 import { UpdateDetails } from '../interfaces/types';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export class EveesDiffExplorer extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');

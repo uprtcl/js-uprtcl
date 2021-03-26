@@ -9,7 +9,7 @@ import { LinkingBehaviorNames } from 'src/patterns/behaviours/has-links';
 import { arrayDiff } from '../merge/utils';
 import { icons } from '@uprtcl/common-ui';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export class EveesDiffUpdate extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF-UPDATE');

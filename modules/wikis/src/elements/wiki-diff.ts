@@ -3,7 +3,7 @@ import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
 import { Wiki } from '../types';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export class WikiDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');

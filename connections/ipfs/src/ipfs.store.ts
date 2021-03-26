@@ -14,6 +14,7 @@ import {
   EntityCreate,
   validateEntities,
   cidConfigOf,
+  defaultCidConfig,
 } from '@uprtcl/evees';
 
 import { IpfsConnectionOptions } from './types';
@@ -25,13 +26,6 @@ export interface PutConfig {
   cidVersion: number;
   pin?: boolean;
 }
-
-export const defaultCidConfig: CidConfig = {
-  version: 1,
-  type: 'sha2-256',
-  codec: 'raw',
-  base: 'base58btc',
-};
 
 const ENABLE_LOG = true;
 

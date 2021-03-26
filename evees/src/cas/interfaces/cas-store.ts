@@ -17,6 +17,9 @@ export interface CASStore {
    * must include the remote in which the entities should be ultimately stored */
   storeEntities(entities: EntityCreate[]): Promise<Entity[]>;
 
+  /** removes the entities from the store */
+  removeEntities(hashes: string[]): Promise<void>;
+
   /** an interface to hash objects without storing them
    * (this way they are hashed with the correct CIDConfig and can be considered valid
    * even if they have not been stored) */

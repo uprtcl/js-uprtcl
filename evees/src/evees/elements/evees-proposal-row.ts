@@ -91,7 +91,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     this.loadingCreator = false;
 
     /** create an Evees service that includes the proposal mutation */
-    this.proposalEvees = await this.evees.clone(`Proposal-${this.proposalId}`);
+    this.proposalEvees = this.evees.clone(`Proposal-${this.proposalId}`);
     await this.proposalEvees.client.update(this.proposal.mutation);
 
     await this.checkCanExecute();

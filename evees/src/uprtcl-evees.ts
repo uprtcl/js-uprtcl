@@ -21,12 +21,13 @@ export {
   SearchResult,
   UpdateDetails,
   ForkOf,
+  UpdatePerspectiveData,
 } from './evees/interfaces/types';
 
 /** interfaces */
 export { EveesContentModule } from './evees/interfaces/evees.content.module';
 
-export { Evees } from './evees/evees.service';
+export { Evees, EveesEvents } from './evees/evees.service';
 export { RemoteEvees } from './evees/interfaces/remote.evees';
 export { SearchEngine } from './evees/interfaces/search.engine';
 export { Client, ClientEvents } from './evees/interfaces/client';
@@ -61,13 +62,15 @@ export { ProposalsList } from './evees/elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './evees/elements/evees-perspective-icon';
 
 export {
-  UpdateContentEvent,
-  UpdateContentArgs,
+  UpdatePerspectiveEvent,
   ContentUpdatedEvent,
   SpliceChildrenEvent,
   ProposalCreatedEvent,
+  NewPerspectiveEvent,
   CONTENT_UPDATED_TAG,
   PROPOSAL_CREATED_TAG,
+  NEW_PERSPECTIVE_TAG,
+  UPDATE_PERSPECTIVE_TAG,
 } from './evees/elements/events';
 export { EveesDiffExplorer } from './evees/elements/evees-diff-explorer';
 
@@ -80,7 +83,7 @@ export { isAncestorOf } from './evees/merge/ancestor';
 export { Connection, ConnectionOptions } from './utils/connection';
 export { Ready } from './utils/ready';
 export { ConnectionLogged } from './utils/connection.logged';
-export { filterAsync, mapAsync } from './utils/async';
+export { filterAsync, mapAsync, AsyncQueue } from './utils/async';
 
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
@@ -135,8 +138,11 @@ export { MultiContainer } from './container/multi.container';
 export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Clients */
-export { EveesDraftsLocal } from './evees/clients/drafts.temp/evees.drafts.local';
 export { ClientOnMemory } from './evees/clients/memory/client.memory';
 export { RemoteEveesLocal } from './evees/clients/local/remote.local';
+export { ClientCachedLocal } from './evees/clients/local/client.cached.local';
+export { CacheLocal } from './evees/clients/local/cache.local';
+export { ClientCachedWithBase, ClientCachedEvents } from './evees/clients/client.cached.with.base';
+
 export { CASOnMemory } from './cas/stores/cas.memory';
 export { CASLocal } from './cas/stores/cas.local';
