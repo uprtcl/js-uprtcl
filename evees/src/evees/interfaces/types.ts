@@ -7,6 +7,11 @@ import { Entity, EntityCreate } from '../../cas/interfaces/entity';
 import { RemoteEvees } from './remote.evees';
 import { Evees } from '../evees.service';
 
+export declare enum Join {
+  inner = "INNER_JOIN",
+  full = "FULL_JOIN"
+}
+
 /** Core perspective format. A perspective is like a URL, it includes the coordinates to reach a current head.
  * The hash of the perspective is the perspective id. */
 export interface Perspective {
@@ -144,12 +149,6 @@ export interface EveesMutationCreate {
   entities?: EntityCreate[];
 }
 
-export interface SearchOptionsJoin {
-  type?: 'AND' | 'OR' | 'XOR';
-  negation?: boolean;
-  id: string;
-}
-
 export interface EveesOptions {
   creatorId?: string;
   createdBefore?: number;
@@ -157,18 +156,27 @@ export interface EveesOptions {
   updatedBefore?: number;
   updatedAfter?: number;
 }
+export interface JoinElement {
+  id: string;
+  negation?: boolean;
+}
+
+export interface SearchOptionsJoin {
+  type?: Join.inner | Join.full;
+  elements: JoinElement[];
+}
 
 export interface SearchOptions {
-  under?: SearchOptionsJoin[];
-  linksTo?: SearchOptionsJoin[];
+  under?: SearchOptionsJoin;
+  linksTo?: SearchOptionsJoin;
   text?: {
-    value: string;
-    levels?: number;
+      value: string;
+      levels?: number;
   };
   orderBy?: string;
   pagination?: {
-    first: number;
-    offset: number;
+      first: number;
+      offset: number;
   };
 }
 
