@@ -37,7 +37,7 @@ export class RemoteEveesLocal extends ClientCachedLocal implements RemoteEvees {
     return '';
   }
 
-  constructor(store: CASStore, readonly casID: string, base?: Client) {
+  constructor(readonly casID: string, store?: CASStore, base?: Client) {
     super(store, base, false, 'remote');
     this.searchEngineLocal = new LocalSearchEngine((this.cache as CacheLocal).db);
   }

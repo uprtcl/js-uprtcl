@@ -133,9 +133,6 @@ export class CASCachedWithBase implements CASStore {
   }
 
   async hashEntity<T = any>(entity: EntityCreate): Promise<Entity<T>> {
-    if (!this.base) {
-      throw new Error('Based store not defined');
-    }
     const hashed = await this.hashEntities([entity]);
     return hashed[0];
   }

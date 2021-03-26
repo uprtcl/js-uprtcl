@@ -165,12 +165,18 @@ export class IpfsStore extends Connection implements CASRemote {
     const { entities } = await this.getEntities([hash]);
     return entities[0];
   }
+
   async storeEntity(entity: Entity): Promise<Entity> {
     const entities = await this.storeEntities([entity]);
     return entities[0];
   }
+
   async hashEntity<T = any>(object: any): Promise<Entity<T>> {
     const entities = await this.hashEntities([object]);
     return entities[0];
+  }
+
+  async removeEntities(hashes: string[]): Promise<void> {
+    console.warn('Ipfs cant delete entities');
   }
 }

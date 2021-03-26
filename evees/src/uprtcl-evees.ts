@@ -114,7 +114,7 @@ export { Signed } from './patterns/interfaces/signable';
 export { Entity, EntityCreate } from './cas/interfaces/entity';
 export { CASStore, EntityGetResult } from './cas/interfaces/cas-store';
 export { CASRemote } from './cas/interfaces/cas-remote';
-export { CidConfig } from './cas/interfaces/cid-config';
+export { CidConfig, defaultCidConfig } from './cas/interfaces/cid-config';
 
 /* merge */
 export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
@@ -146,3 +146,4 @@ export { ClientCachedWithBase, ClientCachedEvents } from './evees/clients/client
 
 export { CASOnMemory } from './cas/stores/cas.memory';
 export { CASLocal } from './cas/stores/cas.local';
+export { CASRemoteLocal } from './cas/stores/cas.remote.local';

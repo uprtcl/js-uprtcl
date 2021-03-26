@@ -35,10 +35,9 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     if (store) {
       this.store = store;
     } else {
-      if (!this.base) {
-        throw new Error(`Base must be defined if not store is provided`);
+      if (this.base) {
+        this.store = new CASLocal('local', this.base.store, false);
       }
-      this.store = new CASLocal('local', this.base.store, false);
     }
 
     this.cache = new CacheLocal(name, this.store);
