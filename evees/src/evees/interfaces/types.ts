@@ -146,8 +146,11 @@ export interface EveesMutationCreate {
 export interface SearchOptionsJoin {
   type?: 'AND' | 'OR' | 'XOR';
   negation?: boolean;
-  levels?: number; // valid for under only...
   id: string;
+}
+
+export interface SearchOptionsUnderJoin extends SearchOptionsJoin {
+  levels?: number;
 }
 
 export interface EveesOptions {
@@ -159,7 +162,7 @@ export interface EveesOptions {
 }
 
 export interface SearchOptions {
-  under?: SearchOptionsJoin[];
+  under?: SearchOptionsUnderJoin[];
   linksTo?: SearchOptionsJoin[];
   text?: {
     value: string;
