@@ -54,6 +54,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
+  @property({ type: Function })
+  getEveeInfo!: Function;
+
   @property({ type: Object, attribute: false })
   localEvees!: Evees;
 
@@ -886,16 +889,16 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     if (node.draft.type === TextType.Title) {
       switch (node.level) {
         case 0:
-          paddingTop = '20px';
+          paddingTop = '2px';
           break;
         case 1:
-          paddingTop = '14px';
+          paddingTop = '2px';
           break;
         case 2:
-          paddingTop = '10px';
+          paddingTop = '2px';
           break;
         default:
-          paddingTop = '0px';
+          paddingTop = '2px';
           break;
       }
     }
@@ -910,14 +913,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         @dragover=${(e) => this.draggingOver(e, node)}
         @drop=${(e) => this.handleDrop(e, node)}
       >
-        ${!this.readOnly && this.showInfo
+        ${this.showInfo
           ? html` <div class="evee-info" style=${`padding-top:${paddingTop}`}>
-              <evees-info-popper
-                parent-id=${node.parent ? node.parent.uref : this.parentId}
-                uref=${uref}
-                evee-color=${this.getColor()}
-                @checkout-perspective=${(e) => this.handleNodePerspectiveCheckout(e, node)}
-              ></evees-info-popper>
+              ${this.getEveeInfo ? this.getEveeInfo(uref) : ''}
             </div>`
           : html`<div class="empty-evees-info"></div>`}
         <div class="node-content">
