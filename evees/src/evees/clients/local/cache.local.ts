@@ -19,8 +19,12 @@ export class CacheLocal implements ClientCache {
 
   readonly db: EveesCacheDB;
 
-  constructor(name: string, protected store: CASStore) {
+  constructor(name: string, protected store?: CASStore) {
     this.db = new EveesCacheDB(name);
+  }
+
+  setStore(store: CASStore) {
+    this.store = store;
   }
 
   async clearCachedPerspective(perspectiveId: string): Promise<void> {
@@ -43,6 +47,7 @@ export class CacheLocal implements ClientCache {
   }
 
   async setCachedPerspective(perspectiveId: string, cachedUpdate: CachedUpdate): Promise<void> {
+    if (!this.store) throw new Error('store undefined');
     const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
 
     const current = await this.db.perspectives.get(perspectiveId);
@@ -58,6 +63,7 @@ export class CacheLocal implements ClientCache {
     let dataId: string | undefined = undefined;
 
     if (cachedUpdate.update.details.headId) {
+      if (!this.store) throw new Error('store undefined');
       const head = await this.store.getEntity<Signed<Commit>>(cachedUpdate.update.details.headId);
       dataId = head.object.payload.dataId;
     }
@@ -76,6 +82,7 @@ export class CacheLocal implements ClientCache {
     let dataId: string | undefined = undefined;
 
     if (newPerspective.update.details.headId) {
+      if (!this.store) throw new Error('store undefined');
       const head = await this.store.getEntity<Signed<Commit>>(newPerspective.update.details.headId);
       dataId = head.object.payload.dataId;
     }
@@ -91,6 +98,7 @@ export class CacheLocal implements ClientCache {
     let dataId: string | undefined = undefined;
 
     if (update.details.headId) {
+      if (!this.store) throw new Error('store undefined');
       const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
       dataId = head.object.payload.dataId;
     }
@@ -170,6 +178,7 @@ export class CacheLocal implements ClientCache {
       clearUpdates.map(async (update) => {
         if (update.details.headId) {
           clearEntities.push(update.details.headId);
+          if (!this.store) throw new Error('store undefined');
           const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
           /** data should be removed if there are no other commits using it :/ */
           clearEntitiesIfOrphan.push(head.object.payload.dataId);
@@ -201,6 +210,7 @@ export class CacheLocal implements ClientCache {
     );
 
     /** removeEntities from the store */
+    if (!this.store) throw new Error('store undefined');
     await this.store.removeEntities(clearEntities);
   }
 

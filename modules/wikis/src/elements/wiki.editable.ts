@@ -93,6 +93,10 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
     this.logger.log('CheckChanges()');
 
+    if (!this.evees.client.searchEngine) {
+      throw new Error('Search engine undefined');
+    }
+
     const forks = await this.evees.client.searchEngine.forks(this.uref, { levels: -1 });
 
     if (forks.length > 0) {
@@ -111,7 +115,8 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
       const mutation = combineMutations(mutations);
 
-      this.mergeEvees = await this.evees.clone('WikiMergeClient', undefined, mutation);
+      this.mergeEvees = this.evees.clone('WikiMergeClient', undefined);
+      await this.mergeEvees.update(mutation);
       this.hasChanges = mutation.updates.length > 0;
     }
   }

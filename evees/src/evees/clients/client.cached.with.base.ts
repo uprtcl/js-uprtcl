@@ -124,7 +124,7 @@ export class ClientCachedWithBase implements Client {
 
     if (this.readCacheEnabled) {
       /** cache result and slice */
-      this.cache.setCachedPerspective(perspectiveId, {
+      await this.cache.setCachedPerspective(perspectiveId, {
         update: { perspectiveId, details: result.details },
         levels: options ? options.levels : undefined,
       });
@@ -133,15 +133,17 @@ export class ClientCachedWithBase implements Client {
         /** entities are sent to the store to be cached there */
         await this.store.cacheEntities(result.slice.entities);
 
-        result.slice.perspectives.forEach((perspectiveAndDetails) => {
-          this.cache.setCachedPerspective(perspectiveAndDetails.id, {
-            update: {
-              perspectiveId: perspectiveAndDetails.id,
-              details: perspectiveAndDetails.details,
-            },
-            levels: options ? options.levels : undefined,
-          });
-        });
+        await Promise.all(
+          result.slice.perspectives.map(async (perspectiveAndDetails) => {
+            await this.cache.setCachedPerspective(perspectiveAndDetails.id, {
+              update: {
+                perspectiveId: perspectiveAndDetails.id,
+                details: perspectiveAndDetails.details,
+              },
+              levels: options ? options.levels : undefined,
+            });
+          })
+        );
       }
     }
 
@@ -160,13 +162,13 @@ export class ClientCachedWithBase implements Client {
             remote: newPerspective.perspective.object.payload.remote,
           });
 
-          this.cache.newPerspective(newPerspective);
+          await this.cache.newPerspective(newPerspective);
 
           /** set the current known details of that perspective, can update is set to true */
           const update = newPerspective.update;
           update.details.canUpdate = true;
 
-          this.cache.setCachedPerspective(newPerspective.perspective.id, {
+          return this.cache.setCachedPerspective(newPerspective.perspective.id, {
             update: update,
             levels: -1, // new perspectives are assumed to be fully on the cache
           });

@@ -46,10 +46,6 @@ export class RemoteEveesLocal extends ClientCachedLocal implements RemoteEvees {
     return this.searchEngineLocal;
   }
 
-  setStore(store: CASStore) {
-    this.store = store;
-  }
-
   setEvees(evees: Evees) {
     this.searchEngine.setEvees(evees);
   }
