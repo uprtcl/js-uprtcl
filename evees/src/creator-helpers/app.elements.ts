@@ -116,7 +116,8 @@ export class AppElements {
     });
 
     /** get the perspective data */
-    const { details } = await this.evees.client.getPerspective(perspective.id);
+    const levels = getLevels(this.home);
+    const { details } = await this.evees.client.getPerspective(perspective.id, { levels });
 
     /** canUpdate is used as the flag to detect if the home space exists */
     if (!details.canUpdate) {
@@ -212,3 +213,12 @@ export class AppElements {
     );
   }
 }
+
+/** get the number of levels under an element */
+export const getLevels = (element: AppElement, n: number = 0): number => {
+  if (element.children) {
+    const childLevels = element.children.map((child) => getLevels(child, n + 1));
+    return Math.max(...childLevels);
+  }
+  return n;
+};
