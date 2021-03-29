@@ -25,7 +25,7 @@ export class LocalSearchEngine implements SearchEngine {
   }
 
   async explore(options: SearchOptions): Promise<SearchResult> {
-    const underId = options.under ? options.under[0].id : undefined;
+    const underId = options.under ? options.under.elements[0].id : undefined;
     if (!underId) {
       throw new Error(`UnderId not defined`);
     }
