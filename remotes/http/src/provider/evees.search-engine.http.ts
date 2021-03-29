@@ -16,6 +16,7 @@ export class EveesHttpSearchEngine implements SearchEngine {
     fetchOptions: GetPerspectiveOptions = {
       levels: 0,
       entities: true,
+      details: true,
     }
   ) {
     return this.connection.getWithPut<SearchResult>('/explore', {
