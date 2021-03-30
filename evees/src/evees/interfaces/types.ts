@@ -8,8 +8,8 @@ import { RemoteEvees } from './remote.evees';
 import { Evees } from '../evees.service';
 
 export declare enum Join {
-  inner = "INNER_JOIN",
-  full = "FULL_JOIN"
+  inner = 'INNER_JOIN',
+  full = 'FULL_JOIN',
 }
 
 /** Core perspective format. A perspective is like a URL, it includes the coordinates to reach a current head.
@@ -166,17 +166,21 @@ export interface SearchOptionsJoin {
   elements: JoinElement[];
 }
 
+export interface SearchOptionsUnderJoin extends SearchOptionsJoin {
+  levels?: number;
+}
+
 export interface SearchOptions {
-  under?: SearchOptionsJoin;
-  linksTo?: SearchOptionsJoin;
+  under?: SearchOptionsUnderJoin[];
+  linksTo?: SearchOptionsJoin[];
   text?: {
-      value: string;
-      levels?: number;
+    value: string;
+    levels?: number;
   };
   orderBy?: string;
   pagination?: {
-      first: number;
-      offset: number;
+    first: number;
+    offset: number;
   };
 }
 
