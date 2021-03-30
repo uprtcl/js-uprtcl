@@ -28,7 +28,7 @@ export class AppElements {
     this.logger.log('check()');
     /** home space perspective is deterministic */
     this.home.perspective = await this.evees.getHome(this.remote.id);
-    await this.checkOrCreatePerspective(this.home.perspective);
+    await this.checkOrCreateHome(this.home.perspective);
 
     /** all other objects are obtained relative to the home perspective */
     await this.getOrCreateElementData(this.home);
@@ -108,7 +108,7 @@ export class AppElements {
   }
 
   // make sure a perspective exist, or creates it
-  async checkOrCreatePerspective(perspective: Secured<Perspective>) {
+  async checkOrCreateHome(perspective: Secured<Perspective>) {
     /** make sure the perspective is in the store to be resolved */
     await this.evees.client.store.storeEntity({
       object: perspective.object,
@@ -123,7 +123,7 @@ export class AppElements {
     if (!details.canUpdate) {
       /** create the home perspective as it did not existed */
       this.logger.log('create perspective data()', perspective.object.payload);
-      const id = await this.evees.createEvee({
+      await this.evees.createEvee({
         partialPerspective: perspective.object.payload,
       });
     }
