@@ -75,6 +75,7 @@ export class UprtclIconButton extends LitElement {
           position: absolute;
           bottom: 2px;
           right: 2px;
+          user-select: none;
         }
       `,
     ];
