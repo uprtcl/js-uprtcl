@@ -49,7 +49,7 @@ export class UprtclIconButton extends LitElement {
     return html`
       <div class=${classes.join(' ')}>
         ${this.loading ? icons.loading : icons[this.icon]}
-        <slot></slot>
+        <div class="slot-container"><slot></slot></div>
       </div>
     `;
   }
@@ -69,6 +69,12 @@ export class UprtclIconButton extends LitElement {
           flex-direction: column;
           justify-content: center;
           align-items: center;
+          position: relative;
+        }
+        .slot-container {
+          position: absolute;
+          bottom: 2px;
+          right: 2px;
         }
       `,
     ];

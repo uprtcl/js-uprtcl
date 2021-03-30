@@ -171,11 +171,15 @@ export interface SearchOptionsUnderJoin extends SearchOptionsJoin {
 }
 
 export interface SearchOptions {
-  under?: SearchOptionsUnderJoin[];
-  linksTo?: SearchOptionsJoin[];
+  under?: SearchOptionsUnderJoin;
+  linksTo?: SearchOptionsJoin;
   text?: {
     value: string;
     levels?: number;
+  };
+  forks?: {
+    include: boolean;
+    independent: boolean;
   };
   orderBy?: string;
   pagination?: {
