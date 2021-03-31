@@ -1,4 +1,6 @@
+import lodash from 'lodash-es';
 import EventEmitter from 'events';
+
 import {
   ConnectionEvents,
   PolkadotConnection,
@@ -9,6 +11,7 @@ import { EveesCouncilDB } from './dexie.council.store';
 import {
   CouncilData,
   CouncilProposal,
+  LocalHeadUpdate,
   LocalProposal,
   ProposalManifest,
   ProposalSummary,
@@ -289,10 +292,23 @@ export class PolkadotCouncilEveesStorage {
       await Promise.all(
         allUpdates.map(async (update: Update) => {
           const perspective = await this.store.getEntity<Signed<Perspective>>(update.perspectiveId);
+          const localPerspective = await this.db.perspectives.get(update.perspectiveId);
+          const currentUpdates: LocalHeadUpdate[] = localPerspective
+            ? localPerspective.headUpdates
+            : [];
+
+          currentUpdates.push({
+            block: proposal.endBlock,
+            headId: update.details.headId,
+          });
+
+          /** keep updates ordered from newer to older, and headId alphabetically on same block case */
+          const newUpdates = lodash.sortBy(currentUpdates, ['block', 'headId']).reverse();
+
           await this.db.perspectives.put({
             id: update.perspectiveId,
             context: perspective.object.payload.context,
-            headId: update.details.headId,
+            headUpdates: newUpdates,
           });
         })
       );
@@ -366,7 +382,13 @@ export class PolkadotCouncilEveesStorage {
     /** at this point cache data is up to date */
     if (LOG_ENABLED) this.logger.log(`getting perspective ${perspectiveId}`);
     const perspective = await this.db.perspectives.get(perspectiveId);
-    return { headId: perspective ? perspective.headId : undefined };
+
+    const headId =
+      perspective && perspective.headUpdates.length > 0
+        ? perspective.headUpdates[0].headId
+        : undefined;
+
+    return { headId };
   }
 
   async getContextPerspectives(context: string) {

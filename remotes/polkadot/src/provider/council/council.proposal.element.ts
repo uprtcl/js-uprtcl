@@ -326,6 +326,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
       evees-diff-explorer {
         overflow: auto;
         margin: 10px 0px;
+        max-height: 50vh;
       }
       .vote-buttons {
         display: flex;

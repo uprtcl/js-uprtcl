@@ -19,7 +19,6 @@ import { ClientCachedWithBase } from '../client.cached.with.base';
 
 import { CacheLocal } from './cache.local';
 import { LocalSearchEngine } from './search.engine.local';
-import { IndexDataHelper } from 'src/evees/index.data.helper';
 
 export class ClientCachedLocal extends ClientCachedWithBase {
   logger = new Logger('ClientCachedLocal');
@@ -35,10 +34,9 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     if (store) {
       this.store = store;
     } else {
-      if (!this.base) {
-        throw new Error(`Base must be defined if not store is provided`);
+      if (this.base) {
+        this.store = new CASLocal('local', this.base.store, false);
       }
-      this.store = new CASLocal('local', this.base.store, false);
     }
 
     this.cache = new CacheLocal(name, this.store);
@@ -48,6 +46,11 @@ export class ClientCachedLocal extends ClientCachedWithBase {
   /** retype cache as CacheLocal */
   get cacheLocal() {
     return this.cache as CacheLocal;
+  }
+
+  setStore(store: CASStore) {
+    this.store = store;
+    (this.cache as CacheLocal).setStore(store);
   }
 
   /** returns an EveesMutation with the new perspectives and **last** update under a given page

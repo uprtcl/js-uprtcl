@@ -1,4 +1,4 @@
-import { EveesMutationCreate } from '@uprtcl/evees';
+import { EveesMutationCreate, PerspectiveDetails, Update } from '@uprtcl/evees';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
 
 export interface Vote {
@@ -45,10 +45,14 @@ export interface LocalProposal {
   endBlock: number; // not indexed, for sorting
 }
 
+export interface LocalHeadUpdate {
+  block: number;
+  headId?: string;
+}
 export interface LocalPerspective {
   id: string;
   context: string;
-  headId?: string;
+  headUpdates: LocalHeadUpdate[];
 }
 
 export interface LocalVote {

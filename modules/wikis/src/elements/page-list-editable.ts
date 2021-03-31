@@ -30,8 +30,11 @@ export class PageListEditable extends EveesBaseEditable<Wiki> {
         title: '',
         pages: [],
       };
-      await this.evees.updatePerspectiveData(this.mineId, init);
-      await this.evees.client.flush();
+      await this.evees.updatePerspectiveData({
+        perspectiveId: this.mineId,
+        object: init,
+        flush: { autoflush: true, debounce: 0 },
+      });
     }
   }
 

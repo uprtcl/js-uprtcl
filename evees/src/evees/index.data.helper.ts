@@ -37,7 +37,7 @@ export class IndexDataHelper {
   }
 
   static getAddedOnEcosystem(indexData?: IndexData): string[] {
-    const addedOnEcosystem =
+    const added =
       indexData &&
       indexData.linkChanges &&
       indexData.linkChanges.onEcosystem &&
@@ -45,6 +45,18 @@ export class IndexDataHelper {
         ? indexData.linkChanges.onEcosystem.added
         : [];
 
-    return addedOnEcosystem;
+    return added;
+  }
+
+  static getAddedChildren(indexData?: IndexData): string[] {
+    const added =
+      indexData &&
+      indexData.linkChanges &&
+      indexData.linkChanges.children &&
+      indexData.linkChanges.children.added.length > 0
+        ? indexData.linkChanges.children.added
+        : [];
+
+    return added;
   }
 }

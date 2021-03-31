@@ -4,7 +4,7 @@ import { CASOnMemory } from '../cas/stores/cas.memory';
 import { signObject } from '../cas/utils/signed';
 import { Secured } from '../cas/utils/cid-hash';
 import { CASRemote } from '../cas/interfaces/cas-remote';
-import { Client, ClientEvents } from './interfaces/client';
+import { Client } from './interfaces/client';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
@@ -21,6 +21,7 @@ import {
   UpdateDetails,
   UpdatePerspectiveData,
   EveesMutationCreate,
+  FlushConfig,
 } from './interfaces/types';
 
 import { Entity } from '../cas/interfaces/entity';
@@ -66,8 +67,10 @@ export class Evees {
   protected logger = new Logger('Evees');
 
   /** debounce updates to the same perspective */
-  protected debounce: number = 0;
-  protected pendingUpdates: Map<string, { action: Function; timeout: NodeJS.Timeout }> = new Map();
+  protected pendingUpdates: Map<
+    string,
+    { action: Function; timeout: NodeJS.Timeout; flush: FlushConfig }
+  > = new Map();
   protected clientPending: boolean = false;
 
   constructor(
@@ -82,10 +85,18 @@ export class Evees {
     this.events.setMaxListeners(1000);
   }
 
-  clone(name: string = 'NewClient', client?: Client): Evees {
+  clone(name: string = 'NewClient', client?: Client, config?: EveesConfig): Evees {
     const store = client ? client.store : new CASOnMemory(this.client.store);
     client = client || new ClientOnMemory(this.client, store, name);
-    return new Evees(client, this.recognizer, this.remotes, this.stores, this.config, this.modules);
+
+    return new Evees(
+      client,
+      this.recognizer,
+      this.remotes,
+      this.stores,
+      config || this.config,
+      this.modules
+    );
   }
 
   /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
@@ -354,14 +365,23 @@ export class Evees {
   }
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
-  async updatePerspective(update: Update) {
+  async updatePerspective(update: Update, flush?: boolean) {
     if (LOGINFO) this.logger.log('updatePerspective()', update);
     await this.indexUpdate(update);
-    return this.client.updatePerspective(update);
+    await this.client.updatePerspective(update);
+
+    flush = flush || (this.config.flush ? this.config.flush?.autoflush : false);
+    if (flush) {
+      this.client.flush();
+    }
   }
 
   // add indexing data to all updates on a mutation
   async update(mutation: EveesMutationCreate) {
+    if (mutation.entities) {
+      await this.client.store.storeEntities(mutation.entities);
+    }
+
     if (mutation.newPerspectives) {
       await Promise.all(
         mutation.newPerspectives.map(async (np) => {
@@ -497,15 +517,11 @@ export class Evees {
     }
   }
 
-  public setDebounce(debounce: number) {
-    this.debounce = debounce;
-  }
-
-  private async updatePerspectiveDebounce(perspectiveId: string, action: () => Promise<any>) {
-    if (this.debounce === 0) {
-      return action();
-    }
-
+  private async updatePerspectiveDebounce(
+    perspectiveId: string,
+    action: () => Promise<any>,
+    flush: FlushConfig
+  ) {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (LOGINFO) this.logger.log('updatePerspectiveDebounce()', { perspectiveId, pending, action });
 
@@ -513,7 +529,7 @@ export class Evees {
       clearTimeout(pending.timeout);
     }
 
-    const newTimeout = setTimeout(() => this.executePending(perspectiveId), this.debounce);
+    const newTimeout = setTimeout(() => this.executePending(perspectiveId), flush.debounce);
 
     if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, true);
     this.events.emit(EveesEvents.pending, true);
@@ -522,6 +538,7 @@ export class Evees {
     this.pendingUpdates.set(perspectiveId, {
       timeout: newTimeout,
       action,
+      flush,
     });
   }
 
@@ -529,7 +546,7 @@ export class Evees {
   async updatePerspectiveData(options: UpdatePerspectiveData): Promise<void> {
     if (LOGINFO) this.logger.log('updatePerspectiveData()', options);
 
-    const action = async () => {
+    const action = async (flushAction: boolean) => {
       const { perspectiveId, object, onHeadId: onHeadIdIn, guardianId } = options;
       let onHeadId = onHeadIdIn;
 
@@ -567,10 +584,20 @@ export class Evees {
         indexData: options.indexData,
       };
 
-      return this.updatePerspective(update);
+      await this.updatePerspective(update, flushAction);
     };
 
-    return this.updatePerspectiveDebounce(options.perspectiveId, action);
+    const flush = this.config.flush || options.flush;
+
+    if (flush && flush.debounce) {
+      return this.updatePerspectiveDebounce(
+        options.perspectiveId,
+        () => action(flush.autoflush),
+        flush
+      );
+    } else {
+      return action(flush ? flush.autoflush : false);
+    }
   }
 
   async deletePerspective(uref: string): Promise<void> {
@@ -625,7 +652,8 @@ export class Evees {
     childId: string,
     parentId: string,
     index = 0,
-    setGuardian = false
+    setGuardian = false,
+    flush?: FlushConfig
   ): Promise<void> {
     const parentData = await this.getPerspectiveData(parentId);
 
@@ -636,26 +664,34 @@ export class Evees {
       0
     );
 
-    await this.updatePerspectiveData({ perspectiveId: parentId, object: newParentObject });
+    await this.updatePerspectiveData({ perspectiveId: parentId, object: newParentObject, flush });
 
     if (setGuardian) {
-      await this.updatePerspective({
-        perspectiveId: childId,
-        details: { guardianId: parentId },
-      });
+      await this.updatePerspective(
+        {
+          perspectiveId: childId,
+          details: { guardianId: parentId },
+        },
+        flush ? flush.autoflush : undefined
+      );
     }
   }
 
   /**
    * Creates an evee and add it as a child.
    */
-  async addNewChild(parentId: string, childObject: object, index = 0): Promise<string> {
+  async addNewChild(
+    parentId: string,
+    childObject: object,
+    index = 0,
+    flush?: FlushConfig
+  ): Promise<string> {
     const childId = await this.createEvee({
       object: childObject,
       guardianId: parentId,
     });
 
-    await this.addExistingChild(childId, parentId, index);
+    await this.addExistingChild(childId, parentId, index, false, flush);
     return childId;
   }
 
@@ -688,21 +724,21 @@ export class Evees {
     await this.addExistingChild(childId, toId, toIndex, !keepGuardian);
   }
 
-  async moveChild(perspectiveId: string, fromIndex: number, toIndex: number) {
+  async moveChild(perspectiveId: string, fromIndex: number, toIndex: number, flush?: FlushConfig) {
     const data = await this.getPerspectiveData(perspectiveId);
 
     const { removed } = await this.spliceChildren(data.object, [], fromIndex, 1);
     const result = await this.spliceChildren(data.object, removed as string[], toIndex, 0);
 
-    await this.updatePerspectiveData({ perspectiveId, object: result.object });
+    await this.updatePerspectiveData({ perspectiveId, object: result.object, flush });
     return result.removed[0];
   }
 
   /** get the current data of a perspective, removes the i-th child, and updates the data */
-  async removeChild(perspectiveId: string, index: number): Promise<string> {
+  async removeChild(perspectiveId: string, index: number, flush?: FlushConfig): Promise<string> {
     const data = await this.getPerspectiveData(perspectiveId);
     const spliceResult = await this.spliceChildren(data.object, [], index, 1);
-    await this.updatePerspectiveData({ perspectiveId, object: spliceResult.object });
+    await this.updatePerspectiveData({ perspectiveId, object: spliceResult.object, flush });
     return spliceResult.removed[0];
   }
 
@@ -824,7 +860,11 @@ export class Evees {
 
     await this.newPerspective({
       perspective,
-      update: { perspectiveId: perspective.id, details: { headId: forkCommitId, guardianId } },
+      update: {
+        perspectiveId: perspective.id,
+        details: { headId: forkCommitId, guardianId },
+        oldDetails: { headId: undefined },
+      },
     });
 
     return perspective.id;
