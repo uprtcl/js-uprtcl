@@ -52,11 +52,17 @@ export class CacheLocal implements ClientCache {
 
     const current = await this.db.perspectives.get(perspectiveId);
 
-    /** use the linkTo entry to mark a perspective of a given ecoystem */
     const addedOnEcosystem = IndexDataHelper.getAddedOnEcosystem(cachedUpdate.update.indexData);
+    const addedChildren = IndexDataHelper.getAddedChildren(cachedUpdate.update.indexData);
 
     const currentOnEcosystem = current ? (current.onEcosystem ? current.onEcosystem : []) : [];
+    const currentChildren = current ? (current.children ? current.children : []) : [];
+
     const newOnEcosystem = currentOnEcosystem.concat(
+      addedOnEcosystem.filter((e) => !currentOnEcosystem.includes(e))
+    );
+
+    const newChildren = currentOnEcosystem.concat(
       addedOnEcosystem.filter((e) => !currentOnEcosystem.includes(e))
     );
 
@@ -74,6 +80,7 @@ export class CacheLocal implements ClientCache {
       levels: cachedUpdate.levels,
       context: perspective.object.payload.context,
       onEcosystem: newOnEcosystem,
+      children: newChildren,
       dataId,
     });
   }

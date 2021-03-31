@@ -5,7 +5,9 @@ import {
   combineMutations,
   Evees,
   EveesDiffExplorer,
+  ForkOf,
   Logger,
+  ParentAndChild,
   Proposal,
   RecursiveContextMergeStrategy,
   RemoteEvees,
@@ -36,6 +38,9 @@ export class EditableWiki extends servicesConnect(LitElement) {
   isLogged = false;
 
   @internalProperty()
+  checkingChanges = false;
+
+  @internalProperty()
   canPropose = false;
 
   @internalProperty()
@@ -50,6 +55,9 @@ export class EditableWiki extends servicesConnect(LitElement) {
   mergeEvees: Evees | undefined;
   remote!: RemoteEvees;
   editRemote!: RemoteEvees;
+
+  /** a debounce strategy to check changes only once and not once per update event */
+  checkAgain = false;
 
   async firstUpdated() {
     this.remote = this.evees.remotes[0];
@@ -84,6 +92,14 @@ export class EditableWiki extends servicesConnect(LitElement) {
   }
 
   async checkChanges() {
+    if (this.checkingChanges) {
+      // reentrance will just schedule once again
+      this.checkAgain = true;
+      return;
+    }
+
+    this.checkingChanges = true;
+
     if (!this.isLogged) {
       this.mergeEvees = undefined;
       this.hasChanges = false;
@@ -99,25 +115,36 @@ export class EditableWiki extends servicesConnect(LitElement) {
     const forks = await this.evees.client.searchEngine.forks(this.uref, { levels: -1 });
 
     if (forks.length > 0) {
-      // build
-      const mutations = await Promise.all(
-        forks.map(async (fork) => {
-          const mergeEvees = this.evees.clone(`TempMergeClientFor-${fork.forkId}`);
-          const merger = new RecursiveContextMergeStrategy(mergeEvees);
-          await merger.mergePerspectivesExternal(fork.ofPerspectiveId, fork.forkId, {
-            forceOwner: true,
-          });
+      await this.computeChanges(forks);
 
-          return mergeEvees.client.diff();
-        })
-      );
-
-      const mutation = combineMutations(mutations);
-
-      this.mergeEvees = this.evees.clone('WikiMergeClient');
-      await this.mergeEvees.update(mutation);
-      this.hasChanges = mutation.updates.length > 0;
+      /** recurse until checkAgain is false */
+      if (this.checkAgain) {
+        this.checkAgain = false;
+        await this.computeChanges(forks);
+      }
     }
+
+    this.checkingChanges = false;
+  }
+
+  async computeChanges(forks: ForkOf[]) {
+    const mutations = await Promise.all(
+      forks.map(async (fork) => {
+        const mergeEvees = this.evees.clone(`TempMergeClientFor-${fork.forkId}`);
+        const merger = new RecursiveContextMergeStrategy(mergeEvees);
+        await merger.mergePerspectivesExternal(fork.ofPerspectiveId, fork.forkId, {
+          forceOwner: true,
+        });
+
+        return mergeEvees.client.diff();
+      })
+    );
+
+    const mutation = combineMutations(mutations);
+
+    this.mergeEvees = this.evees.clone('WikiMergeClient');
+    await this.mergeEvees.update(mutation);
+    this.hasChanges = mutation.updates.length > 0;
   }
 
   async checkLogin() {
@@ -185,34 +212,26 @@ export class EditableWiki extends servicesConnect(LitElement) {
     return html`<h1>Home</h1>`;
   }
 
-  renderProposals() {
-    return html`
-      <div class="list-container">
-        <evees-proposals-list
-          id="evees-proposals-list"
-          perspective-id=${this.uref}
-          @dialogue-closed=${() => (this.proposalsPopper.showDropdown = false)}
-        ></evees-proposals-list>
-      </div>
-    `;
-  }
-
   renderTopBar() {
     return html`<div class="top-bar">
       <div class="proposals-container">
-        <uprtcl-popper id="proposals-popper" position="bottom-left" class="proposals-popper">
-          <uprtcl-button slot="icon" class="proposals-button"> open proposals </uprtcl-button>
-          ${this.renderProposals()}
-        </uprtcl-popper>
+        <evees-proposals-dropdown
+          id="evees-proposals-list"
+          perspective-id=${this.uref}
+          @dialogue-closed=${() => (this.proposalsPopper.showDropdown = false)}
+        ></evees-proposals-dropdown>
       </div>
       <div class="propose-container">
-        ${this.hasChanges && this.canPropose
-          ? html`<uprtcl-button @click=${() => this.showMergeDialog()}
-              >propose changes</uprtcl-button
-            >`
-          : ''}${this.isLogged && !this.canPropose
-          ? html`<span>can't make proposals :(</span>`
-          : ``}
+        <div class="checking-changes">${this.checkingChanges ? html`Checking changes...` : ''}</div>
+        <div class="has-changes">
+          ${this.hasChanges && this.canPropose
+            ? html`<uprtcl-button @click=${() => this.showMergeDialog()}
+                >propose changes</uprtcl-button
+              >`
+            : ''}${this.isLogged && !this.canPropose
+            ? html`<span>can't make proposals :(</span>`
+            : ``}
+        </div>
       </div>
       <div class="login-container">
         ${!this.isLogged
@@ -298,6 +317,18 @@ export class EditableWiki extends servicesConnect(LitElement) {
           flex: 1 0 auto;
           display: flex;
           justify-content: center;
+        }
+
+        .checking-changes {
+          width: 120px;
+          display: flex;
+          align-items: center;
+          color: #cccccc;
+          font-size: 12px;
+        }
+
+        .has-changes {
+          width: 200px;
         }
 
         .propose-container uprtcl-button {

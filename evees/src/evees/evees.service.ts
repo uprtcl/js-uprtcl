@@ -36,7 +36,7 @@ import { createCommit, getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export interface CreateCommit {
   dataId: string;

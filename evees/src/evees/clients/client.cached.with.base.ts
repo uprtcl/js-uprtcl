@@ -21,7 +21,7 @@ import { Signed } from 'src/patterns/interfaces/signable';
 import { AsyncQueue } from 'src/utils/async';
 import { SearchEngine } from '../interfaces/search.engine';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export enum ClientCachedEvents {
   pending = 'changes-pending',
@@ -32,8 +32,7 @@ export class ClientCachedWithBase implements Client {
 
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
-  proposals?: Proposals | undefined;
-  /** a search engine that will override that of the base layer is provided */
+  /** a search engine that will override that of the base layer if provided */
   searchEngineLocal?: SearchEngine;
   protected cache!: ClientCache;
   store!: CASStore;
@@ -72,6 +71,14 @@ export class ClientCachedWithBase implements Client {
 
     if (this.base) {
       return this.base.searchEngine;
+    }
+
+    return undefined;
+  }
+
+  get proposals() {
+    if (this.base) {
+      return this.base.proposals;
     }
 
     return undefined;
