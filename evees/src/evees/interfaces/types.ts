@@ -210,6 +210,7 @@ export interface EveesConfig {
     remote: string;
     owner: string;
   };
+  flush?: FlushConfig;
 }
 
 export interface UpdateDetails {
@@ -225,4 +226,10 @@ export interface UpdatePerspectiveData {
   onHeadId?: string;
   guardianId?: string;
   indexData?: IndexData;
+  flush?: FlushConfig;
+}
+
+export interface FlushConfig {
+  debounce: number;
+  autoflush: boolean;
 }

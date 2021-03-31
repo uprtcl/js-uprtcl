@@ -54,7 +54,13 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
-  @property({ type: Function })
+  @property({ type: Number })
+  debounce!: number;
+
+  @property({ type: Boolean })
+  autoflush: boolean = false;
+
+  @internalProperty()
   getEveeInfo!: Function;
 
   @property({ type: Object, attribute: false })
@@ -344,6 +350,10 @@ export class DocumentEditor extends servicesConnect(LitElement) {
             removed: [],
           },
         },
+      },
+      flush: {
+        debounce: this.debounce,
+        autoflush: this.autoflush,
       },
     };
 

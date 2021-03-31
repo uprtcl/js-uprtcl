@@ -21,7 +21,7 @@ import { Signed } from 'src/patterns/interfaces/signable';
 import { AsyncQueue } from 'src/utils/async';
 import { SearchEngine } from '../interfaces/search.engine';
 
-const LOGINFO = false;
+const LOGINFO = true;
 
 export enum ClientCachedEvents {
   pending = 'changes-pending',
@@ -353,7 +353,13 @@ export class ClientCachedWithBase implements Client {
   /** a mutation with all the changes made relative to the base client */
   async diff(options?: SearchOptions): Promise<EveesMutation> {
     if (LOGINFO) this.logger.log(`${this.name} diff()`, {});
-    return this.cache.diff();
+
+    const mutation = await this.cache.diff();
+
+    /** append store entities to the mutation */
+    mutation.entities = await this.store.diff();
+
+    return mutation;
   }
 
   /** it gets the logged user perspectives (base layers are user aware) */

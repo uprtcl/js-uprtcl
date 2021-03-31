@@ -1,5 +1,5 @@
 import { css, html } from 'lit-element';
-import { EveesBaseEditable } from '@uprtcl/evees';
+import { EveesBaseEditable, EveesEvents } from '@uprtcl/evees';
 import { TextNode } from '../types';
 
 /** a document editor that has one official version and one draft for the logged user */
@@ -8,7 +8,7 @@ export class EditableDocumentEditor extends EveesBaseEditable<TextNode> {
     if (this.loading) return html`<uprtcl-loading></uprtcl-loading>`;
 
     return html`<div class="info-container">${this.renderInfo()}</div>
-      <documents-editor uref=${this.uref}></documents-editor>`;
+      <documents-editor uref=${this.uref} debounce="2000" autoflush></documents-editor>`;
   }
 
   static get styles() {

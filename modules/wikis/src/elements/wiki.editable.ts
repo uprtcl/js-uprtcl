@@ -3,7 +3,6 @@ import { html, css, LitElement, property, internalProperty, query } from 'lit-el
 import {
   ClientEvents,
   combineMutations,
-  Entity,
   Evees,
   EveesDiffExplorer,
   Logger,
@@ -58,7 +57,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
     /** check changes every time the default remote is updated */
     if (this.editRemote.events) {
-      this.editRemote.events.on(ClientEvents.updated, () => this.checkChanges());
+      this.editRemote.events.on(ClientEvents.ecosystemUpdated, () => this.checkChanges());
     }
 
     if (this.remote.events) {
@@ -103,7 +102,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
       // build
       const mutations = await Promise.all(
         forks.map(async (fork) => {
-          const mergeEvees = await this.evees.clone(`TempMergeClientFor-${fork.forkId}`);
+          const mergeEvees = this.evees.clone(`TempMergeClientFor-${fork.forkId}`);
           const merger = new RecursiveContextMergeStrategy(mergeEvees);
           await merger.mergePerspectivesExternal(fork.ofPerspectiveId, fork.forkId, {
             forceOwner: true,
@@ -115,7 +114,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
       const mutation = combineMutations(mutations);
 
-      this.mergeEvees = this.evees.clone('WikiMergeClient', undefined);
+      this.mergeEvees = this.evees.clone('WikiMergeClient');
       await this.mergeEvees.update(mutation);
       this.hasChanges = mutation.updates.length > 0;
     }

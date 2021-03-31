@@ -8,14 +8,11 @@ import { IndexDataHelper } from 'src/evees/index.data.helper';
 
 export class ClientOnMemory extends ClientCachedWithBase {
   logger = new Logger('ClientOnMemory');
+  store: CASStore;
 
-  constructor(
-    readonly base: Client,
-    public store: CASStore,
-    readonly name: string = 'OnMemoryClient'
-  ) {
+  constructor(readonly base: Client, store?: CASStore, readonly name: string = 'OnMemoryClient') {
     super(base, name);
-    this.store = base.store;
+    this.store = store || base.store;
     this.cache = new CacheOnMemory();
   }
 
