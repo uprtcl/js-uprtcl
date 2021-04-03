@@ -166,12 +166,13 @@ export interface SearchOptionsJoin {
   elements: JoinElement[];
 }
 
-export interface SearchOptionsUnderJoin extends SearchOptionsJoin {
+export interface SearchOptionsEcoJoin extends SearchOptionsJoin {
   levels?: number;
 }
 
 export interface SearchOptions {
-  under?: SearchOptionsUnderJoin;
+  under?: SearchOptionsEcoJoin;
+  above?: SearchOptionsEcoJoin;
   linksTo?: SearchOptionsJoin;
   text?: {
     value: string;

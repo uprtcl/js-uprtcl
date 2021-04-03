@@ -17,6 +17,8 @@ export {
   EveesConfig,
   Slice,
   SearchOptions,
+  SearchOptionsEcoJoin,
+  SearchOptionsJoin,
   ParentAndChild,
   SearchResult,
   UpdateDetails,
