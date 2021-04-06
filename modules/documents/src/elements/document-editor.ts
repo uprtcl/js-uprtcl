@@ -351,10 +351,13 @@ export class DocumentEditor extends servicesConnect(LitElement) {
           },
         },
       },
-      flush: {
-        debounce: this.debounce,
-        autoflush: this.autoflush,
-      },
+      flush:
+        this.debounce !== undefined || this.autoflush !== undefined
+          ? {
+              debounce: this.debounce,
+              autoflush: this.autoflush,
+            }
+          : undefined,
     };
 
     if (LOGINFO) this.logger.log('updatePerspectiveData()', { update });
