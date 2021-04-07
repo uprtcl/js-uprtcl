@@ -6,7 +6,6 @@ import { Entity } from '../../cas/interfaces/entity';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Client } from '../interfaces/client';
 import { MergeConfig, MergeStrategy } from './merge-strategy';
-import { hashObject } from 'src/cas/utils/cid-hash';
 
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(protected evees: Evees) {}

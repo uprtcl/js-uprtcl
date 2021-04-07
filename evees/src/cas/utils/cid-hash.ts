@@ -113,17 +113,24 @@ export const bytes32ToCid = (bytes: [string, string]) => {
   return cid.toBaseEncodedString(multibaseName as any);
 };
 
+const LOGINFO = false;
+
 export async function deriveEntity<O extends object>(
   object: O,
   config: CidConfig = defaultCidConfig,
   casID: string
 ): Promise<Entity<O>> {
   const hash = await hashObject(object, config);
-  return {
+
+  const entity = {
     id: hash,
     object,
     casID,
   };
+
+  if (LOGINFO) console.log('deriveEntity', { entity, config });
+
+  return entity;
 }
 
 /** verify that the reference entities that have a hash were created with the same hash */

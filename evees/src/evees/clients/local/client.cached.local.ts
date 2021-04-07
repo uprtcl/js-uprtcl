@@ -54,7 +54,7 @@ export class ClientCachedLocal extends ClientCachedWithBase {
   }
 
   /** returns an EveesMutation with the new perspectives and **last** update under a given page
-   * created un the draftsEvees */
+   * created in this client draftsEvees */
   async diff(options?: SearchOptions): Promise<EveesMutation> {
     await this.ready();
 
@@ -78,6 +78,7 @@ export class ClientCachedLocal extends ClientCachedWithBase {
           mutation.newPerspectives.push(newPerspective);
         }
 
+        /** returns the last update only */
         const update = await this.cache.getLastUpdate(perspectiveId);
         if (update) {
           mutation.updates.push(update);
@@ -104,12 +105,19 @@ export class ClientCachedLocal extends ClientCachedWithBase {
           throw new Error('base client not defined for flush');
         }
 
-        const newUpdate = await this.squashUpdate(update);
-
         /** if newPerspective, send as new perspective to the base (even if it had other updates) */
         const newPerspective = pageMutation.newPerspectives.find(
           (np) => np.perspective.id === update.perspectiveId
         );
+
+        /** if this is not a new perspective, get the current head */
+        let onHead: string | undefined = undefined;
+        if (newPerspective === undefined) {
+          const currentDetails = await this.base.getPerspective(update.perspectiveId);
+          onHead = currentDetails.details.headId;
+        }
+
+        const newUpdate = await this.squashUpdate(update, onHead);
 
         if (newPerspective !== undefined) {
           const perspective = await this.store.getEntity<Signed<Perspective>>(update.perspectiveId);
@@ -137,7 +145,7 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     );
   }
 
-  async squashUpdate(update): Promise<Update> {
+  async squashUpdate(update: Update, onHead?: string): Promise<Update> {
     if (!this.base) {
       throw new Error('base client not defined for flush');
     }
@@ -157,6 +165,9 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     await this.base.store.storeEntity(perspective);
 
     let headId: string | undefined = undefined;
+
+    const baseHead = this.base.getPerspective(perspectiveId);
+
     if (data) {
       const dataId = await this.base.store.storeEntity({
         object: data.object,
@@ -165,6 +176,7 @@ export class ClientCachedLocal extends ClientCachedWithBase {
 
       const headObject = await createCommit({
         dataId: dataId.id,
+        parentsIds: onHead ? [onHead] : undefined,
       });
 
       const head = await this.base.store.storeEntity({

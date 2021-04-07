@@ -20,14 +20,14 @@ import {
 import { IpfsConnectionOptions } from './types';
 import { PinnerCached } from './pinner.cached';
 
+const LOGINFO = false;
+
 export interface PutConfig {
   format: string;
   hashAlg: string;
   cidVersion: number;
   pin?: boolean;
 }
-
-const ENABLE_LOG = true;
 
 const promiseWithTimeout = (promise: Promise<any>, timeout: number): Promise<any> => {
   let timeoutId;
@@ -68,7 +68,7 @@ export class IpfsStore extends Connection implements CASRemote {
 
     const sorted = sortObject(object);
     const buffer = CBOR.encode(sorted);
-    if (ENABLE_LOG) {
+    if (LOGINFO) {
       this.logger.log('Trying to add object:', { object, sorted, buffer });
     }
 
@@ -83,7 +83,7 @@ export class IpfsStore extends Connection implements CASRemote {
     const result = await this.client.dag.put(Buffer.from(buffer), putConfig);
     let hashString = result.toString(cidConfig.base);
 
-    if (ENABLE_LOG) {
+    if (LOGINFO) {
       this.logger.log('Object stored', {
         object,
         sorted,
@@ -112,7 +112,7 @@ export class IpfsStore extends Connection implements CASRemote {
       const raw = await promiseWithTimeout(this.client.dag.get(hash), 10000);
       const forceBuffer = Uint8Array.from(raw.value);
       let object = CBOR.decode(forceBuffer.buffer);
-      if (ENABLE_LOG) {
+      if (LOGINFO) {
         this.logger.log(`Object retrieved ${hash}`, { raw, object });
       }
       return { id: hash, object, casID: this.casID };
@@ -126,11 +126,16 @@ export class IpfsStore extends Connection implements CASRemote {
 
     /** optimistically hash based on the CidConfig without asking the server */
     const id = await hashObject(entityCreate.object, cidConfig);
-    return {
+
+    const entity = {
       id,
       object: entityCreate.object,
       casID: this.casID,
     };
+
+    if (LOGINFO) this.logger.log('hash', { entity, cidConfig });
+
+    return entity;
   }
 
   async cacheEntities(entities: Entity[]): Promise<void> {}
