@@ -28,7 +28,7 @@ export class HttpStore implements CASRemote {
   }
 
   async get(hash: string): Promise<Entity> {
-    return this.connection.get<Entity>(`/get/${hash}`);
+    return this.connection.get<Entity>(`/data/${hash}`);
   }
 
   async hash(object: object): Promise<Entity> {
