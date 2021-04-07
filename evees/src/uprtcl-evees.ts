@@ -19,6 +19,7 @@ export {
   SearchOptions,
   SearchOptionsEcoJoin,
   SearchOptionsJoin,
+  SearchForkOptions,
   ParentAndChild,
   SearchResult,
   UpdateDetails,
