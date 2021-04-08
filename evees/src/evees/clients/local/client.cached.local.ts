@@ -20,6 +20,8 @@ import { ClientCachedWithBase } from '../client.cached.with.base';
 import { CacheLocal } from './cache.local';
 import { LocalSearchEngine } from './search.engine.local';
 
+const LOGINFO = true;
+
 export class ClientCachedLocal extends ClientCachedWithBase {
   logger = new Logger('ClientCachedLocal');
 
@@ -86,6 +88,8 @@ export class ClientCachedLocal extends ClientCachedWithBase {
       })
     );
 
+    if (LOGINFO) this.logger.log('diff', { options, perspectiveIds, mutation });
+
     return mutation;
   }
 
@@ -98,6 +102,8 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     const allUpdates = pageMutation.newPerspectives
       .map((np) => np.update)
       .concat(pageMutation.updates);
+
+    if (LOGINFO) this.logger.log('flush', { allUpdates });
 
     await Promise.all(
       allUpdates.map(async (update) => {
@@ -113,6 +119,7 @@ export class ClientCachedLocal extends ClientCachedWithBase {
         /** if this is not a new perspective, get the current head */
         let onHead: string | undefined = undefined;
         if (newPerspective === undefined) {
+          /** TODO, this should be the parent commit of the oldest update in the cache... */
           const currentDetails = await this.base.getPerspective(update.perspectiveId);
           onHead = currentDetails.details.headId;
         }
@@ -137,7 +144,7 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     }
 
     /** execute the changes on the base client */
-    await this.base.flush();
+    await this.base.flush(options, true);
 
     /** clean perspectives from the cache */
     await Promise.all(
@@ -166,8 +173,6 @@ export class ClientCachedLocal extends ClientCachedWithBase {
 
     let headId: string | undefined = undefined;
 
-    const baseHead = this.base.getPerspective(perspectiveId);
-
     if (data) {
       const dataId = await this.base.store.storeEntity({
         object: data.object,
@@ -185,11 +190,15 @@ export class ClientCachedLocal extends ClientCachedWithBase {
       });
 
       headId = head.id;
+
+      if (LOGINFO) this.logger.log('squashUpdate', { update, data, head });
     }
 
     /** keep everyhing except for the headId which was squashed */
     const newUpdate = lodash.cloneDeep(update);
     newUpdate.details.headId = headId;
+
+    if (LOGINFO) this.logger.log('squashUpdate - newUpdate', { newUpdate });
 
     return newUpdate;
   }

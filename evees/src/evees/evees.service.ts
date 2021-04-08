@@ -22,6 +22,7 @@ import {
   UpdatePerspectiveData,
   EveesMutationCreate,
   FlushConfig,
+  IndexData,
 } from './interfaces/types';
 
 import { Entity } from '../cas/interfaces/entity';
@@ -35,8 +36,11 @@ import { RemoteEvees } from './interfaces/remote.evees';
 import { createCommit, getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
+import { tail } from 'lodash';
+import { CASStore } from 'src/cas/interfaces/cas-store';
+import { IndexDataHelper } from './index.data.helper';
 
-const LOGINFO = false;
+const LOGINFO = true;
 
 export interface CreateCommit {
   dataId: string;
@@ -71,7 +75,6 @@ export class Evees {
     string,
     { action: Function; timeout: NodeJS.Timeout; flush: FlushConfig }
   > = new Map();
-  protected clientPending: boolean = false;
 
   constructor(
     readonly client: Client,
@@ -484,8 +487,9 @@ export class Evees {
   }
 
   async flushPendingUpdates() {
+    const pending = Array.from(this.pendingUpdates.entries());
     await Promise.all(
-      Array.from(this.pendingUpdates.entries()).map(([perspectiveId, e]) => {
+      pending.map(([perspectiveId, e]) => {
         clearTimeout(e.timeout);
         return this.executePending(perspectiveId);
       })
@@ -501,14 +505,14 @@ export class Evees {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
 
+    this.pendingUpdates.delete(perspectiveId);
+
     if (LOGINFO)
       this.logger.log('executePending()', {
         perspectiveId,
-        pendingUpdates: this.pendingUpdates,
-        clientPending: this.clientPending,
+        pendingUpdates: Array.from(this.pendingUpdates.entries()),
       });
 
-    this.pendingUpdates.delete(perspectiveId);
     await pending.action();
 
     if (this.pendingUpdates.size === 0) {
@@ -1017,45 +1021,5 @@ export class Evees {
     }
 
     return updateDetails;
-  }
-}
-
-export class FindAncestor {
-  done = false;
-
-  constructor(protected client: Client, protected lookingFor: string, protected stopAt?: string) {}
-
-  async checkIfParent(commitId: string) {
-    /* stop searching all paths once one path finds it */
-    if (this.done) {
-      return false;
-    }
-
-    if (this.lookingFor === commitId) {
-      this.done = true;
-      return true;
-    }
-
-    if (this.stopAt !== undefined) {
-      if (this.stopAt === commitId) {
-        this.done = true;
-        return false;
-      }
-    }
-
-    const commit = await this.client.store.getEntity(commitId);
-
-    if (commit.object.payload.parentsIds.length === 0) {
-      return false;
-    }
-
-    const seeParents = await Promise.all(
-      commit.object.payload.parentsIds.map((parentId) => {
-        /* recursively look on parents */
-        return this.checkIfParent(parentId);
-      })
-    );
-
-    return seeParents.includes(true);
   }
 }

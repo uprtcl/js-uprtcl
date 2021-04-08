@@ -64,20 +64,20 @@ export interface IndexData {
  * which explicitely considers the link a child and a part of the parent, and can be used
  * for recurse-by-default operations */
 
-export interface LinkChanges {
-  children?: {
-    added: string[];
-    removed: string[];
-  };
-  linksTo?: {
-    added: string[];
-    removed: string[];
-  };
-  onEcosystem?: {
-    added: string[];
-    removed: string[];
-  };
+export interface ArrayChanges {
+  added: string[];
+  removed: string[];
 }
+
+export enum LinksType {
+  onEcosystem = 'onEcosystem',
+  children = 'children',
+  linksTo = 'linksTo',
+}
+
+export type LinkChanges = {
+  [key in LinksType]?: ArrayChanges;
+};
 
 /** Remote interface to create a perspective  */
 export interface NewPerspective {

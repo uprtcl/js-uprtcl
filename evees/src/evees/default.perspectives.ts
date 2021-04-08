@@ -98,6 +98,7 @@ export const createCommit = (commit: CreateCommit): Signed<Commit> => {
   const timestamp = commit.timestamp !== undefined ? commit.timestamp : Date.now();
   const creatorsIds = commit.creatorsIds !== undefined ? commit.creatorsIds : [];
   const parentsIds = commit.parentsIds !== undefined ? commit.parentsIds : [];
+  const forking = commit.forking;
 
   const commitData: Commit = {
     creatorsIds: creatorsIds,
@@ -105,6 +106,7 @@ export const createCommit = (commit: CreateCommit): Signed<Commit> => {
     message: message,
     timestamp: timestamp,
     parentsIds: parentsIds,
+    forking,
   };
 
   return signObject(commitData);

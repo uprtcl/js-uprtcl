@@ -21,7 +21,7 @@ import { Signed } from 'src/patterns/interfaces/signable';
 import { AsyncQueue } from 'src/utils/async';
 import { SearchEngine } from '../interfaces/search.engine';
 
-const LOGINFO = false;
+const LOGINFO = true;
 
 export enum ClientCachedEvents {
   pending = 'changes-pending',
@@ -342,6 +342,9 @@ export class ClientCachedWithBase implements Client {
       await this.store.flush();
 
       const diff = await this.diff(options);
+
+      if (LOGINFO) this.logger.log(`${this.name} flush -diff`, diff);
+
       await this.base.update(diff);
 
       if (recurse) {

@@ -1,14 +1,20 @@
-import { IndexData } from './interfaces/types';
+import { ArrayChanges, IndexData, LinksType } from './interfaces/types';
 
 export class IndexDataHelper {
-  /** upsert indexData */
-  static addOnEcosystem(newElements: string[], indexData?: IndexData): IndexData {
+  /** Create or append ArrayChanges to an IndexData */
+  static combineArrayChanges(
+    changes?: ArrayChanges,
+    linksType: LinksType = LinksType.children,
+    indexData?: IndexData
+  ): IndexData {
+    changes = changes || { added: [], removed: [] };
+
     if (!indexData) {
       return {
         linkChanges: {
-          onEcosystem: {
-            added: newElements,
-            removed: [],
+          [linksType]: {
+            added: changes.added,
+            removed: changes.removed,
           },
         },
       };
@@ -16,47 +22,59 @@ export class IndexDataHelper {
 
     if (!indexData.linkChanges) {
       indexData.linkChanges = {
-        onEcosystem: {
-          added: newElements,
-          removed: [],
+        [linksType]: {
+          added: changes.added,
+          removed: changes.removed,
         },
       };
       return indexData;
     }
 
-    if (!indexData.linkChanges.onEcosystem) {
-      indexData.linkChanges.onEcosystem = {
-        added: newElements,
-        removed: [],
+    if (!indexData.linkChanges[linksType]) {
+      indexData.linkChanges[linksType] = {
+        added: changes.added,
+        removed: changes.removed,
       };
       return indexData;
     }
 
-    indexData.linkChanges.onEcosystem.added.push(...newElements);
+    (indexData.linkChanges[linksType] as ArrayChanges).added.push(...changes.added);
+    (indexData.linkChanges[linksType] as ArrayChanges).removed.push(...changes.removed);
+
     return indexData;
   }
 
-  static getAddedOnEcosystem(indexData?: IndexData): string[] {
-    const added =
-      indexData &&
-      indexData.linkChanges &&
-      indexData.linkChanges.onEcosystem &&
-      indexData.linkChanges.onEcosystem.added.length > 0
-        ? indexData.linkChanges.onEcosystem.added
-        : [];
+  static getArrayChanges(
+    indexData?: IndexData,
+    linksType: LinksType = LinksType.children
+  ): ArrayChanges {
+    const changes: ArrayChanges =
+      indexData && indexData.linkChanges && indexData.linkChanges[linksType]
+        ? (indexData.linkChanges[linksType] as ArrayChanges)
+        : {
+            added: [],
+            removed: [],
+          };
 
-    return added;
+    return changes;
   }
 
-  static getAddedChildren(indexData?: IndexData): string[] {
-    const added =
-      indexData &&
-      indexData.linkChanges &&
-      indexData.linkChanges.children &&
-      indexData.linkChanges.children.added.length > 0
-        ? indexData.linkChanges.children.added
-        : [];
-
-    return added;
+  static combine(indexData?: IndexData, withIndexData?: IndexData): IndexData {
+    indexData = this.combineArrayChanges(
+      this.getArrayChanges(withIndexData),
+      LinksType.children,
+      indexData
+    );
+    indexData = this.combineArrayChanges(
+      this.getArrayChanges(withIndexData),
+      LinksType.linksTo,
+      indexData
+    );
+    indexData = this.combineArrayChanges(
+      this.getArrayChanges(withIndexData),
+      LinksType.onEcosystem,
+      indexData
+    );
+    return indexData;
   }
 }
