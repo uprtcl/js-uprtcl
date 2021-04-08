@@ -189,7 +189,7 @@ export interface SearchOptions {
 export interface SearchForkOptions {
   independent: boolean;
   independentOf?: string;
-  levels?: number;
+  exclusive?: boolean;
 }
 
 export interface SearchResult {
