@@ -22,7 +22,6 @@ import {
   UpdatePerspectiveData,
   EveesMutationCreate,
   FlushConfig,
-  IndexData,
 } from './interfaces/types';
 
 import { Entity } from '../cas/interfaces/entity';
@@ -36,9 +35,7 @@ import { RemoteEvees } from './interfaces/remote.evees';
 import { createCommit, getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
-import { tail } from 'lodash';
-import { CASStore } from 'src/cas/interfaces/cas-store';
-import { IndexDataHelper } from './index.data.helper';
+import { FindAncestor } from './evees.utils';
 
 const LOGINFO = true;
 
@@ -48,6 +45,7 @@ export interface CreateCommit {
   creatorsIds?: string[];
   message?: string;
   timestamp?: number;
+  forking?: string;
 }
 
 export interface CreatePerspective {
