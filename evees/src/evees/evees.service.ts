@@ -37,7 +37,7 @@ import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
 import { FindAncestor } from './evees.utils';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export interface CreateCommit {
   dataId: string;

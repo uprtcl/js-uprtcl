@@ -20,7 +20,7 @@ import { ClientCachedWithBase } from '../client.cached.with.base';
 import { CacheLocal } from './cache.local';
 import { LocalSearchEngine } from './search.engine.local';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export class ClientCachedLocal extends ClientCachedWithBase {
   logger = new Logger('ClientCachedLocal');
