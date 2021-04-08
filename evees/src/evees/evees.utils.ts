@@ -142,7 +142,7 @@ export class CondensateCommits {
         const newList = [...currentList];
         newList.push(commitId);
 
-        return this.condenseUpdate(childId, onParents, newList, forking, combinedIndexData);
+        return this.condenseUpdate(childId, onParents, forking, newList, combinedIndexData);
       });
 
       return Array.prototype.concat.apply([], childrenHeads);
@@ -162,7 +162,7 @@ export class CondensateCommits {
 
     const head = await this.store.storeEntity({
       object: newCommitObject,
-      remote: this.remoteId,
+      remote: 'WIP',
     });
 
     const newUpdate: Update = {
@@ -178,7 +178,7 @@ export class CondensateCommits {
     return [newUpdate];
   }
 
-  async sort(): Promise<CommitDAG[]> {
+  async sort(): Promise<void> {
     const tailsIds = this.findTails();
 
     /** for each tail, explore forward to find all connected heads */
@@ -187,18 +187,5 @@ export class CondensateCommits {
       if (!commit) throw new Error('Commit not found');
       return this.condenseUpdate(tailId, commit.object.payload.parentsIds);
     });
-
-    if (commit.object.payload.parentsIds.length === 0) {
-      return false;
-    }
-
-    const seeParents = await Promise.all(
-      commit.object.payload.parentsIds.map((parentId) => {
-        /* recursively look on parents */
-        return this.checkIfParent(parentId);
-      })
-    );
-
-    return seeParents.includes(true);
   }
 }

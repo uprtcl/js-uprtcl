@@ -9,6 +9,7 @@ import {
   Perspective,
   Slice,
   Commit,
+  LinksType,
 } from '../../interfaces/types';
 import { CachedUpdate, ClientCache } from '../client.cache';
 import { EveesCacheDB } from './cache.local.db';
@@ -52,18 +53,24 @@ export class CacheLocal implements ClientCache {
 
     const current = await this.db.perspectives.get(perspectiveId);
 
-    const addedOnEcosystem = IndexDataHelper.getAddedOnEcosystem(cachedUpdate.update.indexData);
-    const addedChildren = IndexDataHelper.getAddedChildren(cachedUpdate.update.indexData);
+    const onEcosystemChanges = IndexDataHelper.getArrayChanges(
+      cachedUpdate.update.indexData,
+      LinksType.onEcosystem
+    );
+    const childrenChanges = IndexDataHelper.getArrayChanges(
+      cachedUpdate.update.indexData,
+      LinksType.children
+    );
 
     const currentOnEcosystem = current ? (current.onEcosystem ? current.onEcosystem : []) : [];
     const currentChildren = current ? (current.children ? current.children : []) : [];
 
     const newOnEcosystem = currentOnEcosystem.concat(
-      addedOnEcosystem.filter((e) => !currentOnEcosystem.includes(e))
+      onEcosystemChanges.added.filter((e) => !currentOnEcosystem.includes(e))
     );
 
     const newChildren = currentOnEcosystem.concat(
-      addedOnEcosystem.filter((e) => !currentOnEcosystem.includes(e))
+      childrenChanges.added.filter((e) => !currentChildren.includes(e))
     );
 
     let dataId: string | undefined = undefined;

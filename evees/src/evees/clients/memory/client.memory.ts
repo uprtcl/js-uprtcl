@@ -1,10 +1,11 @@
 import { Logger } from '../../../utils/logger';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { Client } from '../../../evees/interfaces/client';
+import { LinksType } from '../../../evees/interfaces/types';
+import { IndexDataHelper } from '../../../evees/index.data.helper';
 
 import { ClientCachedWithBase } from '../client.cached.with.base';
 import { CacheOnMemory } from './cache.memory';
-import { IndexDataHelper } from 'src/evees/index.data.helper';
 
 export class ClientOnMemory extends ClientCachedWithBase {
   logger = new Logger('ClientOnMemory');
@@ -19,12 +20,20 @@ export class ClientOnMemory extends ClientCachedWithBase {
   async addOnEcosystem(onEcosystem: string[]) {
     const updates = await this.cache.getUpdates();
     updates.map((update) => {
-      IndexDataHelper.addOnEcosystem(onEcosystem, update.indexData);
+      IndexDataHelper.combineArrayChanges(
+        { added: onEcosystem, removed: [] },
+        LinksType.onEcosystem,
+        update.indexData
+      );
     });
 
     const perspectives = await this.cache.getNewPerspectives();
     perspectives.map((newPerspective) => {
-      IndexDataHelper.addOnEcosystem(onEcosystem, newPerspective.update.indexData);
+      IndexDataHelper.combineArrayChanges(
+        { added: onEcosystem, removed: [] },
+        LinksType.onEcosystem,
+        newPerspective.update.indexData
+      );
     });
   }
 }
