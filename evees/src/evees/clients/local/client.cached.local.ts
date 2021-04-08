@@ -19,6 +19,7 @@ import { ClientCachedWithBase } from '../client.cached.with.base';
 
 import { CacheLocal } from './cache.local';
 import { LocalSearchEngine } from './search.engine.local';
+import { CondensateCommits, getMutationEntitiesIds } from 'src/evees/evees.utils';
 
 const LOGINFO = false;
 
@@ -81,10 +82,13 @@ export class ClientCachedLocal extends ClientCachedWithBase {
         }
 
         /** returns the last update only */
-        const update = await this.cache.getLastUpdate(perspectiveId);
-        if (update) {
-          mutation.updates.push(update);
-        }
+        const updates = await this.cache.getUpdatesOf(perspectiveId);
+
+        const condensate = new CondensateCommits(this.store, updates);
+        await condensate.init();
+
+        const squahedUpdates = await condensate.condensate();
+        mutation.updates.push(...squahedUpdates);
       })
     );
 
@@ -97,46 +101,22 @@ export class ClientCachedLocal extends ClientCachedWithBase {
    * takes all changes under a given page, squash them as new commits
    * and remove them from the drafts client */
   async flush(options?: SearchOptions) {
-    const pageMutation = await this.diff(options);
+    const mutation = await this.diff(options);
 
-    const allUpdates = pageMutation.newPerspectives
-      .map((np) => np.update)
-      .concat(pageMutation.updates);
+    const { entities } = await this.store.getEntities(getMutationEntitiesIds(mutation));
+    mutation.entities = entities;
 
-    if (LOGINFO) this.logger.log('flush', { allUpdates });
+    if (!this.base) throw new Error('base not defined');
+
+    await this.base.store.storeEntities(mutation.entities);
 
     await Promise.all(
-      allUpdates.map(async (update) => {
-        if (!this.base) {
-          throw new Error('base client not defined for flush');
-        }
-
-        /** if newPerspective, send as new perspective to the base (even if it had other updates) */
-        const newPerspective = pageMutation.newPerspectives.find(
-          (np) => np.perspective.id === update.perspectiveId
-        );
-
-        /** if this is not a new perspective, get the current head */
-        let onHead: string | undefined = undefined;
-        if (newPerspective === undefined) {
-          /** TODO, this should be the parent commit of the oldest update in the cache... */
-          const currentDetails = await this.base.getPerspective(update.perspectiveId);
-          onHead = currentDetails.details.headId;
-        }
-
-        const newUpdate = await this.squashUpdate(update, onHead);
-
-        if (newPerspective !== undefined) {
-          const perspective = await this.store.getEntity<Signed<Perspective>>(update.perspectiveId);
-          await this.base.newPerspective({
-            perspective,
-            update: newUpdate,
-          });
-        } else {
-          /** just update the perspective data (no guardian update or anything) */
-          await this.base.updatePerspective(newUpdate);
-        }
-      })
+      mutation.newPerspectives.map((newPerspective) =>
+        (this.base as Client).newPerspective(newPerspective)
+      )
+    );
+    await Promise.all(
+      mutation.updates.map((update) => (this.base as Client).updatePerspective(update))
     );
 
     if (!this.base) {
@@ -148,7 +128,13 @@ export class ClientCachedLocal extends ClientCachedWithBase {
 
     /** clean perspectives from the cache */
     await Promise.all(
-      allUpdates.map(async (update) => this.cache.clearPerspective(update.perspectiveId))
+      mutation.newPerspectives.map((newPerspective) =>
+        this.cache.clearPerspective(newPerspective.perspective.id)
+      )
+    );
+
+    await Promise.all(
+      mutation.updates.map((update) => this.cache.clearPerspective(update.perspectiveId))
     );
   }
 

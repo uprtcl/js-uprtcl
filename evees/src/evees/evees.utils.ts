@@ -1,11 +1,13 @@
 import { update } from 'lodash';
+import { Signed } from 'src/patterns/interfaces/signable';
 import { CASStore } from '../cas/interfaces/cas-store';
 import { Secured } from '../cas/utils/cid-hash';
 import { createCommit } from './default.perspectives';
+import { Evees } from './evees.service';
 import { IndexDataHelper } from './index.data.helper';
 
 import { Client } from './interfaces/client';
-import { Commit, IndexData, Update } from './interfaces/types';
+import { Commit, EveesMutation, IndexData, Perspective, Update } from './interfaces/types';
 
 export class FindAncestor {
   done = false;
@@ -47,6 +49,31 @@ export class FindAncestor {
   }
 }
 
+export const getUpdateEntitiesIds = (update: Update): string[] => {
+  const entitiesIds: string[] = [];
+  entitiesIds.push(update.perspectiveId);
+
+  if (update.details.headId) entitiesIds.push(update.details.headId);
+  if (update.oldDetails && update.oldDetails.headId) entitiesIds.push(update.oldDetails.headId);
+
+  return entitiesIds;
+};
+
+/** get all the entities that are referenced inside an EveesMutation */
+export const getMutationEntitiesIds = (mutation: EveesMutation): string[] => {
+  const entitiesIds: Set<string> = new Set();
+
+  mutation.newPerspectives.forEach((newPerspective) => {
+    getUpdateEntitiesIds(newPerspective.update).forEach((id) => entitiesIds.add(id));
+  });
+
+  mutation.updates.forEach((update) => {
+    getUpdateEntitiesIds(update).forEach((id) => entitiesIds.add(id));
+  });
+
+  return Array.from(entitiesIds.values());
+};
+
 export interface CommitDAG {
   commits: Set<Secured<Commit>>;
   heads: string[];
@@ -64,9 +91,27 @@ export class CondensateCommits {
   /** reverse map parentIds */
   childrenMap: Map<string, Set<string>> = new Map();
 
+  remoteId!: string;
+  perspectiveId!: string;
+
   constructor(protected store: CASStore, protected updates: Update[]) {}
 
-  async readAllCommits() {
+  async init() {
+    this.perspectiveId = this.updates[0].perspectiveId;
+    const perspective = await this.store.getEntity<Signed<Perspective>>(this.perspectiveId);
+    this.remoteId = perspective.object.payload.remote;
+
+    this.updates.forEach((update) => {
+      if (this.perspectiveId && this.perspectiveId !== update.perspectiveId) {
+        throw new Error('All updates must be of the same perspective');
+      }
+    });
+
+    await this.readAllCommits();
+    this.indexChildren();
+  }
+
+  private async readAllCommits() {
     /** extract all head commits in the Updates and create a map from commit id to Update */
     const headIds = this.updates
       .map((update) => {
@@ -83,14 +128,14 @@ export class CondensateCommits {
   }
 
   /** the parents of the commit are both the parentIds and the forking properties */
-  getParents(commit: Secured<Commit>) {
+  private getParents(commit: Secured<Commit>) {
     return commit.object.payload.parentsIds.concat(
       commit.object.payload.forking ? [commit.object.payload.forking] : []
     );
   }
 
   /** create a map from commit id to its children (all commits in the DAG who has that commit as parent) */
-  indexChildren() {
+  private indexChildren() {
     Array.from(this.allCommits.values()).map((commit) => {
       /** forking is a special type of parent */
       const parentsIds = this.getParents(commit);
@@ -105,7 +150,7 @@ export class CondensateCommits {
   }
 
   /** find all the commits have at least one parent outside of the original DAG */
-  findTails(): string[] {
+  private findTails(): string[] {
     const tails: string[] = [];
     Array.from(this.allCommits.values()).filter((commit) => {
       const parentsIds = this.getParents(commit);
@@ -123,7 +168,7 @@ export class CondensateCommits {
   }
 
   /** Navigates commit children until no further children exist, combine updates in the proecss */
-  async condenseUpdate(
+  private async condenseUpdate(
     commitId: string,
     onParents: string[],
     forking?: string,
@@ -132,18 +177,26 @@ export class CondensateCommits {
   ): Promise<Update[]> {
     const children = this.childrenMap.get(commitId);
     if (children && children.size > 0) {
-      const childrenHeads = Array.from(children.values()).map((childId) => {
-        const childUpdate = this.updatesMap.get(childId);
+      const childrenHeads = await Promise.all(
+        Array.from(children.values()).map(async (childId) => {
+          const childUpdate = this.updatesMap.get(childId);
+          if (!childUpdate) throw new Error('child Updated not found');
 
-        if (!childUpdate) throw new Error('child Updated not found');
+          const combinedIndexData = IndexDataHelper.combine(indexData, childUpdate.indexData);
 
-        const combinedIndexData = IndexDataHelper.combine(indexData, childUpdate.indexData);
+          const newList = [...currentList];
+          newList.push(commitId);
 
-        const newList = [...currentList];
-        newList.push(commitId);
-
-        return this.condenseUpdate(childId, onParents, forking, newList, combinedIndexData);
-      });
+          const updates = await this.condenseUpdate(
+            childId,
+            onParents,
+            forking,
+            newList,
+            combinedIndexData
+          );
+          return updates;
+        })
+      );
 
       return Array.prototype.concat.apply([], childrenHeads);
     }
@@ -155,14 +208,14 @@ export class CondensateCommits {
     const newCommitObject = createCommit({
       dataId: commit.object.payload.dataId,
       creatorsIds: commit.object.payload.creatorsIds,
-      message: `squashing ${JSON.stringify(currentList)}`,
+      message: `condensating ${JSON.stringify(currentList)}`,
       parentsIds: onParents,
       forking: forking,
     });
 
     const head = await this.store.storeEntity({
       object: newCommitObject,
-      remote: 'WIP',
+      remote: this.remoteId,
     });
 
     const newUpdate: Update = {
@@ -178,14 +231,22 @@ export class CondensateCommits {
     return [newUpdate];
   }
 
-  async sort(): Promise<void> {
+  async condensate(): Promise<Update[]> {
+    if (this.updates.length === 1) {
+      return this.updates;
+    }
+
     const tailsIds = this.findTails();
 
     /** for each tail, explore forward to find all connected heads */
-    const updates = tailsIds.map((tailId) => {
-      const commit = this.allCommits.get(tailId);
-      if (!commit) throw new Error('Commit not found');
-      return this.condenseUpdate(tailId, commit.object.payload.parentsIds);
-    });
+    const updates = await Promise.all(
+      tailsIds.map((tailId) => {
+        const commit = this.allCommits.get(tailId);
+        if (!commit) throw new Error('Commit not found');
+        return this.condenseUpdate(tailId, commit.object.payload.parentsIds);
+      })
+    );
+
+    return Array.prototype.concat.apply([], updates);
   }
 }
