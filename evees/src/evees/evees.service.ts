@@ -993,12 +993,18 @@ export class Evees {
     const update = mutation.updates.find((update) => update.perspectiveId === perspectiveId);
 
     if (update && update.details.headId) {
-      const newData = await localEvees.getCommitData(update.details.headId);
+      const head = await localEvees.client.store.getEntity<Signed<Commit>>(update.details.headId);
+      const newData = await localEvees.client.store.getEntity(head.object.payload.dataId);
 
-      const oldData =
-        update.oldDetails && update.oldDetails.headId !== undefined
-          ? await localEvees.getCommitData(update.oldDetails.headId)
-          : undefined;
+      let oldData: Entity<any> | undefined = undefined;
+
+      if (head.object.payload.parentsIds.length > 0) {
+        console.warn('Old data could be more than one in case of a merge');
+        const oldHead = await localEvees.client.store.getEntity<Signed<Commit>>(
+          head.object.payload.parentsIds[0]
+        );
+        oldData = await localEvees.client.store.getEntity(head.object.payload.dataId);
+      }
 
       const updateDetail: UpdateDetails = {
         path,

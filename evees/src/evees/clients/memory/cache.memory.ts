@@ -64,10 +64,10 @@ export class CacheOnMemory implements ClientCache {
     return this.newPerspectives.get(perspectiveId);
   }
 
-  async getLastUpdate(perspectiveId: string): Promise<Update | undefined> {
+  async getUpdatesOf(perspectiveId: string): Promise<Update[]> {
     const updates = await this.getUpdates();
     /** assumed last in array is last */
-    return updates.filter((u) => u.perspectiveId === perspectiveId).pop();
+    return updates.filter((u) => u.perspectiveId === perspectiveId);
   }
 
   async clearPerspective(perspectiveId: string) {

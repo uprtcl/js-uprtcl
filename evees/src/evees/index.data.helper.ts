@@ -38,8 +38,26 @@ export class IndexDataHelper {
       return indexData;
     }
 
-    (indexData.linkChanges[linksType] as ArrayChanges).added.push(...changes.added);
-    (indexData.linkChanges[linksType] as ArrayChanges).removed.push(...changes.removed);
+    /** removes cancel additions and viceversa */
+    const newChanges = indexData.linkChanges[linksType] as ArrayChanges;
+
+    changes.added.map((added) => {
+      const ixOfRemoved = newChanges.removed.indexOf(added);
+      if (ixOfRemoved !== -1) {
+        newChanges.removed.splice(ixOfRemoved, 1);
+      } else {
+        newChanges.added.push(added);
+      }
+    });
+
+    changes.removed.map((removed) => {
+      const ixOfAdded = newChanges.added.indexOf(removed);
+      if (ixOfAdded !== -1) {
+        newChanges.added.splice(ixOfAdded, 1);
+      } else {
+        newChanges.removed.push(removed);
+      }
+    });
 
     return indexData;
   }
@@ -61,20 +79,22 @@ export class IndexDataHelper {
 
   static combine(indexData?: IndexData, withIndexData?: IndexData): IndexData {
     indexData = this.combineArrayChanges(
-      this.getArrayChanges(withIndexData),
+      this.getArrayChanges(withIndexData, LinksType.children),
       LinksType.children,
       indexData
     );
     indexData = this.combineArrayChanges(
-      this.getArrayChanges(withIndexData),
+      this.getArrayChanges(withIndexData, LinksType.linksTo),
       LinksType.linksTo,
       indexData
     );
     indexData = this.combineArrayChanges(
-      this.getArrayChanges(withIndexData),
+      this.getArrayChanges(withIndexData, LinksType.onEcosystem),
       LinksType.onEcosystem,
       indexData
     );
+    indexData.text = withIndexData ? withIndexData.text : undefined;
+
     return indexData;
   }
 }

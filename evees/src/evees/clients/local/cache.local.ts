@@ -254,17 +254,8 @@ export class CacheLocal implements ClientCache {
     return newPerspectiveLocal.newPerspective;
   }
 
-  async getLastUpdate(perspectiveId: string): Promise<Update | undefined> {
-    const updates = await this.db.updates
-      .where('perspectiveId')
-      .equals(perspectiveId)
-      .sortBy('timexstamp');
-
-    const last = updates.pop();
-    if (!last) {
-      return undefined;
-    }
-
-    return last.update;
+  async getUpdatesOf(perspectiveId: string): Promise<Update[]> {
+    const updates = await this.db.updates.where('perspectiveId').equals(perspectiveId).toArray();
+    return updates.map((u) => u.update);
   }
 }

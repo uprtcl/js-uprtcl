@@ -5,6 +5,7 @@ import CID from 'cids';
 import { CidConfig, defaultCidConfig } from '../../cas/interfaces/cid-config';
 import { Signed } from '../../patterns/interfaces/signable';
 import { Entity, EntityCreate } from '../interfaces/entity';
+import { Logger } from 'src/utils/logger';
 
 export type Secured<T> = Entity<Signed<T>>;
 
@@ -22,6 +23,9 @@ export function sortObject(object: object): object {
   return newObject;
 }
 
+const logger = new Logger('hashObject()');
+const LOGINFO_HASH = false;
+
 export async function hashObject(
   object: object,
   config: CidConfig = defaultCidConfig
@@ -31,8 +35,11 @@ export async function hashObject(
   const encoded = await multihashing(buffer, config.type as any);
 
   const cid = new CID(config.version, config.codec, encoded, config.base);
+  const cidStr = cid.toString();
+  if (LOGINFO_HASH)
+    logger.log('hash', { cidStr: cid.toString(), object, sorted, buffer, encoded, cid });
 
-  return cid.toString();
+  return cidStr;
 }
 
 export function cidConfigOf(cidStr: string): CidConfig {
@@ -139,6 +146,10 @@ export function validateEntities(entities: Entity[], references: EntityCreate[])
     if (ref.id) {
       const entity = entities.find((e) => e.id === ref.id);
       if (!entity) {
+        /** append stringified object */
+        entities.forEach((entity) => ((entity as any).objectStr = JSON.stringify(entity.object)));
+        references.forEach((entity) => ((entity as any).objectStr = JSON.stringify(entity.object)));
+
         console.error(`Entity ${ref.id} not correctly created`, { entities, references });
         throw new Error(`Entity ${JSON.stringify(ref)} not found in entity set`);
       }
