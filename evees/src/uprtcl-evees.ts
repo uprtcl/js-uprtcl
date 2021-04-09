@@ -149,3 +149,6 @@ export { ClientCachedWithBase, ClientCachedEvents } from './evees/clients/client
 export { CASOnMemory } from './cas/stores/cas.memory';
 export { CASLocal } from './cas/stores/cas.local';
 export { CASRemoteLocal } from './cas/stores/cas.remote.local';
+
+/** Evees Utils */
+export { CondensateCommits } from './evees/evees.utils';
