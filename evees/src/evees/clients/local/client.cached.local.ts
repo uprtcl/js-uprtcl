@@ -1,17 +1,6 @@
-import lodash from 'lodash-es';
-
-import {
-  Commit,
-  EveesMutation,
-  Perspective,
-  SearchOptions,
-  Update,
-} from '../../../evees/interfaces/types';
-import { Signed } from '../../../patterns/interfaces/signable';
-import { Entity } from '../../../cas/interfaces/entity';
+import { EveesMutation, SearchOptions } from '../../../evees/interfaces/types';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { CASLocal } from '../../../cas/stores/cas.local';
-import { createCommit } from '../../../evees/default.perspectives';
 import { Logger } from '../../../utils/logger';
 
 import { Client } from '../../interfaces/client';
@@ -21,7 +10,7 @@ import { CacheLocal } from './cache.local';
 import { LocalSearchEngine } from './search.engine.local';
 import { CondensateCommits, getMutationEntitiesIds } from 'src/evees/evees.utils';
 
-const LOGINFO = false;
+const LOGINFO = true;
 
 export class ClientCachedLocal extends ClientCachedWithBase {
   logger = new Logger('ClientCachedLocal');
@@ -84,7 +73,7 @@ export class ClientCachedLocal extends ClientCachedWithBase {
         /** returns the last update only */
         const updates = await this.cache.getUpdatesOf(perspectiveId);
 
-        const condensate = new CondensateCommits(this.store, updates);
+        const condensate = new CondensateCommits(this.store, updates, LOGINFO);
         await condensate.init();
 
         const squahedUpdates = await condensate.condensate();
@@ -103,7 +92,8 @@ export class ClientCachedLocal extends ClientCachedWithBase {
   async flush(options?: SearchOptions) {
     const mutation = await this.diff(options);
 
-    const { entities } = await this.store.getEntities(getMutationEntitiesIds(mutation));
+    const entitiesIds = await getMutationEntitiesIds(mutation, this.store);
+    const { entities } = await this.store.getEntities(entitiesIds);
     mutation.entities = entities;
 
     if (!this.base) throw new Error('base not defined');

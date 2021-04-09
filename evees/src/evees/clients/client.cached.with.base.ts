@@ -16,12 +16,11 @@ import { Logger } from '../../utils/logger';
 
 import { Client, ClientEvents } from '../interfaces/client';
 import { ClientCache } from './client.cache';
-import { Proposals } from '../proposals/proposals';
 import { Signed } from 'src/patterns/interfaces/signable';
 import { AsyncQueue } from 'src/utils/async';
 import { SearchEngine } from '../interfaces/search.engine';
 
-const LOGINFO = false;
+const LOGINFO = true;
 
 export enum ClientCachedEvents {
   pending = 'changes-pending',

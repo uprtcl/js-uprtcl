@@ -48,33 +48,42 @@ export class FindAncestor {
   }
 }
 
-export const getUpdateEntitiesIds = (update: Update): string[] => {
+export const getUpdateEntitiesIds = async (update: Update, store: CASStore): Promise<string[]> => {
   const entitiesIds: string[] = [];
   entitiesIds.push(update.perspectiveId);
 
-  if (update.details.headId) entitiesIds.push(update.details.headId);
-  if (update.oldDetails && update.oldDetails.headId) entitiesIds.push(update.oldDetails.headId);
+  if (update.details.headId) {
+    const head = await store.getEntity<Signed<Commit>>(update.details.headId);
+    entitiesIds.push(update.details.headId);
+    entitiesIds.push(head.object.payload.dataId);
+  }
 
   return entitiesIds;
 };
 
 /** get all the entities that are referenced inside an EveesMutation */
-export const getMutationEntitiesIds = (mutation: EveesMutation): string[] => {
+export const getMutationEntitiesIds = async (
+  mutation: EveesMutation,
+  store: CASStore
+): Promise<string[]> => {
   const entitiesIds: Set<string> = new Set();
 
-  mutation.newPerspectives.forEach((newPerspective) => {
-    getUpdateEntitiesIds(newPerspective.update).forEach((id) => entitiesIds.add(id));
-  });
+  await Promise.all(
+    mutation.newPerspectives.map(async (newPerspective) => {
+      const ids = await getUpdateEntitiesIds(newPerspective.update, store);
+      ids.forEach((id) => entitiesIds.add(id));
+    })
+  );
 
-  mutation.updates.forEach((update) => {
-    getUpdateEntitiesIds(update).forEach((id) => entitiesIds.add(id));
-  });
+  await Promise.all(
+    mutation.updates.map(async (update) => {
+      const ids = await getUpdateEntitiesIds(update, store);
+      ids.forEach((id) => entitiesIds.add(id));
+    })
+  );
 
   return Array.from(entitiesIds.values());
 };
-
-const LOGINFO_CONDENSATE = false;
-const logger = new Logger('CondensateCommits');
 
 export interface CommitDAG {
   commits: Set<Secured<Commit>>;
@@ -95,8 +104,13 @@ export class CondensateCommits {
 
   remoteId!: string;
   perspectiveId!: string;
+  logger = new Logger('CondensateCommits');
 
-  constructor(protected store: CASStore, protected updates: Update[]) {}
+  constructor(
+    protected store: CASStore,
+    protected updates: Update[],
+    protected logEnabled = false
+  ) {}
 
   async init() {
     this.perspectiveId = this.updates[0].perspectiveId;
@@ -104,7 +118,7 @@ export class CondensateCommits {
     const perspective = await this.store.getEntity<Signed<Perspective>>(this.perspectiveId);
     this.remoteId = perspective.object.payload.remote;
 
-    if (LOGINFO_CONDENSATE) logger.log('init()', { updates: this.updatesMap, perspective });
+    if (this.logEnabled) this.logger.log('init()', { updates: this.updatesMap, perspective });
 
     this.updates.forEach((update) => {
       if (this.perspectiveId && this.perspectiveId !== update.perspectiveId) {
@@ -131,7 +145,7 @@ export class CondensateCommits {
     const commits = await this.store.getEntities(headIds);
     commits.entities.map((commit) => this.allCommits.set(commit.id, commit));
 
-    if (LOGINFO_CONDENSATE) logger.log('readAllCommits()', { allCommits: this.allCommits });
+    if (this.logEnabled) this.logger.log('readAllCommits()', { allCommits: this.allCommits });
   }
 
   /** the parents of the commit are both the parentIds and the forking properties */
@@ -171,7 +185,7 @@ export class CondensateCommits {
       }
     });
 
-    if (LOGINFO_CONDENSATE) logger.log('findTails()', { tails });
+    if (this.logEnabled) this.logger.log('findTails()', { tails });
 
     return tails;
   }
@@ -185,7 +199,7 @@ export class CondensateCommits {
     indexData?: IndexData
   ): Promise<Update[]> {
     const children = this.childrenMap.get(commitId);
-    if (LOGINFO_CONDENSATE) logger.log('condenseUpdate()', { commitId, children });
+    if (this.logEnabled) this.logger.log('condenseUpdate()', { commitId, children });
 
     if (children && children.size > 0) {
       const childrenHeads = await Promise.all(
@@ -194,8 +208,8 @@ export class CondensateCommits {
           if (!childUpdate) throw new Error('child Updated not found');
 
           const combinedIndexData = IndexDataHelper.combine(indexData, childUpdate.indexData);
-          if (LOGINFO_CONDENSATE)
-            logger.log('condenseUpdate() - combinedIndexData', {
+          if (this.logEnabled)
+            this.logger.log('condenseUpdate() - combinedIndexData', {
               combinedIndexData,
               indexData,
               childUpdateIndexData: childUpdate.indexData,
@@ -245,8 +259,8 @@ export class CondensateCommits {
       indexData: indexData,
     };
 
-    if (LOGINFO_CONDENSATE)
-      logger.log('condenseUpdate() - newUpdate', {
+    if (this.logEnabled)
+      this.logger.log('condenseUpdate() - newUpdate', {
         newUpdate: newUpdate,
         oldCommit: commit,
         newCommit: head,
@@ -256,11 +270,11 @@ export class CondensateCommits {
   }
 
   async condensate(): Promise<Update[]> {
-    if (LOGINFO_CONDENSATE)
-      logger.log('condensate()', { perspectiveId: this.perspectiveId, updates: this.updates });
+    if (this.logEnabled)
+      this.logger.log('condensate()', { perspectiveId: this.perspectiveId, updates: this.updates });
 
     if (this.updates.length === 1) {
-      if (LOGINFO_CONDENSATE) logger.log('condenseUpdate() - NOP');
+      if (this.logEnabled) this.logger.log('condenseUpdate() - NOP');
       return this.updates;
     }
 
