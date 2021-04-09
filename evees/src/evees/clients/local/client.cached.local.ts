@@ -127,65 +127,14 @@ export class ClientCachedLocal extends ClientCachedWithBase {
     await this.base.flush(options, true);
 
     /** clean perspectives from the cache */
-    await Promise.all(
-      mutation.newPerspectives.map((newPerspective) =>
-        this.cache.clearPerspective(newPerspective.perspective.id)
-      )
-    );
+    // await Promise.all(
+    //   mutation.newPerspectives.map((newPerspective) =>
+    //     this.cache.clearPerspective(newPerspective.perspective.id)
+    //   )
+    // );
 
-    await Promise.all(
-      mutation.updates.map((update) => this.cache.clearPerspective(update.perspectiveId))
-    );
-  }
-
-  async squashUpdate(update: Update, onHead?: string): Promise<Update> {
-    if (!this.base) {
-      throw new Error('base client not defined for flush');
-    }
-
-    const perspectiveId = update.perspectiveId;
-
-    let data: Entity<any> | undefined = undefined;
-
-    if (update.details.headId) {
-      const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
-      data = head ? await this.store.getEntity<any>(head.object.payload.dataId) : undefined;
-    }
-
-    const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
-    const remoteId = perspective.object.payload.remote;
-
-    await this.base.store.storeEntity(perspective);
-
-    let headId: string | undefined = undefined;
-
-    if (data) {
-      const dataId = await this.base.store.storeEntity({
-        object: data.object,
-        remote: remoteId,
-      });
-
-      const headObject = await createCommit({
-        dataId: dataId.id,
-        parentsIds: onHead ? [onHead] : undefined,
-      });
-
-      const head = await this.base.store.storeEntity({
-        object: headObject,
-        remote: remoteId,
-      });
-
-      headId = head.id;
-
-      if (LOGINFO) this.logger.log('squashUpdate', { update, data, head });
-    }
-
-    /** keep everyhing except for the headId which was squashed */
-    const newUpdate = lodash.cloneDeep(update);
-    newUpdate.details.headId = headId;
-
-    if (LOGINFO) this.logger.log('squashUpdate - newUpdate', { newUpdate });
-
-    return newUpdate;
+    // await Promise.all(
+    //   mutation.updates.map((update) => this.cache.clearPerspective(update.perspectiveId))
+    // );
   }
 }

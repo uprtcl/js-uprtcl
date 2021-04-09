@@ -1,9 +1,8 @@
-import { update } from 'lodash';
 import { Signed } from 'src/patterns/interfaces/signable';
+import { Logger } from 'src/utils/logger';
 import { CASStore } from '../cas/interfaces/cas-store';
 import { Secured } from '../cas/utils/cid-hash';
 import { createCommit } from './default.perspectives';
-import { Evees } from './evees.service';
 import { IndexDataHelper } from './index.data.helper';
 
 import { Client } from './interfaces/client';
@@ -74,6 +73,9 @@ export const getMutationEntitiesIds = (mutation: EveesMutation): string[] => {
   return Array.from(entitiesIds.values());
 };
 
+const LOGINFO_CONDENSATE = false;
+const logger = new Logger('CondensateCommits');
+
 export interface CommitDAG {
   commits: Set<Secured<Commit>>;
   heads: string[];
@@ -98,8 +100,11 @@ export class CondensateCommits {
 
   async init() {
     this.perspectiveId = this.updates[0].perspectiveId;
+
     const perspective = await this.store.getEntity<Signed<Perspective>>(this.perspectiveId);
     this.remoteId = perspective.object.payload.remote;
+
+    if (LOGINFO_CONDENSATE) logger.log('init()', { updates: this.updatesMap, perspective });
 
     this.updates.forEach((update) => {
       if (this.perspectiveId && this.perspectiveId !== update.perspectiveId) {
@@ -125,6 +130,8 @@ export class CondensateCommits {
 
     const commits = await this.store.getEntities(headIds);
     commits.entities.map((commit) => this.allCommits.set(commit.id, commit));
+
+    if (LOGINFO_CONDENSATE) logger.log('readAllCommits()', { allCommits: this.allCommits });
   }
 
   /** the parents of the commit are both the parentIds and the forking properties */
@@ -164,6 +171,8 @@ export class CondensateCommits {
       }
     });
 
+    if (LOGINFO_CONDENSATE) logger.log('findTails()', { tails });
+
     return tails;
   }
 
@@ -176,6 +185,8 @@ export class CondensateCommits {
     indexData?: IndexData
   ): Promise<Update[]> {
     const children = this.childrenMap.get(commitId);
+    if (LOGINFO_CONDENSATE) logger.log('condenseUpdate()', { commitId, children });
+
     if (children && children.size > 0) {
       const childrenHeads = await Promise.all(
         Array.from(children.values()).map(async (childId) => {
@@ -183,6 +194,12 @@ export class CondensateCommits {
           if (!childUpdate) throw new Error('child Updated not found');
 
           const combinedIndexData = IndexDataHelper.combine(indexData, childUpdate.indexData);
+          if (LOGINFO_CONDENSATE)
+            logger.log('condenseUpdate() - combinedIndexData', {
+              combinedIndexData,
+              indexData,
+              childUpdateIndexData: childUpdate.indexData,
+            });
 
           const newList = [...currentList];
           newList.push(commitId);
@@ -228,11 +245,22 @@ export class CondensateCommits {
       indexData: indexData,
     };
 
+    if (LOGINFO_CONDENSATE)
+      logger.log('condenseUpdate() - newUpdate', {
+        newUpdate: newUpdate,
+        oldCommit: commit,
+        newCommit: head,
+      });
+
     return [newUpdate];
   }
 
   async condensate(): Promise<Update[]> {
+    if (LOGINFO_CONDENSATE)
+      logger.log('condensate()', { perspectiveId: this.perspectiveId, updates: this.updates });
+
     if (this.updates.length === 1) {
+      if (LOGINFO_CONDENSATE) logger.log('condenseUpdate() - NOP');
       return this.updates;
     }
 

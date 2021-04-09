@@ -32,16 +32,23 @@ export class HttpStore implements CASRemote {
   }
 
   async hash(object: object): Promise<Entity> {
+    const cidConfig = httpCidConfig;
     /** optimistically hash based on the CidConfig without asking the server */
-    const id = await hashObject(object, httpCidConfig);
+    const id = await hashObject(object, cidConfig);
 
     const entity = {
       id,
-      object: object,
+      object: { ...object },
       casID: this.casID,
     };
 
-    if (LOGINFO) this.logger.log('hash', { entity, cidConfig: httpCidConfig });
+    if (LOGINFO)
+      this.logger.log('hash', {
+        entity,
+        cidConfig,
+        objectStr: JSON.stringify(entity.object),
+        cidConfigStr: JSON.stringify(cidConfig),
+      });
 
     return entity;
   }
