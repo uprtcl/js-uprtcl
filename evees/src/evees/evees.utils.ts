@@ -239,7 +239,7 @@ export class CondensateCommits {
     const newCommitObject = createCommit({
       dataId: commit.object.payload.dataId,
       creatorsIds: commit.object.payload.creatorsIds,
-      message: `condensating ${JSON.stringify(currentList)}`,
+      message: `condensating ${currentList.join(' ')}`,
       parentsIds: onParents,
       forking: forking,
     });

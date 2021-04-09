@@ -20,7 +20,7 @@ import { Signed } from 'src/patterns/interfaces/signable';
 import { AsyncQueue } from 'src/utils/async';
 import { SearchEngine } from '../interfaces/search.engine';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export enum ClientCachedEvents {
   pending = 'changes-pending',
