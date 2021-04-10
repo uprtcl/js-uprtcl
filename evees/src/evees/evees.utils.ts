@@ -1,5 +1,5 @@
-import { Signed } from 'src/patterns/interfaces/signable';
-import { Logger } from 'src/utils/logger';
+import { Signed } from '../patterns/interfaces/signable';
+import { Logger } from '../utils/logger';
 import { CASStore } from '../cas/interfaces/cas-store';
 import { Secured } from '../cas/utils/cid-hash';
 import { createCommit } from './default.perspectives';
@@ -109,6 +109,7 @@ export class CondensateCommits {
   constructor(
     protected store: CASStore,
     protected updates: Update[],
+    protected squash: boolean = true,
     protected logEnabled = false
   ) {}
 
@@ -235,35 +236,44 @@ export class CondensateCommits {
     /** this is a head, so create a new Update object
      * that replaces all the updates in the list */
     const update = this.updatesMap.get(commitId) as Update;
-    const commit = this.allCommits.get(commitId) as Secured<Commit>;
-    const newCommitObject = createCommit({
-      dataId: commit.object.payload.dataId,
-      creatorsIds: commit.object.payload.creatorsIds,
-      message: `condensating ${currentList.join(' ')}`,
-      parentsIds: onParents,
-      forking: forking,
-    });
+    let newUpdate: Update;
 
-    const head = await this.store.storeEntity({
-      object: newCommitObject,
-      remote: this.remoteId,
-    });
+    if (this.squash) {
+      /** squash creates a new head commit that squashes (removes) all intermediate commits  */
+      const commit = this.allCommits.get(commitId) as Secured<Commit>;
+      const newCommitObject = createCommit({
+        dataId: commit.object.payload.dataId,
+        creatorsIds: commit.object.payload.creatorsIds,
+        message: `condensating ${currentList.join(' ')}`,
+        parentsIds: onParents,
+        forking: forking,
+      });
 
-    const newUpdate: Update = {
-      details: {
-        ...update.details,
-        headId: head.id,
-      },
-      perspectiveId: update.perspectiveId,
-      fromPerspectiveId: update.fromPerspectiveId,
-      indexData: indexData,
-    };
+      const head = await this.store.storeEntity({
+        object: newCommitObject,
+        remote: this.remoteId,
+      });
+
+      newUpdate = {
+        details: {
+          ...update.details,
+          headId: head.id,
+        },
+        perspectiveId: update.perspectiveId,
+        fromPerspectiveId: update.fromPerspectiveId,
+        indexData: indexData,
+      };
+    } else {
+      /** if not squash simply return the last update with the compounded indexData  */
+      newUpdate = {
+        ...update,
+        indexData: indexData,
+      };
+    }
 
     if (this.logEnabled)
       this.logger.log('condenseUpdate() - newUpdate', {
         newUpdate: newUpdate,
-        oldCommit: commit,
-        newCommit: head,
       });
 
     return [newUpdate];

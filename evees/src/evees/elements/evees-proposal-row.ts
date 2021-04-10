@@ -117,7 +117,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
               return this.proposalEvees.isAncestorCommit(
                 update.perspectiveId,
                 update.details.headId as string,
-                update.oldDetails?.headId
+                update.oldDetails ? update.oldDetails.headId : undefined
               );
             })
         : [true]

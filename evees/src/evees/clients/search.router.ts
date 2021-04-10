@@ -50,7 +50,7 @@ export class SearchEngineRouter extends BaseRouter implements SearchEngine {
       combinedResult.perspectiveIds.push(...result.perspectiveIds);
       if (combinedResult.slice) {
         if (result.slice) {
-          combinedResult.slice.entities.push(...result.slice?.entities);
+          combinedResult.slice.entities.push(...result.slice.entities);
         }
         if (result.slice) {
           combinedResult.slice.perspectives.push(...result.slice.perspectives);

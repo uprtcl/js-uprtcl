@@ -371,7 +371,7 @@ export class Evees {
     await this.indexUpdate(update);
     await this.client.updatePerspective(update);
 
-    flush = flush || (this.config.flush ? this.config.flush?.autoflush : false);
+    flush = flush || (this.config.flush ? this.config.flush.autoflush : false);
     if (flush) {
       this.client.flush();
     }
