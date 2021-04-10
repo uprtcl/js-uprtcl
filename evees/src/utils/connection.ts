@@ -1,4 +1,4 @@
-import merge from 'lodash-es/merge';
+import {merge} from 'lodash';
 import { Logger } from './logger';
 import { Ready } from './ready';
 

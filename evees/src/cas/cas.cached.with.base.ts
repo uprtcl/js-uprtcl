@@ -1,4 +1,4 @@
-import lodash from 'lodash-es';
+import lodash from 'lodash';
 import { CASCache } from './cas.cache';
 
 import { CASStore, EntityGetResult } from './interfaces/cas-store';
