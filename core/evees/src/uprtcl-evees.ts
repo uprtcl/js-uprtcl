@@ -4,8 +4,6 @@ export {
   Perspective,
   PerspectiveDetails,
   Update,
-  HasDiffLenses,
-  DiffLens,
   PartialPerspective,
   CreateEvee,
   LinkChanges,
