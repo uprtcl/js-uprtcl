@@ -1,4 +1,4 @@
-import lodash from 'lodash-es';
+import lodash from 'lodash';
 import EventEmitter from 'events';
 
 import {

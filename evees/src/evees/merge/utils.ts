@@ -1,5 +1,5 @@
 import { Diff } from 'diff-match-patch-ts';
-import isEqual from 'lodash-es/isEqual';
+import {isEqual} from 'lodash';
 import { Evees } from '../evees.service';
 import { EveesMutation } from '../interfaces/types';
 

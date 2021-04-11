@@ -4,9 +4,6 @@
     "declarationDir": "dist/types",
     "outDir": "dist/lib",
     "baseUrl": "./",
-    "paths": {
-      "lit-element": ["node_modules/lit-element"]
-    }
   },
   "include": ["src"],
   "exclude": ["test"]

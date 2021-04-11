@@ -16,8 +16,7 @@ export default {
   external: [
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.peerDependencies || {}),
-    'lodash-es/isEqual',
-    'lodash-es/cloneDeep',
+
   ],
   watch: {
     buildDelay: 1000,
