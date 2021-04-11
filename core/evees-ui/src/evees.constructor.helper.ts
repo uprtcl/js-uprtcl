@@ -8,6 +8,8 @@ import { buildEvees } from './build.evees';
 import { CASRemote } from '../cas/interfaces/cas-remote';
 import { Evees } from '../evees/evees.service';
 
+import { registerComponents } from '../../../evees-ui/src/behaviours/register.components';
+
 /** a top level wrapper that registers everything */
 export const eveesConstructorHelper = (
   remotes: RemoteEvees[],
@@ -17,20 +19,7 @@ export const eveesConstructorHelper = (
   config?: EveesConfig
 ): Evees => {
   /** extract the stores and map remotes to stores */
-  const remoteToSourcesMap = new Map<string, string>();
-  remotes.forEach((remote) => {
-    remoteToSourcesMap.set(remote.id, remote.casID);
-  });
-
-  const store = buildStore(stores, remoteToSourcesMap);
-
-  /** set the cached store of the remotes */
-  remotes.forEach((remote) => {
-    remote.setStore(store);
-  });
-
-  const recognizer = buildRecognizer(modules, patterns);
-  const evees = buildEvees(remotes, stores, store, recognizer, modules, config);
-  
+  const evees = eveesConstructorHelper(remotes, stores, modules, patterns, config);
+  registerComponents(evees);
   return evees;
 };

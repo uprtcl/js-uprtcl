@@ -54,31 +54,6 @@ export {
   combineMutations,
 } from './evees/merge/utils';
 
-/** Elements */
-export { EveesPerspectivesList } from './evees/elements/evees-perspectives-list';
-export { EveesBaseElement } from './evees/elements/evees-base';
-export { EveesBaseEditable, EditableCase } from './evees/elements/evees-base-editable';
-export { EveesInfoPopper, EveesInfoConfig } from './evees/elements/evees-info-popper';
-export { EveesInfoBase } from './evees/elements/evees-info-base';
-export { ProposalsList } from './evees/elements/evees-proposals-list';
-export { EveesPerspectiveIcon } from './evees/elements/evees-perspective-icon';
-
-export {
-  UpdatePerspectiveEvent,
-  ContentUpdatedEvent,
-  SpliceChildrenEvent,
-  ProposalCreatedEvent,
-  NewPerspectiveEvent,
-  CONTENT_UPDATED_TAG,
-  PROPOSAL_CREATED_TAG,
-  NEW_PERSPECTIVE_TAG,
-  UPDATE_PERSPECTIVE_TAG,
-} from './evees/elements/events';
-export { EveesDiffExplorer } from './evees/elements/evees-diff-explorer';
-
-/** UI support components */
-export { prettyAddress } from './evees/elements/support';
-export { eveeColor, DEFAULT_COLOR } from './evees/elements/support';
 
 /** Utils */
 export { isAncestorOf } from './evees/merge/ancestor';
@@ -90,13 +65,12 @@ export { filterAsync, mapAsync, AsyncQueue } from './utils/async';
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
 export { Proposals, ProposalEvents } from './evees/proposals/proposals';
-export { ProposalsWithUI } from './evees/proposals/proposals.with-ui';
+export { ProposalsWithUI } from '../../evees-ui/src/interfaces/proposals.with-ui';
 export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 
 /** Aceess Control */
 export { AccessControl } from './evees/interfaces/access-control';
 export { RemoteLogged, RemoteLoggedEvents } from './evees/interfaces/remote.logged';
-export { RemoteWithUI } from './evees/interfaces/remote.with-ui';
 
 export { Logger } from './utils/logger';
 
@@ -123,8 +97,6 @@ export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
 
 /** Patterns */
 export { HasChildren, HasLinks, LinkingBehaviorNames } from './patterns/behaviours/has-links';
-export { HasLenses, Lens } from './patterns/behaviours/has-lenses';
-export { RenderEntityInput } from './patterns/elements/uprtcl-entity';
 export { HasTitle } from './patterns/behaviours/has-title';
 export { HasEmpty } from './patterns/behaviours/has-empty';
 export { PatternRecognizer } from './patterns/recognizer/pattern-recognizer';
@@ -133,9 +105,7 @@ export { PerspectiveType } from './evees/patterns/perspective.pattern';
 export { CommitType } from './evees/patterns/commit.pattern';
 
 /** container */
-export { servicesConnect } from './container/multi-connect.mixin';
 export { eveesConstructorHelper } from './creator-helpers/evees.constructor.helper';
-export { MultiContainer } from './container/multi.container';
 
 export { AppElement, AppElements } from './creator-helpers/app.elements';
 

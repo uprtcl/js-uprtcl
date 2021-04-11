@@ -1,7 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { servicesConnect } from '../../container/multi-connect.mixin.js';
-import { Logger } from '../../utils/logger.js';
+import { servicesConnect } from '../container/multi-connect.mixin.js.js';
+import { Logger } from '../../../evees/src/utils/logger.js';
 
 import { RemoteWithUI } from '../interfaces/remote.with-ui.js';
 

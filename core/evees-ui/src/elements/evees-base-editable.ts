@@ -1,9 +1,9 @@
 import { icons } from '@uprtcl/common-ui';
 import { css, html, internalProperty, property } from 'lit-element';
 
-import { Logger } from '../../utils/logger';
-import { RemoteEvees } from '../interfaces/remote.evees';
-import { RemoteLoggedEvents } from '../interfaces/remote.logged';
+import { Logger } from '../../../evees/src/utils/logger';
+import { RemoteEvees } from '../../../evees/src/evees/interfaces/remote.evees';
+import { RemoteLoggedEvents } from '../../../evees/src/evees/interfaces/remote.logged';
 import { EveesBaseElement } from './evees-base';
 
 export enum EditableCase {

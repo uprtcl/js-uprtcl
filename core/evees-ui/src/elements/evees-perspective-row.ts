@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
-import { Logger } from '../../utils/logger';
-import { servicesConnect } from '../../container/multi-connect.mixin';
+import { Logger } from '../../../evees/src/utils/logger';
+import { servicesConnect } from '../container/multi-connect.mixin';
 
 import { eveeColor } from './support';
 interface PerspectiveData {

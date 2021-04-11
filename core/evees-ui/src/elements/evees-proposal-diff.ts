@@ -1,7 +1,7 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 import { servicesConnect } from 'src/container/multi-connect.mixin';
 
-import { Logger } from '../../utils/logger';
+import { Logger } from '../../../evees/src/utils/logger';
 
 import { EveesDiffExplorer } from './evees-diff-explorer';
 

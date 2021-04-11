@@ -1,10 +1,10 @@
 import { LitElement, html, css, property } from 'lit-element';
 
-import { Secured } from '../../cas/utils/cid-hash';
-import { servicesConnect } from '../../container/multi-connect.mixin';
+import { Secured } from '../../../evees/src/cas/utils/cid-hash';
+import { servicesConnect } from '../container/multi-connect.mixin';
 
-import { Perspective } from '../interfaces/types';
-import { Evees } from '../evees.service';
+import { Perspective } from '../../../evees/src/evees/interfaces/types';
+import { Evees } from '../../../evees/src/evees/evees.service';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 
 export class EveesPerspectiveIcon extends servicesConnect(LitElement) {

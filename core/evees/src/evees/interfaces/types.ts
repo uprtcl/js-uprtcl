@@ -1,5 +1,3 @@
-import { TemplateResult } from 'lit-element';
-
 import { Behaviour } from '../../patterns/interfaces/behaviour';
 import { Secured } from '../../cas/utils/cid-hash';
 import { Entity, EntityCreate } from '../../cas/interfaces/entity';
@@ -208,16 +206,6 @@ export interface ForkOf {
   forkId: string;
   ofPerspectiveId: string;
   atHeadId?: string;
-}
-
-export interface DiffLens {
-  name: string;
-  render: (evees: Evees, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;
-  type?: string;
-}
-
-export interface HasDiffLenses<T = any> extends Behaviour<T> {
-  diffLenses: () => DiffLens[];
 }
 
 export interface EveesConfig {

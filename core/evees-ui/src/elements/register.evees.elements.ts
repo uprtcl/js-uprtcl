@@ -11,7 +11,7 @@ import { EveesProposalRow } from './evees-proposal-row';
 import { EveesPerspectiveIcon } from './evees-perspective-icon';
 import { EveesDiffUpdate } from './evees-diff-update';
 
-import { UprtclEntity } from '../../patterns/elements/uprtcl-entity';
+import { UprtclEntity } from './uprtcl-entity';
 import { EveesDiffRow } from 'src/evees/elements/evees-diff-row';
 import { ProposalsDropdown } from './evees-proposals-dropdown';
 

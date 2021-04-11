@@ -12,7 +12,6 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.2.0",
     "cbor-js": "^0.1.0",
     "cids": "^1.1.6",
     "multihashing-async": "^v2.1.2",
@@ -20,7 +19,6 @@
     "diff-match-patch-ts": "^0.2.0",
     "ethers": "^5.0.9",
     "events": "^3.2.0",
-    "lit-element": "^2.3.0",
     "lodash": "^4.17.15",
     "randomcolor": "^0.5.4"
   },

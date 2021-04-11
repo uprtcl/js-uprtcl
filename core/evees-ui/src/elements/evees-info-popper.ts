@@ -2,8 +2,8 @@ import { html, css, property, LitElement, query } from 'lit-element';
 
 import { UprtclPopper } from '@uprtcl/common-ui';
 
-import { Logger } from '../../utils/logger';
-import { servicesConnect } from '../../container/multi-connect.mixin';
+import { Logger } from '../../../evees/src/utils/logger';
+import { servicesConnect } from '../container/multi-connect.mixin';
 
 import { DEFAULT_COLOR, eveeColor } from './support';
 

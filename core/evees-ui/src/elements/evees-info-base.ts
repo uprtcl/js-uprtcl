@@ -2,21 +2,21 @@ import { LitElement, property, html, css, query, TemplateResult } from 'lit-elem
 
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
 
-import { PerspectiveType } from '../patterns/perspective.pattern';
-import { CommitType } from '../patterns/commit.pattern';
-import { Entity } from '../../cas/interfaces/entity';
-import { Signed } from '../../patterns/interfaces/signable';
-import { Logger } from '../../utils/logger';
-import { servicesConnect } from '../../container/multi-connect.mixin';
+import { PerspectiveType } from '../../../evees/src/evees/patterns/perspective.pattern';
+import { CommitType } from '../../../evees/src/evees/patterns/commit.pattern';
+import { Entity } from '../../../evees/src/cas/interfaces/entity';
+import { Signed } from '../../../evees/src/patterns/interfaces/signable';
+import { Logger } from '../../../evees/src/utils/logger';
+import { servicesConnect } from '../container/multi-connect.mixin';
 
-import { Perspective, PerspectiveDetails, Commit } from '../interfaces/types';
-import { RemoteEvees } from '../interfaces/remote.evees';
+import { Perspective, PerspectiveDetails, Commit } from '../../../evees/src/evees/interfaces/types';
+import { RemoteEvees } from '../../../evees/src/evees/interfaces/remote.evees';
 
 import { ProposalCreatedEvent } from './events';
-import { Proposal } from '../proposals/types';
-import { RecursiveContextMergeStrategy } from '../merge/recursive-context.merge-strategy';
-import { Evees } from '../evees.service';
-import { MergeConfig } from '../merge/merge-strategy';
+import { Proposal } from '../../../evees/src/evees/proposals/types';
+import { RecursiveContextMergeStrategy } from '../../../evees/src/evees/merge/recursive-context.merge-strategy';
+import { Evees } from '../../../evees/src/evees/evees.service';
+import { MergeConfig } from '../../../evees/src/evees/merge/merge-strategy';
 import { EveesDiffExplorer } from './evees-diff-explorer';
 
 interface PerspectiveData {

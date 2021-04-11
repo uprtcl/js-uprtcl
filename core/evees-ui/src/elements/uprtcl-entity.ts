@@ -1,8 +1,8 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
-import { servicesConnect } from '../../container/multi-connect.mixin.js';
-import { Evees } from '../../evees/evees.service.js';
-import { Logger } from '../../utils/logger.js';
+import { servicesConnect } from '../container/multi-connect.mixin.js.js';
+import { Evees } from '../../../evees/src/evees/evees.service.js';
+import { Logger } from '../../../evees/src/utils/logger.js';
 import { Lens } from '../behaviours/has-lenses.js';
 
 export interface RenderEntityInput {
