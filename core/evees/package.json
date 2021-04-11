@@ -59,7 +59,6 @@
     "proposal"
   ],
   "license": "BOOS-FL",
-  "type": "module",
   "main": "dist/uprtcl-evees.umd.js",
   "module": "dist/uprtcl-evees.es5.js",
   "typings": "dist/types/uprtcl-evees.d.ts",
