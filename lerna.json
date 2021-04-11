@@ -2,7 +2,7 @@
   "packages": [
     "connections/http",
     "connections/ethereum",
-    "evees",
+    "core/evees",
     "modules/common-ui",
     "modules/documents",
     "remotes/http"
