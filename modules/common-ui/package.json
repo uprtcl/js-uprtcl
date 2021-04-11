@@ -42,6 +42,7 @@
     }
   ],
   "license": "BOOS-FL",
+  "type": "module",
   "main": "dist/uprtcl-common-ui.umd.js",
   "module": "dist/uprtcl-common-ui.es5.js",
   "typings": "dist/types/uprtcl-common-ui.d.ts",
