@@ -2,22 +2,18 @@ import { html } from 'lit-element';
 
 import {
   mergeResult,
-  HasDiffLenses,
-  HasLenses,
-  DiffLens,
   MergeConfig,
   Pattern,
   HasChildren,
   HasTitle,
   HasEmpty,
-  Lens,
   Evees,
   LinkingBehaviorNames,
   HasMerge,
   MergingBehaviorNames,
-  RenderEntityInput,
   MergeStrategy,
 } from '@uprtcl/evees';
+import { HasDiffLenses, HasLenses, DiffLens, Lens, RenderEntityInput } from '@uprtcl/evees-ui';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
 import { DocumentsBindings } from '../bindings';

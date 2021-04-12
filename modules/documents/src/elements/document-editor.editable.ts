@@ -1,5 +1,6 @@
 import { css, html } from 'lit-element';
-import { EveesBaseEditable, EveesEvents } from '@uprtcl/evees';
+import { EveesBaseEditable } from '@uprtcl/evees-ui';
+
 import { TextNode } from '../types';
 
 /** a document editor that has one official version and one draft for the logged user */

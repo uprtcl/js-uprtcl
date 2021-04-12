@@ -1,6 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { servicesConnect } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees-ui';
 
 import {
   BasicAdminInheritedPermissions,
