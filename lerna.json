@@ -3,7 +3,8 @@
     "connections/http",
     "connections/ethereum",
     "core/evees",
-    "modules/common-ui",
+    "core/evees-ui",
+    "core/common-ui",
     "modules/documents",
     "remotes/http"
   ],

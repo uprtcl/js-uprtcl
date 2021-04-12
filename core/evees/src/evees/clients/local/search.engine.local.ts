@@ -1,7 +1,7 @@
 import { filterAsync } from '../../../utils/async';
 import { Signed } from '../../../patterns/interfaces/signable';
-import { Evees } from '../../../evees/evees.service';
 
+import { Evees } from '../../evees.service';
 import { SearchEngine } from '../../interfaces/search.engine';
 import {
   SearchOptions,

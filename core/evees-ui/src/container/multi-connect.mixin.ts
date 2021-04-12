@@ -1,4 +1,5 @@
-import { Evees } from '../../../evees/src/evees/evees.service';
+import { Evees } from '@uprtcl/evees';
+
 import { RequestDependencyEvent, RequestEveesEvent } from './multi.container';
 import { Constructor, CustomElement } from './types';
 

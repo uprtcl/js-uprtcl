@@ -1,5 +1,6 @@
-import { IndexDataHelper } from 'src/evees/index.data.helper';
 import { CASStore } from '../../../cas/interfaces/cas-store';
+
+import { IndexDataHelper } from '../../index.data.helper';
 import { Signed } from '../../../patterns/interfaces/signable';
 import { Logger } from '../../../utils/logger';
 import {

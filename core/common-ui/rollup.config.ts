@@ -9,7 +9,6 @@ const libraryName = 'uprtcl-common-ui';
 export default {
   input: `src/${libraryName}.ts`,
   output: [
-    { file: pkg.main, name: libraryName, format: 'umd', sourcemap: true },
     { file: pkg.module, format: 'es', sourcemap: true },
   ],
   external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],

@@ -1,8 +1,8 @@
-import { EveesMutation, SearchOptions } from '../../../evees/interfaces/types';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { CASLocal } from '../../../cas/stores/cas.local';
 import { Logger } from '../../../utils/logger';
 
+import { EveesMutation, SearchOptions } from '../../interfaces/types';
 import { Client } from '../../interfaces/client';
 import { ClientCachedWithBase } from '../client.cached.with.base';
 

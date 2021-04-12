@@ -1,28 +1,20 @@
 {
-  "name": "@uprtcl/evees",
+  "name": "@uprtcl/evees-ui",
   "version": "0.2.0",
-  "description": "The core _Prtcl package with all the services you need to handle Evees in a web application.",
+  "description": "Extension to @uprtc/evees package with all the browser specific dependencies",
   "homepage": "https://uprtcl.io",
   "scripts": {
     "update-uprtcl": "ncu -u \"/^@uprtcl.*$/\"",
     "clean": "rimraf dist",
     "dev": "rollup -w -c rollup.config.ts",
-    "build": "npm run clean && rollup -c rollup.config.ts",
-    "test": "karma start --coverage",
-    "test:watch": "karma start --auto-watch=true --single-run=false"
+    "build": "npm run clean && rollup -c rollup.config.ts"
   },
   "dependencies": {
-    "cbor-js": "^0.1.0",
-    "cids": "^1.1.6",
-    "multihashing-async": "^v2.1.2",
-    "dexie": "^3.0.2",
-    "diff-match-patch-ts": "^0.2.0",
-    "ethers": "^5.0.9",
-    "events": "^3.2.0",
-    "lodash": "^4.17.15",
-    "randomcolor": "^0.5.4"
+    "lit-element": "^2.3.0",
+    "@uprtcl/common-ui": "^0.2.0"
   },
   "devDependencies": {
+    "@open-wc/testing": "^2.5.6",
     "@rollup/plugin-json": "^4.0.1",
     "@types/node": "^10.11.0",
     "karma": "^4.4.1",
@@ -40,27 +32,16 @@
   },
   "contributors": [
     {
-      "name": "Guillem Cordoba",
-      "email": "guillem.cordoba@gmail.com",
-      "url": "https://github.com/guillemcordoba"
-    },
-    {
       "name": "Pepo Ospina",
       "email": "pepo@collectiveone.org",
       "url": "https://github.com/pepoospina"
     }
   ],
-  "keywords": [
-    "_Prtcl",
-    "git",
-    "perspectives",
-    "comBOOS-FLs",
-    "proposal"
-  ],
+  "keywords": [],
   "license": "BOOS-FL",
-  "main": "dist/uprtcl-evees.umd.js",
-  "module": "dist/uprtcl-evees.es5.js",
-  "typings": "dist/types/uprtcl-evees.d.ts",
+  "main": "dist/uprtcl-evees-ui.es5.js",
+  "module": "dist/uprtcl-evees-ui.es5.js",
+  "typings": "dist/types/uprtcl-evees-ui.d.ts",
   "sideEffects": false,
   "engines": {
     "node": ">=10.0.0"

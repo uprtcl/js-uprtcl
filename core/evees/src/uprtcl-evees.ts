@@ -63,7 +63,6 @@ export { filterAsync, mapAsync, AsyncQueue } from './utils/async';
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
 export { Proposals, ProposalEvents } from './evees/proposals/proposals';
-export { ProposalsWithUI } from '../../evees-ui/src/interfaces/proposals.with-ui';
 export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 
 /** Aceess Control */

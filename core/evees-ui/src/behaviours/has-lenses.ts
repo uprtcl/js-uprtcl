@@ -1,7 +1,5 @@
 import { TemplateResult } from 'lit-element';
-
-import { Evees } from '../../../evees/src/evees/evees.service';
-import { Behaviour } from '../../../evees/src/patterns/interfaces/behaviour';
+import { Behaviour, Evees } from '@uprtcl/evees';
 
 export interface Lens<T = string> {
   name: string;

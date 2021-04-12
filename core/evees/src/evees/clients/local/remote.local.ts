@@ -1,8 +1,9 @@
-import { Evees } from '../../../evees/evees.service';
 import { Logger } from '../../../utils/logger';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { Secured } from '../../../cas/utils/cid-hash';
-import { Client } from '../../../evees/interfaces/client';
+
+import { Evees } from '../../evees.service';
+import { Client } from '../../interfaces/client';
 
 import { snapDefaultPerspective } from '../../default.perspectives';
 import { AccessControl } from '../../interfaces/access-control';

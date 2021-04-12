@@ -1,8 +1,8 @@
 import { Logger } from '../../../utils/logger';
 import { CASStore } from '../../../cas/interfaces/cas-store';
-import { Client } from '../../../evees/interfaces/client';
-import { LinksType } from '../../../evees/interfaces/types';
-import { IndexDataHelper } from '../../../evees/index.data.helper';
+import { Client } from '../../interfaces/client';
+import { LinksType } from '../../interfaces/types';
+import { IndexDataHelper } from '../../index.data.helper';
 
 import { ClientCachedWithBase } from '../client.cached.with.base';
 import { CacheOnMemory } from './cache.memory';
