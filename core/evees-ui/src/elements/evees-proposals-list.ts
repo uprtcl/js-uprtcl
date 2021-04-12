@@ -1,11 +1,7 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
+import { Evees, Logger, ProposalEvents, RemoteEvees } from '@uprtcl/evees';
 
 import { servicesConnect } from '../container/multi-connect.mixin';
-import { Logger } from '../../../evees/src/utils/logger';
-
-import { Evees } from '../../../evees/src/evees/evees.service';
-import { RemoteEvees } from '../../../evees/src/evees/interfaces/remote.evees';
-import { ProposalEvents } from '../../../evees/src/evees/proposals/proposals';
 
 export class ProposalsList extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVES-LIST');

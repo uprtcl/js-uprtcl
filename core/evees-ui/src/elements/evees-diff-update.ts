@@ -1,13 +1,8 @@
-import { LitElement, property, html, css, internalProperty } from 'lit-element';
+import { LitElement, html, css, internalProperty } from 'lit-element';
 
-import { Logger } from '../../../evees/src/utils/logger';
+import { arrayDiff, Evees, LinkingBehaviorNames, Logger, UpdateDetails } from '@uprtcl/evees';
+
 import { servicesConnect } from '../container/multi-connect.mixin';
-
-import { Evees } from '../../../evees/src/evees/evees.service';
-import { UpdateDetails } from '../../../evees/src/evees/interfaces/types';
-import { LinkingBehaviorNames } from 'src/patterns/behaviours/has-links';
-import { arrayDiff } from '../../../evees/src/evees/merge/utils';
-import { icons } from '@uprtcl/common-ui';
 
 const LOGINFO = false;
 

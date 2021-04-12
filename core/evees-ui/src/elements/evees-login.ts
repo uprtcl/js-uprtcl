@@ -1,9 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
+import { Evees, Logger } from '@uprtcl/evees';
+
 import { servicesConnect } from '../container/multi-connect.mixin';
-
-import { Logger } from '../../../evees/src/utils/logger';
-
-import { Evees } from '../../../evees/src/evees/evees.service';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
 
 export class EveesLoginWidget extends servicesConnect(LitElement) {

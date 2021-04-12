@@ -1,16 +1,14 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
+import { Logger, Proposal, Evees } from '@uprtcl/evees';
 
-import { Logger } from '../../../evees/src/utils/logger';
 import { servicesConnect } from '../container/multi-connect.mixin';
 
 import { EveesDiffExplorer } from './evees-diff-explorer';
 import { ContentUpdatedEvent } from './events';
 import { RemoteWithUI } from '../interfaces/remote.with-ui';
-import { Proposal } from '../../../evees/src/evees/proposals/types';
 import { ProposalsWithUI } from '../interfaces/proposals.with-ui';
-import { Evees } from '../../../evees/src/evees/evees.service';
 
 export class EveesProposalRow extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PROPOSAL-ROW');

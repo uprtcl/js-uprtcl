@@ -1,6 +1,4 @@
-import { Entity } from '../../../evees/src/cas/interfaces/entity';
-import { NewPerspective, Update } from '../../../evees/src/evees/interfaces/types';
-import { Proposal } from '../../../evees/src/evees/proposals/types';
+import { Entity, NewPerspective, Proposal, Update } from "@uprtcl/evees";
 
 export type ContentUpdatedArgs = {
   uref: string;

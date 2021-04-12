@@ -1,10 +1,7 @@
+import { Evees, Logger, UpdateDetails } from '@uprtcl/evees';
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
-import { Logger } from '../../../evees/src/utils/logger';
 import { servicesConnect } from '../container/multi-connect.mixin';
-
-import { Evees } from '../../../evees/src/evees/evees.service';
-import { UpdateDetails } from '../../../evees/src/evees/interfaces/types';
 
 const LOGINFO = false;
 

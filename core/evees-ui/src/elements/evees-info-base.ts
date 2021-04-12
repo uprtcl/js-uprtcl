@@ -1,23 +1,11 @@
 import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
 
 import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
-
-import { PerspectiveType } from '../../../evees/src/evees/patterns/perspective.pattern';
-import { CommitType } from '../../../evees/src/evees/patterns/commit.pattern';
-import { Entity } from '../../../evees/src/cas/interfaces/entity';
-import { Signed } from '../../../evees/src/patterns/interfaces/signable';
-import { Logger } from '../../../evees/src/utils/logger';
-import { servicesConnect } from '../container/multi-connect.mixin';
-
-import { Perspective, PerspectiveDetails, Commit } from '../../../evees/src/evees/interfaces/types';
-import { RemoteEvees } from '../../../evees/src/evees/interfaces/remote.evees';
+import { Perspective, PerspectiveDetails, Entity, Commit, Logger, Evees, RemoteEvees, PerspectiveType, Signed, CommitType, MergeConfig, RecursiveContextMergeStrategy, Proposal } from '@uprtcl/evees';
 
 import { ProposalCreatedEvent } from './events';
-import { Proposal } from '../../../evees/src/evees/proposals/types';
-import { RecursiveContextMergeStrategy } from '../../../evees/src/evees/merge/recursive-context.merge-strategy';
-import { Evees } from '../../../evees/src/evees/evees.service';
-import { MergeConfig } from '../../../evees/src/evees/merge/merge-strategy';
 import { EveesDiffExplorer } from './evees-diff-explorer';
+import { servicesConnect } from 'src/uprtcl-evees-ui';
 
 interface PerspectiveData {
   id?: string;
@@ -186,7 +174,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     };
 
     this.eveesPull = this.evees.clone('PullClient');
-    const merger = new RecursiveContextMergeStrategy(this.eveesPull);
+    const merger = new RecursiveContextMergeStrategy(this.eveesPull as Evees);
 
     await merger.mergePerspectivesExternal(this.uref, fromUref, {
       forceOwner: true,

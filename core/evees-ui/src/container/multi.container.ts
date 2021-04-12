@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit-element';
 
-import { Evees } from '../../../evees/src/evees/evees.service';
+import { Evees } from '@uprtcl/evees';
 
 export const REQUEST_EVEES_EVENT_TAG = 'request-evees-service';
 export const REQUEST_EVENT_TAG = 'request-dependency';

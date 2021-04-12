@@ -1,6 +1,6 @@
 import { TemplateResult } from 'lit-element';
+import { RemoteEvees } from '@uprtcl/evees';
 import { Lens } from '../behaviours/has-lenses';
-import { RemoteEvees } from '../../../evees/src/evees/interfaces/remote.evees';
 
 /** Adding UI specific methods. Remote implementations should also separate between a
  * JS only implementation and one with UI components. */

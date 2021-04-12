@@ -19,8 +19,7 @@
     "diff-match-patch-ts": "^0.2.0",
     "ethers": "^5.0.9",
     "events": "^3.2.0",
-    "lodash": "^4.17.15",
-    "randomcolor": "^0.5.4"
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
     "@rollup/plugin-json": "^4.0.1",

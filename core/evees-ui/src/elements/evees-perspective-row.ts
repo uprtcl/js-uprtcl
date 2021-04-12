@@ -1,15 +1,8 @@
+import { Logger } from '@uprtcl/evees';
 import { LitElement, property, html, css, query } from 'lit-element';
-import { Logger } from '../../../evees/src/utils/logger';
 import { servicesConnect } from '../container/multi-connect.mixin';
 
 import { eveeColor } from './support';
-interface PerspectiveData {
-  id: string;
-  name: string;
-  remote: string;
-  creatorId: string;
-  timestamp: number;
-}
 
 export class EveesPerspectiveRow extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-PERSPECTIVE-ROW');

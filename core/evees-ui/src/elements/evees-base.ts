@@ -1,16 +1,8 @@
 import { property, LitElement, internalProperty } from 'lit-element';
 
-import { Logger } from '../../../evees/src/utils/logger';
-import { Entity } from '../../../evees/src/cas/interfaces/entity';
-import { Secured } from '../../../evees/src/cas/utils/cid-hash';
-import { Signed } from '../../../evees/src/patterns/interfaces/signable';
-import { servicesConnect } from '../container/multi-connect.mixin';
+import { ClientEvents, Commit, Entity, Evees, Logger, Perspective, RemoteEvees, RemoteLoggedEvents, Secured, Signed } from '@uprtcl/evees';
 
-import { RemoteEvees } from '../../../evees/src/evees/interfaces/remote.evees';
-import { ClientEvents } from '../../../evees/src/evees/interfaces/client';
-import { Commit, Perspective } from '../../../evees/src/evees/interfaces/types';
-import { RemoteLoggedEvents } from '../../../evees/src/evees/interfaces/remote.logged';
-import { Evees } from '../../../evees/src/evees/evees.service';
+import { servicesConnect } from '../container/multi-connect.mixin';
 
 export class EveesBaseElement<T extends object = object> extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-BASE-ELEMENT');

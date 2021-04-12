@@ -1,6 +1,6 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { Logger } from '../../../evees/src/utils/logger';
+import { Logger } from '@uprtcl/evees';
 import { servicesConnect } from '../container/multi-connect.mixin';
 
 import { eveeColor } from './support';

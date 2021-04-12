@@ -1,4 +1,4 @@
-import { Lens } from '../../../../evees-ui/src/behaviours/has-lenses';
+import { AccessControl } from "@uprtcl/evees";
 
 export interface AccessControlWithUi extends AccessControl {
   lense?(): Lens;
