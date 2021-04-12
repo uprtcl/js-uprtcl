@@ -19,7 +19,6 @@ export default {
     ...Object.keys(pkg.dependencies || {}),
     ...Object.keys(pkg.peerDependencies || {}),
     'lit-html',
-    'lodash-es/isEqual',
   ],
   watch: {
     buildDelay: 1000,

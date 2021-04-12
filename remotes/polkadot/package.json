@@ -27,6 +27,7 @@
     "@uprtcl/orbitdb-provider": "^0.2.0",
     "dexie": "^3.0.2",
     "events": "^3.2.0",
+    "lodash": "^4.17.15",
     "lit-html": "^1.1.2",
     "orbit-db-access-controllers": "^0.2.6"
   },

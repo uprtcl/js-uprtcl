@@ -1,6 +1,7 @@
 import { html } from 'lit-element';
 
-import { AccessControl, Logger, Lens } from '@uprtcl/evees';
+import { AccessControl, Logger} from '@uprtcl/evees';
+import { Lens } from '@uprtcl/evees-ui';
 import { HttpConnection } from '@uprtcl/http-provider';
 
 import { PermissionType, UserPermissions } from './types';
