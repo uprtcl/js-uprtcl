@@ -1,6 +1,7 @@
 import { html } from 'lit-html';
 
-import { CASStore, Lens, Logger, Proposal, ProposalEvents, ProposalsWithUI } from '@uprtcl/evees';
+import { CASStore, Logger, Proposal, ProposalEvents } from '@uprtcl/evees';
+import { Lens, ProposalsWithUI } from '@uprtcl/evees-ui';
 
 import { PolkadotConnection } from '../../connection.polkadot';
 

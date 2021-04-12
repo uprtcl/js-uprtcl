@@ -1,5 +1,7 @@
-import { Evees, Logger, servicesConnect } from '@uprtcl/evees';
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
+
+import { Evees, Logger } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees-ui';
 
 import { Wiki } from '../types';
 

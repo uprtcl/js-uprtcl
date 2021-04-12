@@ -1,7 +1,7 @@
 import { html, css, internalProperty, property } from 'lit-element';
 
 import { MenuConfig, styles } from '@uprtcl/common-ui';
-import { EveesBaseElement } from '@uprtcl/evees';
+import { EveesBaseElement } from '@uprtcl/evees-ui';
 import { TextNode } from '@uprtcl/documents';
 import { SELECT_PAGE_EVENT_NAME } from './wiki.editable';
 import { REMOVE_PAGE_EVENT_NAME } from './page-list-editable';

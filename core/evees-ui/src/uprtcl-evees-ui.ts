@@ -7,17 +7,17 @@ export { ProposalsList } from './elements/evees-proposals-list';
 export { EveesPerspectiveIcon } from './elements/evees-perspective-icon';
 
 export {
-    UpdatePerspectiveEvent,
-    ContentUpdatedEvent,
-    SpliceChildrenEvent,
-    ProposalCreatedEvent,
-    NewPerspectiveEvent,
-    CONTENT_UPDATED_TAG,
-    PROPOSAL_CREATED_TAG,
-    NEW_PERSPECTIVE_TAG,
-    UPDATE_PERSPECTIVE_TAG,
-  } from './elements/events';
-  export { EveesDiffExplorer } from './elements/evees-diff-explorer';
+  UpdatePerspectiveEvent,
+  ContentUpdatedEvent,
+  SpliceChildrenEvent,
+  ProposalCreatedEvent,
+  NewPerspectiveEvent,
+  CONTENT_UPDATED_TAG,
+  PROPOSAL_CREATED_TAG,
+  NEW_PERSPECTIVE_TAG,
+  UPDATE_PERSPECTIVE_TAG,
+} from './elements/events';
+export { EveesDiffExplorer } from './elements/evees-diff-explorer';
 
 /** UI support components */
 export { prettyAddress } from './elements/support';
@@ -32,3 +32,5 @@ export { RenderEntityInput } from './elements/uprtcl-entity';
 export { servicesConnect } from './container/multi-connect.mixin';
 export { init } from './init';
 export { MultiContainer } from './container/multi.container';
+
+export { ProposalsWithUI } from './interfaces/proposals.with-ui';

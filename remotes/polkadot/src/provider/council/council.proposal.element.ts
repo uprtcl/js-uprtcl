@@ -7,9 +7,9 @@ import {
   Perspective,
   ProposalEvents,
   RemoteLoggedEvents,
-  servicesConnect,
   Signed,
 } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees-ui';
 
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 

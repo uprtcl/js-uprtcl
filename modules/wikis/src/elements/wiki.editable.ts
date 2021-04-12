@@ -4,17 +4,16 @@ import {
   ClientEvents,
   combineMutations,
   Evees,
-  EveesDiffExplorer,
   ForkOf,
   Logger,
-  ParentAndChild,
   Proposal,
   RecursiveContextMergeStrategy,
   RemoteEvees,
   RemoteLoggedEvents,
-  servicesConnect,
 } from '@uprtcl/evees';
+import { EveesDiffExplorer, servicesConnect } from '@uprtcl/evees-ui';
 import { MenuConfig, styles, UprtclPopper } from '@uprtcl/common-ui';
+
 import { REMOVE_PAGE_EVENT_NAME } from './page-list-editable';
 
 export const SELECT_PAGE_EVENT_NAME = 'select-page';

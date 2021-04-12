@@ -1,5 +1,5 @@
 import { html, property } from 'lit-element';
-import { EditableCase, EveesBaseEditable } from '@uprtcl/evees';
+import { EditableCase, EveesBaseEditable } from '@uprtcl/evees-ui';
 
 import { Wiki } from '../types';
 import { TextNode, TextType } from '@uprtcl/documents';
