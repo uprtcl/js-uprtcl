@@ -12,8 +12,8 @@ import { EveesPerspectiveIcon } from './evees-perspective-icon';
 import { EveesDiffUpdate } from './evees-diff-update';
 
 import { UprtclEntity } from './uprtcl-entity';
-import { EveesDiffRow } from 'src/evees/elements/evees-diff-row';
 import { ProposalsDropdown } from './evees-proposals-dropdown';
+import { EveesDiffRow } from './evees-diff-row';
 
 export const registerEveesElements = (): void => {
   customElements.define('evees-info-popper', EveesInfoPopper);

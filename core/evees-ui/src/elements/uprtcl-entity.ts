@@ -1,5 +1,7 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
+import { Logger, Evees } from '@uprtcl/evees';
+
 import { servicesConnect } from '../container/multi-connect.mixin.js';
 import { Lens } from '../behaviours/has-lenses.js';
 
