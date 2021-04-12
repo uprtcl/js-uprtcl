@@ -1,8 +1,8 @@
 import { html, property } from 'lit-element';
 import { EditableCase, EveesBaseEditable } from '@uprtcl/evees-ui';
+import { TextNode, TextType } from '@uprtcl/documents';
 
 import { Wiki } from '../types';
-import { TextNode, TextType } from '@uprtcl/documents';
 import { SELECT_PAGE_EVENT_NAME } from './wiki.editable';
 
 export const REMOVE_PAGE_EVENT_NAME = 'remove-page';

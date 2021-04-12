@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
-import { RemoteEvees, servicesConnect } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees-ui';
 
 import { EveesBlockchain } from './evees.blockchain';
 import { MenuConfig } from '@uprtcl/common-ui';
