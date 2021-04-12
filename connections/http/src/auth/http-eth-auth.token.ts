@@ -1,8 +1,9 @@
 import { ethers } from 'ethers';
+
 import { AuthTokenStorage } from './http.token.store';
 import { HttpAuthentication, JwtToken } from './http.authentication';
-import { HttpAuthenticatedConnectionImp } from 'src/http.auth.connection.imp';
-import { HttpConnection } from 'src/http.connection';
+import { HttpAuthenticatedConnectionImp } from '../http.auth.connection.imp';
+import { HttpConnection } from '../http.connection';
 
 export const loginMessage = (nonce: string) => {
   return `Login to Intercreativity \n\nnonce:${nonce}`;

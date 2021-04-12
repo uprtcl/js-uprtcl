@@ -9,3 +9,5 @@ export { HttpEthConnection } from './auth/http.eth.connection';
 
 export { HttpAuth0Token } from './auth/http-auth0.token';
 export { HttpAuth0Connection } from './auth/http.auth0.connection';
+
+export { HttpSupertest } from './http.supertest';

@@ -9,14 +9,13 @@ const styleMap = (style) => {
 
 import {
   Logger,
-  servicesConnect,
-  eveeColor,
   PerspectiveType,
   CommitType,
   Evees,
   UpdatePerspectiveData,
   CreateEvee,
 } from '@uprtcl/evees';
+import { servicesConnect, eveeColor } from '@uprtcl/evees-ui';
 
 import { TextType, DocNode, CustomBlocks } from '../types';
 import { icons } from './prosemirror/icons';
@@ -259,23 +258,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const remoteId = parent.remoteId;
 
-    /** snap is async because it performs a hash, should be fast enough for UX flow */
-    const perspective = await this.localEvees.getRemote(remoteId).snapPerspective({});
-    const newEvee: CreateEvee = {
-      object: draft,
-      guardianId: parent ? parent.uref : undefined,
-      remoteId: remoteId,
-      perspectiveId: perspective.id,
-      perspective: perspective,
-    };
-
-    if (newEvee.perspective) {
-      await this.localEvees.client.store.storeEntity(newEvee.perspective);
-    }
-    /** create is sent asyncronously, the flow continues as if it were successful */
-
-    await this.localEvees.client.store.storeEntity(perspective);
-
     /** create is sent asyncronously, the flow continues as if it were successful */
     const parents: string[] = [parent.uref];
     let grandParent = parent.parent;
@@ -285,6 +267,11 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       }
       grandParent = grandParent.parent;
     }
+
+    /** snap is async because it performs a hash, should be fast enough for UX flow */
+    const perspective = await this.localEvees.getRemote(remoteId).snapPerspective({});
+    /** Perspective entity is created and await for it to be ready for immediate reading. */
+    await this.localEvees.client.store.storeEntity(perspective);
 
     const creteEvee: CreateEvee = {
       object: draft,
@@ -301,6 +288,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       },
     };
 
+    /** Create is sent asyncronously, the flow continues as if it were successful */
     this.localEvees.createEvee(creteEvee);
 
     if (LOGINFO) this.logger.log(`createNode()`, { perspective, draft });
@@ -351,10 +339,13 @@ export class DocumentEditor extends servicesConnect(LitElement) {
           },
         },
       },
-      flush: {
-        debounce: this.debounce,
-        autoflush: this.autoflush,
-      },
+      flush:
+        this.debounce !== undefined || this.autoflush !== undefined
+          ? {
+              debounce: this.debounce,
+              autoflush: this.autoflush,
+            }
+          : undefined,
     };
 
     if (LOGINFO) this.logger.log('updatePerspectiveData()', { update });

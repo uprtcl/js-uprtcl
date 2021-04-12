@@ -11,6 +11,8 @@ const httpCidConfig: CidConfig = {
   type: 'sha3-256',
 };
 
+const LOGINFO = false;
+
 export class HttpStore implements CASRemote {
   logger = new Logger('Http Store');
   isLocal: boolean = false;
@@ -26,18 +28,29 @@ export class HttpStore implements CASRemote {
   }
 
   async get(hash: string): Promise<Entity> {
-    return this.connection.get<Entity>(`/get/${hash}`);
+    return this.connection.get<Entity>(`/data/${hash}`);
   }
 
   async hash(object: object): Promise<Entity> {
+    const cidConfig = httpCidConfig;
     /** optimistically hash based on the CidConfig without asking the server */
-    const id = await hashObject(object, httpCidConfig);
+    const id = await hashObject(object, cidConfig);
 
-    return {
+    const entity = {
       id,
-      object,
+      object: { ...object },
       casID: this.casID,
     };
+
+    if (LOGINFO)
+      this.logger.log('hash', {
+        entity,
+        cidConfig,
+        objectStr: JSON.stringify(entity.object),
+        cidConfigStr: JSON.stringify(cidConfig),
+      });
+
+    return entity;
   }
 
   cacheEntities(entities: Entity[]): Promise<void> {

@@ -1,6 +1,7 @@
+import { Auth0Client, Auth0ClientOptions } from '@auth0/auth0-spa-js';
+
 import { AuthTokenStorage } from './http.token.store';
 import { HttpAuthentication, JwtToken } from './http.authentication';
-import { Auth0Client, Auth0ClientOptions } from '@auth0/auth0-spa-js';
 
 export const loginMessage = (nonce: string) => {
   return `Login to Intercreativity \n\nnonce:${nonce}`;

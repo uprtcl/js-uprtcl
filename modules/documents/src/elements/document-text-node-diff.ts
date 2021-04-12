@@ -1,6 +1,7 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
-import { arrayDiff, Client, Logger, servicesConnect } from '@uprtcl/evees';
+import { Client, Logger } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees-ui';
 
 import { TextNode } from '../types';
 
