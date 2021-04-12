@@ -9,7 +9,7 @@ const libraryName = 'uprtcl-evees-ui';
 export default {
   input: `src/${libraryName}.ts`,
   output: [
-    { file: pkg.module, format: 'es', sourcemap: true },
+    { file: pkg.module, name: libraryName, format: 'es', sourcemap: true },
   ],
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash-es')
   external: [

@@ -3,7 +3,7 @@ import { CASRemote } from '../cas/interfaces/cas-remote';
 import { CASRouter } from '../cas/stores/cas.router';
 import { CASOnMemory } from '../cas/stores/cas.memory';
 
-export const buildStore = (
+export const initStore = (
   stores: CASRemote[],
   remoteToSourcesMap: Map<string, string>
 ): CASStore => {

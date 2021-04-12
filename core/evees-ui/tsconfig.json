@@ -5,6 +5,6 @@
     "outDir": "dist/lib",
     "baseUrl": "./",
   },
-  "include": ["src", "../evees-ui/src/interfaces/proposals.with-ui.ts"],
+  "include": ["src"],
   "exclude": ["test"]
 }

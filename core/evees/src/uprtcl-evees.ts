@@ -93,6 +93,7 @@ export { CidConfig, defaultCidConfig } from './cas/interfaces/cid-config';
 export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
 
 /** Patterns */
+export { Behaviour } from './patterns/interfaces/behaviour';
 export { HasChildren, HasLinks, LinkingBehaviorNames } from './patterns/behaviours/has-links';
 export { HasTitle } from './patterns/behaviours/has-title';
 export { HasEmpty } from './patterns/behaviours/has-empty';
@@ -102,7 +103,7 @@ export { PerspectiveType } from './evees/patterns/perspective.pattern';
 export { CommitType } from './evees/patterns/commit.pattern';
 
 /** container */
-export { eveesConstructorHelper } from './creator-helpers/evees.constructor.helper';
+export { init } from './creator-helpers/init';
 
 export { AppElement, AppElements } from './creator-helpers/app.elements';
 

@@ -9,7 +9,7 @@ import { CASStore } from '../cas/interfaces/cas-store';
 import { EveesContentModule } from '../evees/interfaces/evees.content.module';
 import { CASRemote } from 'src/cas/interfaces/cas-remote';
 
-export const buildEvees = (
+export const initEvees = (
   remotes: RemoteEvees[],
   stores: CASRemote[],
   store: CASStore,

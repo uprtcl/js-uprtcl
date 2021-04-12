@@ -4,7 +4,7 @@ import { PerspectivePattern } from '../evees/patterns/perspective.pattern';
 import { CommitPattern } from '../evees/patterns/commit.pattern';
 import { Pattern } from 'src/patterns/interfaces/pattern';
 
-export const buildRecognizer = (
+export const initRecognizer = (
   modules: Map<string, EveesContentModule>,
   addPatterns: Pattern<any>[] = []
 ): PatternRecognizer => {

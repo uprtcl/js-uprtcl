@@ -1,15 +1,15 @@
 import { RemoteEvees } from '../evees/interfaces/remote.evees';
 import { EveesConfig } from '../evees/interfaces/types';
 import { EveesContentModule } from '../evees/interfaces/evees.content.module';
-import { buildStore } from './build.store';
-import { buildRecognizer } from './build.recognizer';
+import { initStore } from './init.store';
+import { initRecognizer } from './init.recognizer';
+import { initEvees } from './init.evees';
 import { Pattern } from '../patterns/interfaces/pattern';
-import { buildEvees } from './build.evees';
 import { CASRemote } from '../cas/interfaces/cas-remote';
 import { Evees } from '../evees/evees.service';
 
 /** a top level wrapper that registers everything */
-export const eveesConstructorHelper = (
+export const init = (
   remotes: RemoteEvees[],
   stores: CASRemote[],
   modules: Map<string, EveesContentModule>,
@@ -22,15 +22,15 @@ export const eveesConstructorHelper = (
     remoteToSourcesMap.set(remote.id, remote.casID);
   });
 
-  const store = buildStore(stores, remoteToSourcesMap);
+  const store = initStore(stores, remoteToSourcesMap);
 
   /** set the cached store of the remotes */
   remotes.forEach((remote) => {
     remote.setStore(store);
   });
 
-  const recognizer = buildRecognizer(modules, patterns);
-  const evees = buildEvees(remotes, stores, store, recognizer, modules, config);
+  const recognizer = initRecognizer(modules, patterns);
+  const evees = initEvees(remotes, stores, store, recognizer, modules, config);
   
   return evees;
 };

@@ -9,14 +9,13 @@ const styleMap = (style) => {
 
 import {
   Logger,
-  servicesConnect,
-  eveeColor,
   PerspectiveType,
   CommitType,
   Evees,
   UpdatePerspectiveData,
   CreateEvee,
 } from '@uprtcl/evees';
+import { servicesConnect, eveeColor } from '@uprtcl/evees-ui';
 
 import { TextType, DocNode, CustomBlocks } from '../types';
 import { icons } from './prosemirror/icons';

@@ -1,3 +1,6 @@
+import { TemplateResult } from "lit-element";
+import { Behaviour, Evees } from "@uprtcl/evees";
+
 export interface DiffLens {
     name: string;
     render: (evees: Evees, newEntity: any, oldEntity: any, summary: boolean) => TemplateResult;

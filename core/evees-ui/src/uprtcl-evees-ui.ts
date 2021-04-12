@@ -26,8 +26,9 @@ export { eveeColor, DEFAULT_COLOR } from './elements/support';
 export { RemoteWithUI } from './interfaces/remote.with-ui';
 
 export { HasLenses, Lens } from './behaviours/has-lenses';
+export { HasDiffLenses, DiffLens } from './behaviours/has-diff-lenses';
 export { RenderEntityInput } from './elements/uprtcl-entity';
 
 export { servicesConnect } from './container/multi-connect.mixin';
-export { eveesConstructorHelper } from './evees.constructor.helper';
+export { init } from './init';
 export { MultiContainer } from './container/multi.container';
