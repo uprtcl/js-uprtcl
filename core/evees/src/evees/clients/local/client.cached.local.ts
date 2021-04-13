@@ -73,11 +73,13 @@ export class ClientCachedLocal extends ClientCachedWithBase {
         /** returns the last update only */
         const updates = await this.cache.getUpdatesOf(perspectiveId);
 
-        const condensate = new CondensateCommits(this.store, updates, LOGINFO);
-        await condensate.init();
+        if (updates.length > 0) {
+          const condensate = new CondensateCommits(this.store, updates, LOGINFO);
+          await condensate.init();
 
-        const squahedUpdates = await condensate.condensate();
-        mutation.updates.push(...squahedUpdates);
+          const squashedUpdates = await condensate.condensate();
+          mutation.updates.push(...squashedUpdates);
+        }
       })
     );
 
