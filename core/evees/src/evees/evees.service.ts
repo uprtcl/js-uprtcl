@@ -22,6 +22,7 @@ import {
   UpdatePerspectiveData,
   EveesMutationCreate,
   FlushConfig,
+  PartialPerspective,
 } from './interfaces/types';
 
 import { Entity } from '../cas/interfaces/entity';
@@ -56,6 +57,11 @@ export interface CreatePerspective {
   canUpdate?: string;
   timestamp?: number;
   creatorId?: string;
+}
+
+export interface ForkOptions {
+  recurse: boolean;
+  detach: boolean;
 }
 
 export const BEHAVIOUR_NOT_FOUND_ERROR = 'BehaviorNotFound';
@@ -810,16 +816,21 @@ export class Evees {
    *
    * recursively fork entity children
    */
-  async fork(id: string, remote: string, parentId?: string): Promise<string> {
+  async fork(
+    id: string,
+    remote: string,
+    parentId?: string,
+    options: ForkOptions = { recurse: true, detach: false }
+  ): Promise<string> {
     const isPerspective = await this.isOfPattern(id, PerspectiveType);
     if (isPerspective) {
-      return this.forkPerspective(id, remote, parentId);
+      return this.forkPerspective(id, remote, parentId, options);
     } else {
       const isCommit = await this.isOfPattern(id, CommitType);
       if (isCommit) {
-        return this.forkCommit(id, remote, parentId);
+        return this.forkCommit(id, remote, parentId, options);
       } else {
-        return this.forkEntity(id, remote, parentId);
+        return this.forkEntity(id, remote, parentId, options);
       }
     }
   }
@@ -828,7 +839,7 @@ export class Evees {
     perspectiveId: string,
     remoteId?: string,
     guardianId?: string,
-    recurse: boolean = true
+    options: ForkOptions = { recurse: true, detach: false }
   ): Promise<string> {
     const refPerspective: Entity<Signed<Perspective>> = await this.client.store.getEntity(
       perspectiveId
@@ -837,15 +848,19 @@ export class Evees {
 
     const { details } = await this.client.getPerspective(perspectiveId);
 
-    const forking: ForkDetails = {
-      perspectiveId: refPerspective.id,
-      headId: details.headId,
+    const perspectivePartial: PartialPerspective = {
+      context: refPerspective.object.payload.context,
     };
 
-    const perspective = await remote.snapPerspective(
-      { context: refPerspective.object.payload.context, meta: { forking } },
-      guardianId
-    );
+    if (!options.detach) {
+      const forking: ForkDetails = {
+        perspectiveId: refPerspective.id,
+        headId: details.headId,
+      };
+      perspectivePartial.meta = { forking };
+    }
+
+    const perspective = await remote.snapPerspective(perspectivePartial, guardianId);
 
     await this.client.store.storeEntity({ object: perspective.object, remote: remote.id });
 
@@ -856,7 +871,7 @@ export class Evees {
         details.headId,
         perspective.object.payload.remote,
         perspective.id, // this perspective is set as the parent of the children's new perspectives
-        recurse
+        options
       );
     }
 
@@ -876,12 +891,12 @@ export class Evees {
     commitId: string,
     remoteId: string,
     parentId?: string,
-    recurse: boolean = true
+    options: ForkOptions = { recurse: true, detach: false }
   ): Promise<string> {
     const commit: Secured<Commit> = await this.client.store.getEntity(commitId);
 
     const dataId = commit.object.payload.dataId;
-    const dataForkId = await this.forkEntity(dataId, remoteId, parentId, recurse);
+    const dataForkId = await this.forkEntity(dataId, remoteId, parentId, options);
 
     const eveesRemote = await this.getRemote(remoteId);
 
@@ -890,10 +905,14 @@ export class Evees {
       creatorsIds: eveesRemote.userId ? [eveesRemote.userId] : [''],
       dataId: dataForkId,
       message: `autocommit to fork ${commitId} on remote ${remoteId}`,
-      forking: commitId,
       parentsIds: [],
       timestamp: Date.now(),
     };
+
+    if (options.detach !== undefined && options.detach === false) {
+      newCommit.forking = commitId;
+    }
+
     const signedCommit = signObject(newCommit);
 
     const entity = await this.client.store.storeEntity({ object: signedCommit, remote: remoteId });
@@ -949,15 +968,15 @@ export class Evees {
     entityId: string,
     remoteId: string,
     parentId?: string,
-    recurse: boolean = true
+    options: ForkOptions = { recurse: true, detach: false }
   ): Promise<string> {
-    if (recurse) {
+    if (options.recurse) {
       const data = await this.client.store.getEntity(entityId);
       if (!data) throw new Error(`data ${entityId} not found`);
 
       /** createOwnerPreservingEntity of children */
       const getLinksForks = this.behaviorConcat(data.object, 'children').map((link) =>
-        this.fork(link, remoteId, parentId)
+        this.fork(link, remoteId, parentId, options)
       );
       const newLinks = await Promise.all(getLinksForks);
       // TODO how can replace children when matching multiple patterns?

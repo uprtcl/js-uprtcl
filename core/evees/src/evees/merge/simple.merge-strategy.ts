@@ -124,7 +124,11 @@ export class SimpleMergeStrategy implements MergeStrategy {
     await this.evees.client.store.storeEntity({ object: mergedObject, remote });
 
     /** some commits might be undefined */
-    const parentsIds = commitsIds.filter((commit) => !!commit);
+    const parentsIds = config.detach
+      ? toCommitId
+        ? [toCommitId]
+        : []
+      : commitsIds.filter((commit) => !!commit);
 
     const newCommit: CreateCommit = {
       dataId: data.id,

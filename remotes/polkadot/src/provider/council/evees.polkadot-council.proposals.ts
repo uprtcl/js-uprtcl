@@ -74,6 +74,12 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
       config: this.config,
     };
 
+    /** persist entities associated to this mutation */
+    if (proposal.mutation.entities) {
+      await this.store.storeEntities(proposal.mutation.entities);
+      await this.store.flush();
+    }
+
     const proposalId = await this.councilStore.createProposal(proposalManifest);
 
     this.logger.info('createProposal() - done', {

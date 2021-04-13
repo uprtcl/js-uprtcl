@@ -111,7 +111,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
       throw new Error('Search engine undefined');
     }
 
-    const { perspectiveIds, forksDetails } = await this.evees.client.searchEngine.explore({
+    const { forksDetails } = await this.evees.client.searchEngine.explore({
       under: { elements: [{ id: this.uref }] },
       forks: { independent: true, include: true },
     });
@@ -138,6 +138,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
         const merger = new RecursiveContextMergeStrategy(mergeEvees);
         await merger.mergePerspectivesExternal(fork.ofPerspectiveId, fork.forkId, {
           forceOwner: true,
+          detach: true,
         });
 
         return mergeEvees.client.diff();
