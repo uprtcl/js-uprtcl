@@ -25,6 +25,13 @@ export class LocalSearchEngine implements SearchEngine {
   }
 
   async explore(options: SearchOptions): Promise<SearchResult> {
+    if (options.forks) {
+      if (!options.under) throw new Error('forks must be found under some perspective');
+      const forks = await this.independentSubPerspectivesRec(options.under.elements[0].id, 
+        undefined, options.under.levels);
+      return { perspectiveIds: forks }
+    }
+
     const underId = options.under ? options.under.elements[0].id : undefined;
     if (!underId) {
       throw new Error(`UnderId not defined`);
@@ -34,7 +41,7 @@ export class LocalSearchEngine implements SearchEngine {
       .equals(underId)
       .primaryKeys();
     return { perspectiveIds };
-  }
+  }  
 
   async locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
     const perspective = await this.db.perspectives.get(perspectiveId);
@@ -62,18 +69,13 @@ export class LocalSearchEngine implements SearchEngine {
 
   /** the independentOfParent will return other perspectives which don't
    * have a parent with the context of the independentPerspective input */
-  async otherPerspectives(perspectiveId: string, independentOfParent?: string): Promise<ForkOf[]> {
+  async otherPerspectives(perspectiveId: string, independentOfParent?: string): Promise<string[]> {
     const context = await this.getContext(perspectiveId);
 
     const allOthers = await this.db.perspectives.where('context').equals(context).primaryKeys();
 
     if (!independentOfParent) {
-      return allOthers.map((otherId) => {
-        return {
-          forkId: otherId,
-          ofPerspectiveId: perspectiveId,
-        };
-      });
+      return allOthers;
     }
 
     const parentContext = await this.getContext(independentOfParent);
@@ -90,19 +92,14 @@ export class LocalSearchEngine implements SearchEngine {
       return parentSameContext.length === 0;
     });
 
-    return independent.map((otherId) => {
-      return {
-        forkId: otherId,
-        ofPerspectiveId: perspectiveId,
-      };
-    });
+    return independent;
   }
 
   async independentSubPerspectivesRec(
     perspectiveId: string,
     parentId?: string,
     levels: number = -1
-  ): Promise<ForkOf[]> {
+  ): Promise<string[]> {
     const thisLevel = await this.otherPerspectives(perspectiveId, parentId);
 
     if (levels === 0) {
@@ -119,16 +116,5 @@ export class LocalSearchEngine implements SearchEngine {
     );
 
     return thisLevel.concat(...independent);
-  }
-  // search independent perspectives
-  // const perspectiveInDb = await this.remote.db.perspectives.get(perspectiveId);
-
-  // perspectiveInDb.children.map();
-
-  async forks(
-    perspectiveId: string,
-    options: SearchForkOptions = { levels: 0 }
-  ): Promise<ForkOf[]> {
-    return this.independentSubPerspectivesRec(perspectiveId, undefined, options.levels);
   }
 }

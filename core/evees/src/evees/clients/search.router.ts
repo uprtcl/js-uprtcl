@@ -15,14 +15,6 @@ export class SearchEngineRouter extends BaseRouter implements SearchEngine {
     super(remotes, store);
   }
 
-  async forks(perspectiveId: string, options?: SearchForkOptions): Promise<ForkOf[]> {
-    const all = await Promise.all(
-      this.remotes.map((remote) => {
-        return remote.searchEngine ? remote.searchEngine.forks(perspectiveId, options) : [];
-      })
-    );
-    return Array.prototype.concat.apply([], all);
-  }
   async locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
     const all = await Promise.all(
       this.remotes.map((remote) => {

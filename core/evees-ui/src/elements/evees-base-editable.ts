@@ -68,8 +68,11 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
       throw new Error(`search engine not defined for remote ${this.editRemote.id}`);
     }
 
-    const drafts = await this.editRemote.searchEngine.forks(this.firstRef);
-    this.mineId = drafts.length > 0 ? drafts[0].forkId : undefined;
+    const { perspectiveIds: drafts } = await this.editRemote.searchEngine.explore({
+      under: { elements: [{ id: this.firstRef }] },
+      forks: { include: true, independent: true },
+    });
+    this.mineId = drafts.length > 0 ? drafts[0] : undefined;
     this.logger.log('BaseDraft -- load() set mineId', this.mineId);
 
     this.checkCase();

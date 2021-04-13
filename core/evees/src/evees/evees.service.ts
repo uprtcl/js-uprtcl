@@ -1003,7 +1003,7 @@ export class Evees {
         const oldHead = await localEvees.client.store.getEntity<Signed<Commit>>(
           head.object.payload.parentsIds[0]
         );
-        oldData = await localEvees.client.store.getEntity(head.object.payload.dataId);
+        oldData = await localEvees.client.store.getEntity(oldHead.object.payload.dataId);
       }
 
       const updateDetail: UpdateDetails = {
