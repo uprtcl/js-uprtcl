@@ -27,9 +27,13 @@ export class LocalSearchEngine implements SearchEngine {
   async explore(options: SearchOptions): Promise<SearchResult> {
     if (options.forks) {
       if (!options.under) throw new Error('forks must be found under some perspective');
-      const forks = await this.independentSubPerspectivesRec(options.under.elements[0].id, 
-        undefined, options.under.levels);
-      return { perspectiveIds: forks }
+      const forks = await this.independentSubPerspectivesRec(
+        options.under.elements[0].id,
+        undefined,
+        options.under.levels
+      );
+
+      return { perspectiveIds: forks.map((fork) => fork.forkId), forksDetails: forks };
     }
 
     const underId = options.under ? options.under.elements[0].id : undefined;
@@ -41,7 +45,7 @@ export class LocalSearchEngine implements SearchEngine {
       .equals(underId)
       .primaryKeys();
     return { perspectiveIds };
-  }  
+  }
 
   async locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
     const perspective = await this.db.perspectives.get(perspectiveId);
@@ -69,13 +73,18 @@ export class LocalSearchEngine implements SearchEngine {
 
   /** the independentOfParent will return other perspectives which don't
    * have a parent with the context of the independentPerspective input */
-  async otherPerspectives(perspectiveId: string, independentOfParent?: string): Promise<string[]> {
+  async otherPerspectives(perspectiveId: string, independentOfParent?: string): Promise<ForkOf[]> {
     const context = await this.getContext(perspectiveId);
 
     const allOthers = await this.db.perspectives.where('context').equals(context).primaryKeys();
 
     if (!independentOfParent) {
-      return allOthers;
+      return allOthers.map((otherId) => {
+        return {
+          forkId: otherId,
+          ofPerspectiveId: perspectiveId,
+        };
+      });
     }
 
     const parentContext = await this.getContext(independentOfParent);
@@ -92,14 +101,19 @@ export class LocalSearchEngine implements SearchEngine {
       return parentSameContext.length === 0;
     });
 
-    return independent;
+    return independent.map((otherId) => {
+      return {
+        forkId: otherId,
+        ofPerspectiveId: perspectiveId,
+      };
+    });
   }
 
   async independentSubPerspectivesRec(
     perspectiveId: string,
     parentId?: string,
     levels: number = -1
-  ): Promise<string[]> {
+  ): Promise<ForkOf[]> {
     const thisLevel = await this.otherPerspectives(perspectiveId, parentId);
 
     if (levels === 0) {

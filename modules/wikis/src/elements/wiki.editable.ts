@@ -111,27 +111,20 @@ export class EditableWiki extends servicesConnect(LitElement) {
       throw new Error('Search engine undefined');
     }
 
-    const { perspectiveIds } = await this.evees.client.searchEngine.explore({
+    const { perspectiveIds, forksDetails } = await this.evees.client.searchEngine.explore({
       under: { elements: [{ id: this.uref }] },
       forks: { independent: true, include: true },
     });
 
-    const forks = perspectiveIds.map(
-      (id: string): ForkOf => {
-        return {
-          forkId: id,
-          ofPerspectiveId: this.uref,
-        };
-      }
-    );
+    if (!forksDetails) throw new Error('forksDetails undefined');
 
-    if (forks.length > 0) {
-      await this.computeChanges(forks);
+    if (forksDetails.length > 0) {
+      await this.computeChanges(forksDetails);
 
       /** recurse until checkAgain is false */
       if (this.checkAgain) {
         this.checkAgain = false;
-        await this.computeChanges(forks);
+        await this.computeChanges(forksDetails);
       }
     }
 
