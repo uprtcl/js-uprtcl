@@ -1,9 +1,6 @@
-import { html } from 'lit-element';
-
 import {
   CASStore,
   EveesMutation,
-  Lens,
   Logger,
   NewPerspective,
   PartialPerspective,

@@ -1,4 +1,5 @@
-import { AccessControl, CASStore, Lens, Perspective, Signed } from '@uprtcl/evees';
+import { AccessControl, CASStore, Perspective, Signed } from '@uprtcl/evees';
+import { Lens } from '@uprtcl/evees-ui';
 import { html } from 'lit-element';
 
 export class EveesAccessControlOrbitDB implements AccessControl {

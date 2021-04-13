@@ -1,7 +1,13 @@
 import { css, html, internalProperty, property } from 'lit-element';
 
 import { icons } from '@uprtcl/common-ui';
-import { RemoteEvees, Logger, RemoteLoggedEvents } from '@uprtcl/evees';
+import {
+  RemoteEvees,
+  Logger,
+  RemoteLoggedEvents,
+  RecursiveContextMergeStrategy,
+  Evees,
+} from '@uprtcl/evees';
 
 import { EveesBaseElement } from './evees-base';
 
@@ -23,10 +29,14 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   isLoggedEdit = false;
 
   @internalProperty()
+  hasPull: boolean = false;
+
+  @internalProperty()
   protected case: EditableCase = EditableCase.IS_OFFICIAL_DONT_HAVE_DRAFT;
 
   protected mineId: string | undefined = undefined;
   protected editRemote!: RemoteEvees;
+  protected eveesPull!: Evees;
 
   async firstUpdated() {
     this.uref = this.firstRef;
@@ -72,10 +82,13 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
       under: { elements: [{ id: this.firstRef }] },
       forks: { include: true, independent: true },
     });
+
     this.mineId = drafts.length > 0 ? drafts[0] : undefined;
     this.logger.log('BaseDraft -- load() set mineId', this.mineId);
 
     this.checkCase();
+
+    await this.checkPull();
   }
 
   isDraft() {
@@ -105,11 +118,32 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
       }
     }
 
-    // neale subclasses to react to case change
+    // hook for subclasses to react to case change
     this.caseUpdated ? this.caseUpdated(current) : null;
   }
 
   caseUpdated?(oldCase: EditableCase);
+
+  async checkPull() {
+    if (this.case === EditableCase.IS_DRAFT_HAS_OFFICIAL) {
+      const config = {
+        forceOwner: true,
+      };
+
+      // Create a temporary workspaces to compute the merge
+      this.eveesPull = this.evees.clone('pull-client');
+      const merger = new RecursiveContextMergeStrategy(this.eveesPull);
+      await merger.mergePerspectivesExternal(this.mineId as string, this.firstRef, config);
+
+      const diff = await this.eveesPull.client.diff();
+      this.hasPull = diff.updates.length > 0;
+    }
+  }
+
+  async pullChanges() {
+    await this.eveesPull.flush();
+    await this.checkPull();
+  }
 
   async checkoutDraft(recurse: boolean = true) {
     if (this.mineId) {
@@ -128,12 +162,10 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   }
 
   async createDraft(recurse: boolean = true): Promise<void> {
-    this.mineId = await this.evees.forkPerspective(
-      this.firstRef,
-      this.editRemote.id,
-      undefined,
-      recurse
-    );
+    this.mineId = await this.evees.forkPerspective(this.firstRef, this.editRemote.id, undefined, {
+      recurse,
+      detach: false,
+    });
     await this.evees.client.flush();
     this.logger.log('BaseDraft -- createDraft()', this.mineId);
     return this.seeDraft();
@@ -189,15 +221,18 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
         break;
     }
 
-    return html`<div
-      @click=${() => this.toggleDraft()}
-      class=${'edit-control-container' + (clickable ? ' clickable' : '')}
-    >
-      <div class=${'action-text' + textColor}>${text}</div>
-      <div class=${'action-circle' + circleColor}>
-        ${circleText !== undefined ? circleText : icons.edit}
-      </div>
-    </div>`;
+    return html`${this.hasPull
+        ? html`<uprtcl-button @click=${() => this.pullChanges()}>pull</uprtcl-button>`
+        : ''}
+      <div
+        @click=${() => this.toggleDraft()}
+        class=${'edit-control-container' + (clickable ? ' clickable' : '')}
+      >
+        <div class=${'action-text' + textColor}>${text}</div>
+        <div class=${'action-circle' + circleColor}>
+          ${circleText !== undefined ? circleText : icons.edit}
+        </div>
+      </div>`;
   }
 
   static get styles() {
