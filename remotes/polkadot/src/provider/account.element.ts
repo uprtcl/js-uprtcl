@@ -2,10 +2,9 @@ import { LitElement, html, css, property, internalProperty } from 'lit-element';
 import { unsafeSVG } from 'lit-html/directives/unsafe-svg';
 import { polkadotIcon } from '@polkadot/ui-shared';
 
-import { EveesBlockchain } from '@uprtcl/evees-blockchain';
-
 import { PolkadotConnection } from '../connection.polkadot';
-import { Logger, servicesConnect } from '@uprtcl/evees';
+import { Logger } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees-ui';
 
 export class PolkadotAccountElement extends servicesConnect(LitElement) {
   logger = new Logger('POLKADOT-ACCOUNT-ELEMENT');

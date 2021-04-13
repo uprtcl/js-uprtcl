@@ -15,14 +15,6 @@ export class SearchEngineRouter extends BaseRouter implements SearchEngine {
     super(remotes, store);
   }
 
-  async forks(perspectiveId: string, options?: SearchForkOptions): Promise<ForkOf[]> {
-    const all = await Promise.all(
-      this.remotes.map((remote) => {
-        return remote.searchEngine ? remote.searchEngine.forks(perspectiveId, options) : [];
-      })
-    );
-    return Array.prototype.concat.apply([], all);
-  }
   async locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
     const all = await Promise.all(
       this.remotes.map((remote) => {
@@ -40,6 +32,7 @@ export class SearchEngineRouter extends BaseRouter implements SearchEngine {
     // search results are concatenated
     let combinedResult: SearchResult = {
       perspectiveIds: [],
+      forksDetails: [],
       slice: {
         entities: [],
         perspectives: [],
@@ -48,13 +41,17 @@ export class SearchEngineRouter extends BaseRouter implements SearchEngine {
     };
     all.forEach((result) => {
       combinedResult.perspectiveIds.push(...result.perspectiveIds);
-      if (combinedResult.slice) {
-        if (result.slice) {
-          combinedResult.slice.entities.push(...result.slice.entities);
-        }
-        if (result.slice) {
-          combinedResult.slice.perspectives.push(...result.slice.perspectives);
-        }
+      if (!combinedResult.slice) throw new Error('unexpected');
+
+      if (result.slice) {
+        combinedResult.slice.entities.push(...result.slice.entities);
+        combinedResult.slice.perspectives.push(...result.slice.perspectives);
+      }
+
+      if (!combinedResult.forksDetails) throw new Error('unexpected');
+
+      if (result.forksDetails) {
+        combinedResult.forksDetails.push(...result.forksDetails);
       }
     });
     return combinedResult;

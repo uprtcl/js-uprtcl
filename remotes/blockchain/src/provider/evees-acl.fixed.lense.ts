@@ -1,6 +1,7 @@
 import { LitElement, property, html, css } from 'lit-element';
 
-import { Perspective, servicesConnect, Logger, Signed } from '@uprtcl/evees';
+import { Perspective, Logger, Signed } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees-ui';
 
 import { EveesBlockchain } from './evees.blockchain';
 

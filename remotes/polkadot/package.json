@@ -21,6 +21,7 @@
     "@polkadot/util-crypto": "^3.7.1",
     "@uprtcl/common-ui": "^0.2.0",
     "@uprtcl/evees": "^0.2.0",
+    "@uprtcl/evees-ui": "^0.2.0",
     "@uprtcl/evees-blockchain": "^0.2.0",
     "@uprtcl/evees-orbitdb": "^0.2.0",
     "@uprtcl/ipfs-provider": "^0.2.0",

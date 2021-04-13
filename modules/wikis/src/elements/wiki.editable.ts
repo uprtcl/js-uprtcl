@@ -4,17 +4,16 @@ import {
   ClientEvents,
   combineMutations,
   Evees,
-  EveesDiffExplorer,
   ForkOf,
   Logger,
-  ParentAndChild,
   Proposal,
   RecursiveContextMergeStrategy,
   RemoteEvees,
   RemoteLoggedEvents,
-  servicesConnect,
 } from '@uprtcl/evees';
+import { EveesDiffExplorer, servicesConnect } from '@uprtcl/evees-ui';
 import { MenuConfig, styles, UprtclPopper } from '@uprtcl/common-ui';
+
 import { REMOVE_PAGE_EVENT_NAME } from './page-list-editable';
 
 export const SELECT_PAGE_EVENT_NAME = 'select-page';
@@ -112,15 +111,20 @@ export class EditableWiki extends servicesConnect(LitElement) {
       throw new Error('Search engine undefined');
     }
 
-    const forks = await this.evees.client.searchEngine.forks(this.uref, { levels: -1 });
+    const { forksDetails } = await this.evees.client.searchEngine.explore({
+      under: { elements: [{ id: this.uref }] },
+      forks: { independent: true, include: true },
+    });
 
-    if (forks.length > 0) {
-      await this.computeChanges(forks);
+    if (!forksDetails) throw new Error('forksDetails undefined');
+
+    if (forksDetails.length > 0) {
+      await this.computeChanges(forksDetails);
 
       /** recurse until checkAgain is false */
       if (this.checkAgain) {
         this.checkAgain = false;
-        await this.computeChanges(forks);
+        await this.computeChanges(forksDetails);
       }
     }
 
@@ -134,6 +138,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
         const merger = new RecursiveContextMergeStrategy(mergeEvees);
         await merger.mergePerspectivesExternal(fork.ofPerspectiveId, fork.forkId, {
           forceOwner: true,
+          detach: true,
         });
 
         return mergeEvees.client.diff();

@@ -194,6 +194,7 @@ export interface SearchForkOptions {
 export interface SearchResult {
   perspectiveIds: string[];
   ended?: boolean;
+  forksDetails?: ForkOf[];
   slice?: Slice;
 }
 

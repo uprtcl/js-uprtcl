@@ -3,18 +3,16 @@ import { html } from 'lit-element';
 import {
   Logger,
   mergeStrings,
-  HasDiffLenses,
-  DiffLens,
   MergeConfig,
   HasTitle,
-  HasLenses,
   HasChildren,
   HasEmpty,
-  Lens,
   Pattern,
   Evees,
   MergeStrategy,
 } from '@uprtcl/evees';
+
+import { HasDiffLenses, DiffLens, HasLenses, Lens } from '@uprtcl/evees-ui';
 
 import { Wiki } from '../types';
 import { WikiBindings } from '../bindings';
