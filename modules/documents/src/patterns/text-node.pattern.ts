@@ -134,14 +134,11 @@ export class TextNodeCommon
 
     if (!merger.mergeChildren) throw new Error('mergeChildren function not found in merger');
 
-    const recurse = config.recurse === undefined ? true : config.recurse;
-    const mergedLinks = recurse
-      ? await merger.mergeChildren(
-          originalNode.links,
-          modifications.map((data) => data.links),
-          config
-        )
-      : originalNode.links;
+    const mergedLinks = await merger.mergeChildren(
+      originalNode.links,
+      modifications.map((data) => data.links),
+      config
+    );
 
     return {
       text: resultText,

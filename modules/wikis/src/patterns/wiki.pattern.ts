@@ -53,14 +53,11 @@ export class WikiLinks implements HasChildren<Wiki>, HasEmpty<Wiki> {
 
     if (!merger.mergeChildren) throw new Error('mergeChildren function not found in merger');
 
-    const recurse = config.recurse === undefined ? true : config.recurse;
-    const mergedPages = recurse
-      ? await merger.mergeChildren(
-          originalNode.pages,
-          modifications.map((data) => data.pages),
-          config
-        )
-      : originalNode.pages;
+    const mergedPages = await merger.mergeChildren(
+      originalNode.pages,
+      modifications.map((data) => data.pages),
+      config
+    );
 
     return {
       title: mergedTitle,
