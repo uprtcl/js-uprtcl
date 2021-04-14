@@ -38,6 +38,10 @@ export class PageListEditable extends EveesBaseEditable<Wiki> {
     }
   }
 
+  async checkPull() {
+    await super.checkPull(false);
+  }
+
   async checkoutOfficial() {
     await super.seeOfficial();
   }

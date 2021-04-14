@@ -23,6 +23,10 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromPerspectiveId: string,
     config: MergeConfig
   ): Promise<string> {
+    if (toPerspectiveId === fromPerspectiveId) {
+      return toPerspectiveId;
+    }
+
     const promises = [toPerspectiveId, fromPerspectiveId].map(
       async (id) => (await this.evees.client.getPerspective(id)).details.headId
     );
@@ -99,10 +103,10 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDatasDefined = newDatas.map((data) => (data === undefined ? emptyEntity : data));
 
-    const ancestorId: string | undefined = undefined;
+    let ancestorId: string | undefined = undefined;
     if (toCommitId) {
       try {
-        await findMostRecentCommonAncestor(this.evees.client)(commitsIds);
+        ancestorId = await findMostRecentCommonAncestor(this.evees.client)(commitsIds);
       } catch (e) {
         console.error(`Error in findMostRecentCommonAncestor`, { commitsIds, e });
       }
@@ -114,10 +118,13 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const data = await this.evees.client.store.hashEntity({ object: mergedObject, remote });
     /** prevent an update head to the same data */
-    if (
-      ((!!newDatas[0] && data.id === newDatas[0].id) || toCommitId === fromCommitId) &&
-      toCommitIdOrg !== undefined
-    ) {
+
+    /** if toData is defined and the new computed data is the same*/
+    const sameToData = !!newDatas[0] && data.id === newDatas[0].id;
+    /** if from and to commits are the same */
+    const sameCommit = toCommitId === fromCommitId;
+
+    if ((sameToData || sameCommit) && toCommitIdOrg !== undefined) {
       return toCommitIdOrg;
     }
 

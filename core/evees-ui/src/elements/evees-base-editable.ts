@@ -124,10 +124,11 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
 
   caseUpdated?(oldCase: EditableCase);
 
-  async checkPull() {
+  async checkPull(recurse: boolean = true) {
     if (this.case === EditableCase.IS_DRAFT_HAS_OFFICIAL) {
       const config = {
         forceOwner: true,
+        recurse,
       };
 
       // Create a temporary workspaces to compute the merge
@@ -221,18 +222,22 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
         break;
     }
 
-    return html`${this.hasPull
-        ? html`<uprtcl-button @click=${() => this.pullChanges()}>pull</uprtcl-button>`
-        : ''}
-      <div
-        @click=${() => this.toggleDraft()}
-        class=${'edit-control-container' + (clickable ? ' clickable' : '')}
-      >
+    return html` <div
+      @click=${() => this.toggleDraft()}
+      class=${'edit-control-container' + (clickable ? ' clickable' : '')}
+    >
+      <div class="left-control">
+        ${this.hasPull
+          ? html`<uprtcl-button @click=${() => this.pullChanges()}>pull</uprtcl-button>`
+          : ''}
+      </div>
+      <div class="right-control">
         <div class=${'action-text' + textColor}>${text}</div>
         <div class=${'action-circle' + circleColor}>
           ${circleText !== undefined ? circleText : icons.edit}
         </div>
-      </div>`;
+      </div>
+    </div>`;
   }
 
   static get styles() {
@@ -244,6 +249,17 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
           justify-content: flex-end;
           padding: 0 0.7rem;
           margin: 1rem 0rem;
+        }
+        .left-control {
+          flex: 1 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+        }
+        .right-control {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
         }
         .action-text {
           margin-right: 6px;
