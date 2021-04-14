@@ -185,7 +185,7 @@ export interface SearchOptions {
 }
 
 export interface SearchForkOptions {
-  independent: boolean;
+  independent?: boolean;
   independentOf?: string;
   exclusive?: boolean;
 }
