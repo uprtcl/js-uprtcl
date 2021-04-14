@@ -43,13 +43,15 @@ export class EveesPerspectivesList extends servicesConnect(LitElement) {
       throw new Error(`search engine not defined`);
     }
 
-    const otherPerspectives = await this.evees.client.searchEngine.forks(this.perspectiveId);
+    const { perspectiveIds: otherPerspectives } = await this.evees.client.searchEngine.explore({
+      under: { elements: [{ id: this.perspectiveId }] },
+    });
 
     const perspectivesData: PerspectiveData[] = await Promise.all(
       otherPerspectives.map(
         async (fork): Promise<PerspectiveData> => {
           /** data on this perspective */
-          const perspective = await this.evees.client.store.getEntity(fork.forkId);
+          const perspective = await this.evees.client.store.getEntity(fork);
           const remote = this.evees.remotes.find((r) => r.id === perspective.object.payload.remote);
           if (!remote) throw new Error(`remote not found for ${perspective.object.payload.remote}`);
           return {

@@ -1,6 +1,7 @@
 import { html } from 'lit-html';
 
-import { CASStore, Lens, Logger, Proposal, ProposalEvents, ProposalsWithUI } from '@uprtcl/evees';
+import { CASStore, Logger, Proposal, ProposalEvents } from '@uprtcl/evees';
+import { Lens, ProposalsWithUI } from '@uprtcl/evees-ui';
 
 import { PolkadotConnection } from '../../connection.polkadot';
 
@@ -72,6 +73,12 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
       block: await this.connection.getLatestBlock(),
       config: this.config,
     };
+
+    /** persist entities associated to this mutation */
+    if (proposal.mutation.entities) {
+      await this.store.storeEntities(proposal.mutation.entities);
+      await this.store.flush();
+    }
 
     const proposalId = await this.councilStore.createProposal(proposalManifest);
 

@@ -1,5 +1,5 @@
-import { RemoteWithUI } from '@uprtcl/evees';
-import { html, TemplateResult } from 'lit-html';
+import { RemoteWithUI } from '@uprtcl/evees-ui';
+import { html } from 'lit-html';
 import { EveesPolkadotCouncil } from './evees.polkadot-council';
 
 export class EveesPolkadotCouncilWithUI extends EveesPolkadotCouncil implements RemoteWithUI {

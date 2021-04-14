@@ -1,4 +1,4 @@
-import { ethers, ContractInterface, Overrides } from 'ethers';
+import { ethers, ContractInterface } from 'ethers';
 
 import { Logger } from '@uprtcl/evees';
 

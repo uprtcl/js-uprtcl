@@ -156,7 +156,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
                 const newPerspectiveId = await this.evees.forkPerspective(
                   perspectivesByContext.from as string,
                   config.remote,
-                  config.guardianId
+                  config.guardianId,
+                  { recurse: true, detach: config.detach !== undefined ? config.detach : false }
                 );
                 return newPerspectiveId;
               } else {

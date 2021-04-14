@@ -15,6 +15,7 @@
     "@uprtcl/common-ui": "^0.2.0",
     "@uprtcl/documents": "^0.2.0",
     "@uprtcl/evees": "^0.2.0",
+    "@uprtcl/evees-ui": "^0.2.0",
     "lit-element": "^2.3.0",
     "npm-check-updates": "^10.2.1",
     "redux": "^4.0.4"

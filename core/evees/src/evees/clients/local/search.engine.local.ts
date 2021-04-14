@@ -25,6 +25,17 @@ export class LocalSearchEngine implements SearchEngine {
   }
 
   async explore(options: SearchOptions): Promise<SearchResult> {
+    if (options.forks) {
+      if (!options.under) throw new Error('forks must be found under some perspective');
+      const forks = await this.independentSubPerspectivesRec(
+        options.under.elements[0].id,
+        undefined,
+        options.under.levels
+      );
+
+      return { perspectiveIds: forks.map((fork) => fork.forkId), forksDetails: forks };
+    }
+
     const underId = options.under ? options.under.elements[0].id : undefined;
     if (!underId) {
       throw new Error(`UnderId not defined`);
@@ -119,16 +130,5 @@ export class LocalSearchEngine implements SearchEngine {
     );
 
     return thisLevel.concat(...independent);
-  }
-  // search independent perspectives
-  // const perspectiveInDb = await this.remote.db.perspectives.get(perspectiveId);
-
-  // perspectiveInDb.children.map();
-
-  async forks(
-    perspectiveId: string,
-    options: SearchForkOptions = { levels: 0 }
-  ): Promise<ForkOf[]> {
-    return this.independentSubPerspectivesRec(perspectiveId, undefined, options.levels);
   }
 }
