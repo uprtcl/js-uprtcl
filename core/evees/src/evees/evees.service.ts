@@ -844,7 +844,22 @@ export class Evees {
     const refPerspective: Entity<Signed<Perspective>> = await this.client.store.getEntity(
       perspectiveId
     );
-    const remote = await this.getRemote(remoteId);
+
+    /** derive onRemote from the guardian if it's not given, or use the default remote */
+    let onRemoteId;
+    if (!remoteId) {
+      if (guardianId) {
+        const guardianRemote = await this.getPerspectiveRemote(guardianId);
+        onRemoteId = guardianRemote.id;
+      } else {
+        const defaultRemote = this.getRemote();
+        onRemoteId = defaultRemote.id;
+      }
+    } else {
+      onRemoteId = remoteId;
+    }
+
+    const remote = this.getRemote(onRemoteId);
 
     const { details } = await this.client.getPerspective(perspectiveId);
 
