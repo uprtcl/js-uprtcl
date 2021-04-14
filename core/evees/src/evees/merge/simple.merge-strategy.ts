@@ -112,11 +112,17 @@ export class SimpleMergeStrategy implements MergeStrategy {
       }
     }
 
+    // If the ancestor is the fromFommit, then no new changes made and no need to merge
+    if (toCommitIdOrg !== undefined && ancestorId === fromCommitId) {
+      return toCommitIdOrg;
+    }
+
     const ancestorData = ancestorId ? await this.evees.getCommitData(ancestorId) : emptyEntity;
 
     const mergedObject = await this.mergeData(ancestorData, newDatasDefined, config);
 
     const data = await this.evees.client.store.hashEntity({ object: mergedObject, remote });
+
     /** prevent an update head to the same data */
 
     /** if toData is defined and the new computed data is the same*/

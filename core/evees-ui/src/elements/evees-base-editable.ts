@@ -125,6 +125,8 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   caseUpdated?(oldCase: EditableCase);
 
   async checkPull(recurse: boolean = true) {
+    this.hasPull = false;
+
     if (this.case === EditableCase.IS_DRAFT_HAS_OFFICIAL) {
       const config = {
         forceOwner: true,
