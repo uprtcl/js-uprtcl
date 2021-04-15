@@ -68,7 +68,6 @@ export class UprtclTextField extends LitElement {
           position: absolute;
           left: 10px;
           top: -8px;
-          background-color: white;
           width: fit-content;
           padding: 0px 5px;
           font-size: 15px;
@@ -85,6 +84,7 @@ export class UprtclTextField extends LitElement {
           outline-style: none;
           border-style: none;
           border-radius: 4px;
+          background-color: transparent;
         }
         .input-container {
           width: fit-content;
