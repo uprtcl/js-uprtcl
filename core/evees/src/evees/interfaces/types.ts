@@ -203,7 +203,7 @@ export interface ParentAndChild {
 }
 
 export interface ForkOf {
-  forkId: string;
+  forkIds: string[];
   ofPerspectiveId: string;
   atHeadId?: string;
 }
