@@ -1,7 +1,21 @@
 import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
 
-import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
-import { Perspective, PerspectiveDetails, Entity, Commit, Logger, Evees, RemoteEvees, PerspectiveType, Signed, CommitType, MergeConfig, RecursiveContextMergeStrategy, Proposal } from '@uprtcl/evees';
+import { MenuOptions, UprtclDialog } from '@uprtcl/common-ui';
+import {
+  Perspective,
+  PerspectiveDetails,
+  Entity,
+  Commit,
+  Logger,
+  Evees,
+  RemoteEvees,
+  PerspectiveType,
+  Signed,
+  CommitType,
+  MergeConfig,
+  RecursiveContextMergeStrategy,
+  Proposal,
+} from '@uprtcl/evees';
 
 import { ProposalCreatedEvent } from './events';
 import { EveesDiffExplorer } from './evees-diff-explorer';
@@ -220,19 +234,18 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
         : false
       : false;
 
-    const options: MenuConfig = {
-      apply: {
-        text: canUpdate ? 'merge' : 'propose',
-        icon: 'done',
-        disabled: !canUpdate && !canPropose,
-        skinny: false,
-      },
-      close: {
-        text: 'close',
-        icon: 'clear',
-        skinny: true,
-      },
-    };
+    const options: MenuOptions = new Map();
+    options.set('apply', {
+      text: canUpdate ? 'merge' : 'propose',
+      icon: 'done',
+      disabled: !canUpdate && !canPropose,
+      skinny: false,
+    });
+    options.set('close', {
+      text: 'close',
+      icon: 'clear',
+      skinny: true,
+    });
 
     const result = await this.updatesDialog(
       eveesMerge,
@@ -346,7 +359,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
 
   async updatesDialog(
     localEvees: Evees,
-    options: MenuConfig,
+    options: MenuOptions,
     message: TemplateResult = html``
   ): Promise<string> {
     this.showUpdatesDialog = true;
