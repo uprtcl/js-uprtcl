@@ -82,6 +82,16 @@ export class TextNodeCommon
     ];
   };
 
+  preview = (node: TextNode): Lens<RenderEntityInput> => {
+    return {
+      name: 'documents:document-preview-card',
+      type: 'preview',
+      render: (input: any, evees?: Evees) => {
+        return html`<documents-preview-card uref=${input}></documents-preview-card>`;
+      },
+    };
+  };
+
   /** lenses top is a lense that dont render the node children, leaving the job to an upper node tree controller */
   docNodeLenses = (): DocNodeLens[] => {
     return [
