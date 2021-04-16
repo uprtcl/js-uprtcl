@@ -1,12 +1,12 @@
 import { LitElement, html, property, css, internalProperty } from 'lit-element';
-import { MenuConfig } from './options-menu';
+import { MenuOptions } from './options-menu';
 
 export class UprtclDialog extends LitElement {
   @property({ attribute: false })
   resolved: Function | undefined = undefined;
 
   @property({ type: Object })
-  options: MenuConfig = {};
+  options: MenuOptions = new Map();
 
   @property({ type: Boolean, attribute: 'show-close' })
   showClose: boolean = false;
