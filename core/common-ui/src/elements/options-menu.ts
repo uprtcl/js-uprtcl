@@ -1,20 +1,20 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-export interface MenuConfig {
-  [key: string]: {
-    text: string;
-    icon?: string;
-    skinny?: boolean;
-    disabled?: boolean;
-    background?: string;
-  };
+export interface MenuOption {
+  text: string;
+  icon?: string;
+  skinny?: boolean;
+  disabled?: boolean;
+  background?: string;
 }
+
+export type MenuOptions = Map<string, MenuOption>;
 
 import { UprtclPopper } from './popper';
 
 export class UprtclOptionsMenu extends LitElement {
   @property({ type: Object })
-  config: MenuConfig = {};
+  config: MenuOptions = new Map();
 
   @property({ type: String })
   icon = 'more_vert';
@@ -56,8 +56,7 @@ export class UprtclOptionsMenu extends LitElement {
           ></uprtcl-icon-button
         ></slot>
         <uprtcl-list>
-          ${Object.keys(this.config).map((itemKey) => {
-            const item = this.config[itemKey];
+          ${Array.from(this.config.entries()).map(([itemKey, item]) => {
             return item.disabled !== undefined && item.disabled
               ? html`
                   <uprtcl-list-item icon=${item.icon ? item.icon : ''} disabled>

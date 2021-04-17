@@ -60,8 +60,8 @@ export interface CreatePerspective {
 }
 
 export interface ForkOptions {
-  recurse: boolean;
-  detach: boolean;
+  recurse?: boolean;
+  detach?: boolean;
 }
 
 export const BEHAVIOUR_NOT_FOUND_ERROR = 'BehaviorNotFound';

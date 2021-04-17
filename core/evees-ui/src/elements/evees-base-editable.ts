@@ -128,12 +128,9 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   }
 
   async createDraft(recurse: boolean = true): Promise<void> {
-    this.mineId = await this.evees.forkPerspective(
-      this.firstRef,
-      this.editRemote.id,
-      undefined,
-      recurse
-    );
+    this.mineId = await this.evees.forkPerspective(this.firstRef, this.editRemote.id, undefined, {
+      recurse,
+    });
     await this.evees.client.flush();
     this.logger.log('BaseDraft -- createDraft()', this.mineId);
     return this.seeDraft();

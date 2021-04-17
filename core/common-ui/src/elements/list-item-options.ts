@@ -1,6 +1,6 @@
 import { LitElement, html, property, css } from 'lit-element';
 
-import { MenuConfig } from './options-menu';
+import { MenuOptions } from './options-menu';
 
 import './options-menu';
 
@@ -12,7 +12,7 @@ export class UprtclListItemWithOption extends LitElement {
   selected = 'false';
 
   @property({ type: Object })
-  config: MenuConfig = {};
+  config: MenuOptions = new Map();
 
   elementClicked() {
     this.dispatchEvent(

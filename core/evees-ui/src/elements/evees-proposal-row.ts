@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, query } from 'lit-element';
 
-import { MenuConfig, UprtclDialog } from '@uprtcl/common-ui';
+import { MenuOptions, UprtclDialog } from '@uprtcl/common-ui';
 import { Logger, Proposal, Evees } from '@uprtcl/evees';
 
 import { servicesConnect } from '../container/multi-connect.mixin';
@@ -142,29 +142,29 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
   async showProposalChanges() {
     this.showDiff = true;
-    const options: MenuConfig = {};
+    const options: MenuOptions = new Map();
 
     if (this.canExecute && !this.executed) {
-      options['accept'] = {
+      options.set('accept', {
         disabled: false,
         text: 'accept',
         icon: 'done',
-      };
+      });
     }
 
-    options['close'] = {
+    options.set('close', {
       disabled: false,
       text: 'close',
       icon: 'clear',
-    };
+    });
 
     if (this.canExecute || this.canRemove) {
-      options['delete'] = {
+      options.set('delete', {
         disabled: false,
         text: 'delete',
         icon: 'delete',
         background: '#c93131',
-      };
+      });
     }
 
     await this.updateComplete;

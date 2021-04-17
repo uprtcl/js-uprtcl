@@ -53,6 +53,25 @@ export const icons = {
       />
     </svg>
   `,
+  close_purple:html`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g filter="url(#filter0_i)">
+  <rect width="32" height="32" rx="16" fill="#EFEFFD"/>
+  <path fill-rule="evenodd" clip-rule="evenodd" d="M16 17.0605L10.5303 22.5301L9.46967 21.4695L14.9393 15.9998L9.46967 10.5301L10.5303 9.46949L16 14.9392L21.4697 9.46948L22.5303 10.5301L17.0607 15.9998L22.5303 21.4695L21.4697 22.5301L16 17.0605Z" fill="#4B4DED"/>
+  </g>
+  <defs>
+  <filter id="filter0_i" x="0" y="-0.5" width="32" height="32.5" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+  <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+  <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+  <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+  <feOffset dy="-1"/>
+  <feGaussianBlur stdDeviation="0.25"/>
+  <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+  <feColorMatrix type="matrix" values="0 0 0 0 0.054902 0 0 0 0 0.054902 0 0 0 0 0.172549 0 0 0 0.4 0"/>
+  <feBlend mode="overlay" in2="shape" result="effect1_innerShadow"/>
+  </filter>
+  </defs>
+  </svg>
+  `,
   hourglass_empty: html`
     <svg
       xmlns="http://www.w3.org/2000/svg"
