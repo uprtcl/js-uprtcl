@@ -319,6 +319,7 @@ export class ClientCachedWithBase implements Client {
     if (LOGINFO) this.logger.log(`${this.name} newPerspective()`, { newPerspective });
     return this.update({ newPerspectives: [newPerspective] });
   }
+
   async deletePerspective(perspectiveId: string): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} deletePerspective()`, { perspectiveId });
     await this.update({ deletedPerspectives: [perspectiveId] });
@@ -363,7 +364,7 @@ export class ClientCachedWithBase implements Client {
   async diff(options?: SearchOptions): Promise<EveesMutation> {
     if (LOGINFO) this.logger.log(`${this.name} diff()`, {});
 
-    const mutation = await this.cache.diff();
+    const mutation = await this.cache.diff(options);
 
     /** append store entities to the mutation */
     mutation.entities = await this.store.diff();

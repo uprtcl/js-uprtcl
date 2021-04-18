@@ -34,6 +34,9 @@ export class AppElements {
 
     /** all other objects are obtained relative to the home perspective */
     await this.getOrCreateElementData(this.home);
+
+    /** always flush to send pending changes */
+    await this.flush();
   }
 
   /** Returns the appElement from the path */
@@ -123,7 +126,7 @@ export class AppElements {
     const { details } = await this.evees.client.getPerspective(perspective.id, { levels });
 
     /** canUpdate is used as the flag to detect if the home space exists */
-    if (!details.canUpdate) {
+    if (!details.headId) {
       /** create the home perspective as it did not existed */
       if (LOGINFO) this.logger.log('create perspective data()', perspective.object.payload);
       await this.evees.createEvee({
@@ -160,8 +163,17 @@ export class AppElements {
 
     // set perspectives data
     await this.initPerspectiveDataRec(element);
+  }
 
-    await this.evees.client.flush();
+  /** always flush the tree in case it got stuck from previous initTree attempt */
+  async flush() {
+    if (!this.home.perspective) {
+      throw new Error('home perspective must exist at this point');
+    }
+
+    await this.evees.client.flush({
+      under: { elements: [{ id: this.home.perspective.id, levels: 3 }] },
+    });
   }
 
   async readTree(element: AppElement) {

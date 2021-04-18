@@ -11,9 +11,11 @@ import {
   Slice,
   Commit,
   LinksType,
+  SearchOptions,
+  JoinElement,
 } from '../../interfaces/types';
 import { CachedUpdate, ClientCache } from '../client.cache';
-import { EveesCacheDB } from './cache.local.db';
+import { EveesCacheDB, NewPerspectiveLocal, UpdateLocal } from './cache.local.db';
 
 /** use local storage as cache of ClientCachedWithBase */
 export class CacheLocal implements ClientCache {
@@ -137,26 +139,58 @@ export class CacheLocal implements ClientCache {
     }
   }
 
-  async getNewPerspectives(): Promise<NewPerspective[]> {
-    const elements = await this.db.newPerspectives.toArray();
-    return elements.map((e) => e.newPerspective);
-  }
+  /** helper method to avoid code duplication */
+  private async getFiltered<T>(under: string[], table: Dexie.Table) {
+    let elements: T[] = [];
+    if (under && under.length > 0) {
+      const allElements = await Promise.all(
+        under.map((underId) => {
+          return table.where('perspectiveId').equals(underId).toArray();
+        })
+      );
+      elements = Array.prototype.concat.apply([], allElements);
+    } else {
+      elements = await table.toArray();
+    }
 
-  async getUpdates(): Promise<Update[]> {
-    const elements = await this.db.updates.toArray();
-    return elements.map((e) => e.update);
-  }
-
-  async getDeletedPerspective(): Promise<string[]> {
-    const elements = await this.db.deletedPerspectives.toArray();
     return elements;
   }
 
-  async diff(): Promise<EveesMutation> {
+  async getNewPerspectives(under: string[] = []): Promise<NewPerspective[]> {
+    const local = await this.getFiltered<NewPerspectiveLocal>(under, this.db.newPerspectives);
+    return local.map((local) => local.newPerspective);
+  }
+
+  async getUpdates(under: string[] = []): Promise<Update[]> {
+    const local = await this.getFiltered<UpdateLocal>(under, this.db.updates);
+    return local.map((local) => local.update);
+  }
+
+  async getDeletedPerspective(under: string[] = []): Promise<string[]> {
+    const local = await this.getFiltered<string>(under, this.db.deletedPerspectives);
+    return local;
+  }
+
+  async diff(options?: SearchOptions): Promise<EveesMutation> {
+    let of: string[] = [];
+
+    /** filter updates only to perspectives under a given element */
+    if (options && options.under) {
+      /**  */
+      const allUnder = await Promise.all(
+        options.under.elements.map(
+          async (under): Promise<string[]> => {
+            return this.getUnder(under.id);
+          }
+        )
+      );
+      of = Array.prototype.concat.apply([], allUnder);
+    }
+
     return {
-      newPerspectives: await this.getNewPerspectives(),
-      updates: await this.getUpdates(),
-      deletedPerspectives: await this.getDeletedPerspective(),
+      newPerspectives: await this.getNewPerspectives(of),
+      updates: await this.getUpdates(of),
+      deletedPerspectives: await this.getDeletedPerspective(of),
       entities: [],
     };
   }

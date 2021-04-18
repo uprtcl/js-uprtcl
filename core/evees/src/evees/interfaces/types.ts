@@ -156,6 +156,7 @@ export interface EveesOptions {
 }
 export interface JoinElement {
   id: string;
+  levels?: number;
   negation?: boolean;
 }
 

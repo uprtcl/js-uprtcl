@@ -1,4 +1,10 @@
-import { EveesMutation, NewPerspective, PerspectiveDetails, Update } from '../interfaces/types';
+import {
+  EveesMutation,
+  NewPerspective,
+  PerspectiveDetails,
+  SearchOptions,
+  Update,
+} from '../interfaces/types';
 
 export interface CachedUpdate {
   update: Update;
@@ -26,6 +32,6 @@ export interface ClientCache {
 
   clearPerspective(perspectiveId: string);
 
-  diff(): Promise<EveesMutation>;
+  diff(options?: SearchOptions): Promise<EveesMutation>;
   clear(): Promise<void>;
 }

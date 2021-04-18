@@ -159,9 +159,7 @@ export class EveesHttp implements RemoteEvees {
   ): Promise<PerspectiveGetResult> {
     if (LOGINFO) this.logger.log('getPerspective()', perspectiveId);
 
-    let result: PerspectiveGetResult = {
-      details: {},
-    };
+    let result: PerspectiveGetResult;
 
     /** add default values for case where options is partially provided */
     options.entities = options.entities === undefined ? true : options.entities;
@@ -178,6 +176,9 @@ export class EveesHttp implements RemoteEvees {
       }
     } catch (e) {
       this.logger.warn(`Error fetching perspective ${perspectiveId}`, e);
+      result = {
+        details: {},
+      };
     }
 
     if (LOGINFO) this.logger.log('getPerspective() - result', result);
