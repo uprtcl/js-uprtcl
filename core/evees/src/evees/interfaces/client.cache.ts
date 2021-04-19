@@ -1,10 +1,4 @@
-import {
-  EveesMutation,
-  NewPerspective,
-  PerspectiveDetails,
-  SearchOptions,
-  Update,
-} from '../interfaces/types';
+import { EveesMutation, NewPerspective, PerspectiveDetails, SearchOptions, Update } from './types';
 
 export interface CachedUpdate {
   update: Update;

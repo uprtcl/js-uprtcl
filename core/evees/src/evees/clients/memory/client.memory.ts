@@ -4,10 +4,10 @@ import { Client } from '../../interfaces/client';
 import { LinksType } from '../../interfaces/types';
 import { IndexDataHelper } from '../../index.data.helper';
 
-import { ClientCachedWithBase } from '../client.cached.with.base';
+import { ClientCachedBase } from '../cached/client.cached.base';
 import { CacheOnMemory } from './cache.memory';
 
-export class ClientOnMemory extends ClientCachedWithBase {
+export class ClientOnMemory extends ClientCachedBase {
   logger = new Logger('ClientOnMemory');
   store: CASStore;
 

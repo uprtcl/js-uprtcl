@@ -36,7 +36,8 @@ import { RemoteEvees } from './interfaces/remote.evees';
 import { createCommit, getHome } from './default.perspectives';
 import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
-import { FindAncestor } from './evees.utils';
+import { FindAncestor } from './utils/find.ancestor';
+import { ClientCached } from './interfaces/client.cached';
 
 const LOGINFO = false;
 
@@ -81,7 +82,7 @@ export class Evees {
   > = new Map();
 
   constructor(
-    readonly client: Client,
+    readonly client: ClientCached,
     readonly recognizer: PatternRecognizer,
     readonly remotes: RemoteEvees[],
     readonly stores: CASRemote[],
@@ -92,7 +93,7 @@ export class Evees {
     this.events.setMaxListeners(1000);
   }
 
-  clone(name: string = 'NewClient', client?: Client, config?: EveesConfig): Evees {
+  clone(name: string = 'NewClient', client?: ClientCached, config?: EveesConfig): Evees {
     const store = client ? client.store : new CASOnMemory(this.client.store);
     client = client || new ClientOnMemory(this.client, store, name);
 
@@ -110,7 +111,7 @@ export class Evees {
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
   async cloneAndUpdate(
     name: string = 'NewClient',
-    client?: Client,
+    client?: ClientCached,
     mutation?: EveesMutation
   ): Promise<Evees> {
     const evees = this.clone(name, client);

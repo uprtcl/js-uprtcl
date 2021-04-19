@@ -9,16 +9,17 @@ import {
   EveesMutationCreate,
   Commit,
   SearchOptions,
-} from '../interfaces/types';
-import { CASStore } from '../../cas/interfaces/cas-store';
-import { Entity, EntityCreate } from '../../cas/interfaces/entity';
-import { Logger } from '../../utils/logger';
+} from '../../interfaces/types';
+import { CASStore } from '../../../cas/interfaces/cas-store';
+import { Entity, EntityCreate } from '../../../cas/interfaces/entity';
+import { Logger } from '../../../utils/logger';
 
-import { Client, ClientEvents } from '../interfaces/client';
-import { ClientCache } from './client.cache';
+import { Client, ClientEvents } from '../../interfaces/client';
+import { ClientCache } from '../../interfaces/client.cache';
 import { Signed } from 'src/patterns/interfaces/signable';
 import { AsyncQueue } from 'src/utils/async';
-import { SearchEngine } from '../interfaces/search.engine';
+import { ClientCached } from '../../interfaces/client.cached';
+import { condensateUpdates } from '../../utils/condensate.updates';
 
 const LOGINFO = false;
 
@@ -26,22 +27,22 @@ export enum ClientCachedEvents {
   pending = 'changes-pending',
 }
 
-export class ClientCachedWithBase implements Client {
+/** a reusable cache base to be used for different cache implementations */
+export class ClientCachedBase implements ClientCached {
   logger = new Logger('ClientCachedWithBase');
+
+  cache!: ClientCache;
+  store!: CASStore;
 
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
-  /** a search engine that will override that of the base layer if provided */
-  searchEngineLocal?: SearchEngine;
-  protected cache!: ClientCache;
-  store!: CASStore;
 
-  /** forces sequentiality between calls to update methods */
+  /** A queue to enforce sequentiality between calls to update methods */
   private updateQueue: AsyncQueue;
   private lastQueued: Promise<any> | undefined = undefined;
 
   constructor(
-    readonly base?: Client,
+    readonly base?: Client | ClientCached,
     readonly name: string = 'client',
     readonly readCacheEnabled: boolean = true
   ) {
@@ -49,6 +50,7 @@ export class ClientCachedWithBase implements Client {
     this.events.setMaxListeners(1000);
     this.updateQueue = new AsyncQueue();
 
+    /** subscribe to base client events to update the cache */
     if (this.base && this.base.events) {
       this.base.events.on(ClientEvents.updated, (perspectiveIds: string[]) => {
         /** remove the cached perspectives if updated */
@@ -58,16 +60,13 @@ export class ClientCachedWithBase implements Client {
 
         if (LOGINFO)
           this.logger.log(`${this.name} event : ${ClientEvents.updated}`, perspectiveIds);
+
         this.events.emit(ClientEvents.updated, perspectiveIds);
       });
     }
   }
 
   get searchEngine() {
-    if (this.searchEngineLocal) {
-      return this.searchEngineLocal;
-    }
-
     if (this.base) {
       return this.base.searchEngine;
     }
@@ -248,6 +247,7 @@ export class ClientCachedWithBase implements Client {
 
     if (LOGINFO)
       this.logger.log(`${this.name} event : ${ClientEvents.updated}`, [update.perspectiveId]);
+
     this.events.emit(ClientEvents.updated, [update.perspectiveId]);
   }
 
@@ -348,7 +348,9 @@ export class ClientCachedWithBase implements Client {
       await this.base.update(diff);
 
       if (recurse) {
-        await this.base.flush(options);
+        if ((this.base as ClientCached).flush) {
+          await (this.base as ClientCached).flush(options);
+        }
       }
 
       await this.clear();
@@ -361,10 +363,15 @@ export class ClientCachedWithBase implements Client {
   }
 
   /** a mutation with all the changes made relative to the base client */
-  async diff(options?: SearchOptions): Promise<EveesMutation> {
+  async diff(options?: SearchOptions, condensate: boolean = false): Promise<EveesMutation> {
     if (LOGINFO) this.logger.log(`${this.name} diff()`, {});
 
     const mutation = await this.cache.diff(options);
+
+    if (condensate) {
+      mutation.updates = await condensateUpdates(mutation.updates, this.store);
+      if (LOGINFO) this.logger.log('condensate diff', { options, mutation });
+    }
 
     /** append store entities to the mutation */
     mutation.entities = await this.store.diff();

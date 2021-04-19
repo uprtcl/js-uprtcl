@@ -12,9 +12,8 @@ import {
   Commit,
   LinksType,
   SearchOptions,
-  JoinElement,
 } from '../../interfaces/types';
-import { CachedUpdate, ClientCache } from '../client.cache';
+import { CachedUpdate, ClientCache } from '../../interfaces/client.cache';
 import { EveesCacheDB, NewPerspectiveLocal, UpdateLocal } from './cache.local.db';
 
 /** use local storage as cache of ClientCachedWithBase */
@@ -145,7 +144,7 @@ export class CacheLocal implements ClientCache {
     if (under && under.length > 0) {
       const allElements = await Promise.all(
         under.map((underId) => {
-          return table.where('perspectiveId').equals(underId).toArray();
+          return table.where('id').equals(underId).toArray();
         })
       );
       elements = Array.prototype.concat.apply([], allElements);

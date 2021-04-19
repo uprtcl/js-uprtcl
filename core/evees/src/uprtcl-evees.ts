@@ -52,7 +52,6 @@ export {
   combineMutations,
 } from './evees/merge/utils';
 
-
 /** Utils */
 export { isAncestorOf } from './evees/merge/ancestor';
 export { Connection, ConnectionOptions } from './utils/connection';
@@ -112,11 +111,12 @@ export { ClientOnMemory } from './evees/clients/memory/client.memory';
 export { RemoteEveesLocal } from './evees/clients/local/remote.local';
 export { ClientCachedLocal } from './evees/clients/local/client.cached.local';
 export { CacheLocal } from './evees/clients/local/cache.local';
-export { ClientCachedWithBase, ClientCachedEvents } from './evees/clients/client.cached.with.base';
+export { ClientCachedBase, ClientCachedEvents } from './evees/clients/cached/client.cached.base';
 
 export { CASOnMemory } from './cas/stores/cas.memory';
 export { CASLocal } from './cas/stores/cas.local';
 export { CASRemoteLocal } from './cas/stores/cas.remote.local';
 
 /** Evees Utils */
-export { CondensateCommits } from './evees/evees.utils';
+export { CondensateCommits } from './evees/utils/condensate.commits';
+export { condensateUpdates } from './evees/utils/condensate.updates';

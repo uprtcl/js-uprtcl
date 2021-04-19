@@ -44,15 +44,6 @@ export interface Client {
   deletePerspective(perspectiveId: string): Promise<void>;
   updatePerspective(update: Update): Promise<void>;
 
-  /** get all the changes relative to the underlying client(s) */
-  diff(options?: SearchOptions): Promise<EveesMutation>;
-  /** sync all the temporary changes made on this client with the base layer */
-  flush(options?: SearchOptions, recurse?: boolean): Promise<void>;
-  /** force refresh the perspective details and deletes the cached proposals and userPerspectives. */
-  refresh(): Promise<void>;
-  /** delete all changes done and cached in this client. */
-  clear?(): Promise<void>;
-
   /** await for all update transactions received to be processed (visible to read queries) */
   ready?(): Promise<void>;
 
