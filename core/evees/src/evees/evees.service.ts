@@ -80,7 +80,7 @@ interface PendingUpdateDetails {
   update: Update;
   commit: Secured<Commit>;
   data: Entity;
-  timeout?: NodeJS.Timeout;
+  timeout?: number;
 }
 
 export class Evees {
@@ -425,14 +425,14 @@ export class Evees {
   }
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
-  async updatePerspective(update: Update, flush?: boolean) {
+  async updatePerspective(update: Update, flush?: FlushConfig) {
     if (LOGINFO) this.logger.log('updatePerspective()', update);
     await this.indexUpdate(update);
     await this.client.updatePerspective(update);
 
-    flush = flush || (this.config.flush ? this.config.flush.autoflush : false);
+    flush = flush || this.config.flush;
     if (flush) {
-      this.client.flush();
+      this.client.flush(undefined, flush);
     }
   }
 
@@ -581,7 +581,7 @@ export class Evees {
       this.client.store.storeEntity(pending.data),
     ]);
 
-    await this.updatePerspective(pending.update, pending.flush.autoflush);
+    await this.updatePerspective(pending.update, pending.flush);
 
     if (this.pendingUpdates.size === 0) {
       if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, false);
@@ -671,7 +671,7 @@ export class Evees {
         this.client.store.storeEntity(pendingUpdate.data),
       ]);
 
-      await this.updatePerspective(pendingUpdate.update, pendingUpdate.flush.autoflush);
+      await this.updatePerspective(pendingUpdate.update, pendingUpdate.flush);
     }
   }
 
@@ -742,13 +742,10 @@ export class Evees {
     await this.updatePerspectiveData({ perspectiveId: parentId, object: newParentObject, flush });
 
     if (setGuardian) {
-      await this.updatePerspective(
-        {
-          perspectiveId: childId,
-          details: { guardianId: parentId },
-        },
-        flush ? flush.autoflush : undefined
-      );
+      await this.updatePerspective({
+        perspectiveId: childId,
+        details: { guardianId: parentId },
+      });
     }
   }
 

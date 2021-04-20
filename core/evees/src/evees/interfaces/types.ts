@@ -237,6 +237,8 @@ export interface UpdatePerspectiveData {
 }
 
 export interface FlushConfig {
-  debounce: number;
-  autoflush: boolean;
+  debounce?: number;
+  autoflush?: boolean;
+  recurse?: boolean;
+  condensate?: boolean;
 }

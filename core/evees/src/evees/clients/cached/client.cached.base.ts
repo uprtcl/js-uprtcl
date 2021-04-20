@@ -9,6 +9,7 @@ import {
   EveesMutationCreate,
   Commit,
   SearchOptions,
+  FlushConfig,
 } from '../../interfaces/types';
 import { CASStore } from '../../../cas/interfaces/cas-store';
 import { Entity, EntityCreate } from '../../../cas/interfaces/entity';
@@ -330,7 +331,7 @@ export class ClientCachedBase implements ClientCached {
     return this.store.hashEntities(entities);
   }
 
-  async flush(options?: SearchOptions, recurse: boolean = true): Promise<void> {
+  async flush(options?: SearchOptions, flush?: FlushConfig): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} flush()`, { updateQueue: this.updateQueue });
 
     await this.enqueueTask(async () => {
@@ -347,7 +348,7 @@ export class ClientCachedBase implements ClientCached {
 
       await this.base.update(diff);
 
-      if (recurse) {
+      if (flush && flush.recurse) {
         if ((this.base as ClientCached).flush) {
           await (this.base as ClientCached).flush(options);
         }
