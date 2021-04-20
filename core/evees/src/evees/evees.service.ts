@@ -659,11 +659,11 @@ export class Evees {
     const pendingUpdate: PendingUpdateDetails = {
       commit: head,
       data: data,
-      flush: options.flush as FlushConfig,
+      flush: flush as FlushConfig,
       update: update,
     };
 
-    if (flush && flush.debounce) {
+    if (pendingUpdate.flush && pendingUpdate.flush.debounce) {
       return this.updatePerspectiveDebounce(options.perspectiveId, pendingUpdate);
     } else {
       await Promise.all([
