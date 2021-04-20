@@ -29,7 +29,6 @@ export { EveesContentModule } from './evees/interfaces/evees.content.module';
 
 export { Evees, EveesEvents } from './evees/evees.service';
 export { RemoteEvees } from './evees/interfaces/remote.evees';
-export { SearchEngine } from './evees/interfaces/search.engine';
 export { Client, ClientEvents } from './evees/interfaces/client';
 
 /** Default Perspectives */

@@ -3,7 +3,6 @@ import { Logger } from 'src/utils/logger';
 import { CASStore } from '../../cas/interfaces/cas-store';
 import { Client, ClientEvents } from '../interfaces/client';
 import { RemoteEvees } from '../interfaces/remote.evees';
-import { SearchEngine } from '../interfaces/search.engine';
 import {
   GetPerspectiveOptions,
   NewPerspective,
@@ -21,7 +20,7 @@ export class RemoteRouter extends BaseRouter implements Client {
   logger = new Logger('RemoteRouter');
 
   proposals?: Proposals | undefined;
-  searchEngine!: SearchEngine;
+  searchEngine!: SearchEngineRouter;
   events: EventEmitter;
 
   constructor(protected remotes: RemoteEvees[], public store: CASStore) {

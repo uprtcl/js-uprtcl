@@ -1,32 +1,17 @@
 import { CASStore } from 'src/cas/interfaces/cas-store';
 import { RemoteEvees } from '../interfaces/remote.evees';
-import { SearchEngine } from '../interfaces/search.engine';
 import { BaseRouter } from './base.router';
-import {
-  ForkOf,
-  ParentAndChild,
-  SearchForkOptions,
-  SearchOptions,
-  SearchResult,
-} from '../interfaces/types';
+import { SearchOptions, SearchResult } from '../interfaces/types';
 
-export class SearchEngineRouter extends BaseRouter implements SearchEngine {
+export class SearchEngineRouter extends BaseRouter {
   constructor(protected remotes: RemoteEvees[], protected store: CASStore) {
     super(remotes, store);
   }
 
-  async locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
-    const all = await Promise.all(
-      this.remotes.map((remote) => {
-        return remote.searchEngine ? remote.searchEngine.locate(perspectiveId, forks) : [];
-      })
-    );
-    return Array.prototype.concat.apply([], all);
-  }
   async explore(options: SearchOptions) {
     const all = await Promise.all(
       this.remotes.map((remote) => {
-        return remote.searchEngine ? remote.searchEngine.explore(options) : { perspectiveIds: [] };
+        return remote.explore ? remote.explore(options) : { perspectiveIds: [] };
       })
     );
     // search results are concatenated

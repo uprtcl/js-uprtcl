@@ -2,19 +2,18 @@ import { filterAsync } from '../../../utils/async';
 import { Signed } from '../../../patterns/interfaces/signable';
 
 import { Evees } from '../../evees.service';
-import { SearchEngine } from '../../interfaces/search.engine';
 import {
   SearchOptions,
   ParentAndChild,
   Perspective,
   SearchResult,
-  SearchForkOptions,
   ForkOf,
+  GetPerspectiveOptions,
 } from '../../interfaces/types';
 
 import { EveesCacheDB, PerspectiveLocal } from './cache.local.db';
 
-export class LocalSearchEngine implements SearchEngine {
+export class LocalExplore {
   /** The evees service is needed to navigate a tree of perspectives stored on other remotes */
   private evees!: Evees;
 
@@ -24,7 +23,10 @@ export class LocalSearchEngine implements SearchEngine {
     this.evees = evees;
   }
 
-  async explore(options: SearchOptions): Promise<SearchResult> {
+  async explore(
+    options: SearchOptions,
+    fetchOptions?: GetPerspectiveOptions
+  ): Promise<SearchResult> {
     if (options.forks) {
       if (!options.under) throw new Error('forks must be found under some perspective');
       const forks = await this.independentSubPerspectivesRec(

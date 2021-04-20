@@ -8,8 +8,13 @@ import { Client } from '../../interfaces/client';
 import { snapDefaultPerspective } from '../../default.perspectives';
 import { AccessControl } from '../../interfaces/access-control';
 import { RemoteEvees } from '../../interfaces/remote.evees';
-import { PartialPerspective, Perspective } from '../../interfaces/types';
-import { LocalSearchEngine } from './search.engine.local';
+import {
+  GetPerspectiveOptions,
+  PartialPerspective,
+  Perspective,
+  SearchOptions,
+} from '../../interfaces/types';
+import { LocalExplore } from './search.engine.local';
 import { ClientCachedLocal } from './client.cached.local';
 import { CacheLocal } from './cache.local';
 
@@ -24,7 +29,7 @@ export class RemoteEveesLocal extends ClientCachedLocal implements RemoteEvees {
   logger = new Logger('RemoteEveesLocal');
   accessControl: AccessControl = new LocalAccessControl();
   store!: CASStore;
-  searchEngineLocal!: LocalSearchEngine;
+  localExplore!: LocalExplore;
 
   get userId() {
     return 'local';
@@ -40,15 +45,15 @@ export class RemoteEveesLocal extends ClientCachedLocal implements RemoteEvees {
 
   constructor(readonly casID: string, store?: CASStore, base?: Client) {
     super(store, base, false, 'remote');
-    this.searchEngineLocal = new LocalSearchEngine((this.cache as CacheLocal).db);
+    this.localExplore = new LocalExplore((this.cache as CacheLocal).db);
   }
 
-  get searchEngine() {
-    return this.searchEngineLocal;
+  explore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions) {
+    return this.localExplore.explore(searchOptions, fetchOptions);
   }
 
   setEvees(evees: Evees) {
-    this.searchEngine.setEvees(evees);
+    this.localExplore.setEvees(evees);
   }
 
   snapPerspective(

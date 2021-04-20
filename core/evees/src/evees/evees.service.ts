@@ -1,10 +1,9 @@
 import { EventEmitter } from 'events';
 
 import { CASOnMemory } from '../cas/stores/cas.memory';
-import { deriveSecured, signObject } from '../cas/utils/signed';
+import { signObject } from '../cas/utils/signed';
 import { Secured } from '../cas/utils/cid-hash';
 import { CASRemote } from '../cas/interfaces/cas-remote';
-import { Client } from './interfaces/client';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
@@ -26,9 +25,11 @@ import {
   SearchOptions,
   PerspectiveGetResult,
   GetPerspectiveOptions,
+  SearchResult,
 } from './interfaces/types';
 
 import { Entity, EntityCreate } from '../cas/interfaces/entity';
+import { CASStore } from '../cas/interfaces/cas-store';
 import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
 import { Logger } from '../utils/logger';
 import { Signed } from '../patterns/interfaces/signable';
@@ -41,7 +42,6 @@ import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
 import { FindAncestor } from './utils/find.ancestor';
 import { ClientCached } from './interfaces/client.cached';
-import { CASStore } from 'src/cas/interfaces/cas-store';
 
 const LOGINFO = false;
 
@@ -100,6 +100,10 @@ export class Evees {
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
+  }
+
+  getClient(): ClientCached {
+    return this.client;
   }
 
   clone(name: string = 'NewClient', client?: ClientCached, config?: EveesConfig): Evees {
@@ -179,10 +183,27 @@ export class Evees {
     return this.client.store.hashEntity(entity);
   }
 
+  async explore(
+    searchOptions: SearchOptions,
+    fetchOptions?: GetPerspectiveOptions
+  ): Promise<SearchResult> {
+    if (!this.client.explore) {
+      throw new Error('explore not defined');
+    }
+
+    return this.client.explore(searchOptions, fetchOptions);
+  }
+
   async getPerspective(
     perspectiveId: string,
     options?: GetPerspectiveOptions
   ): Promise<PerspectiveGetResult> {
+    /** pending updates are considered applied */
+    const pending = this.pendingUpdates.get(perspectiveId);
+    if (pending) {
+      return { details: pending.update.details };
+    }
+
     return this.client.getPerspective(perspectiveId, options);
   }
 
@@ -534,9 +555,13 @@ export class Evees {
     );
   }
 
-  async flush(options: SearchOptions) {
+  async flush(options?: SearchOptions) {
     await this.awaitPending();
     return this.client.flush(options);
+  }
+
+  async diff(options?: SearchOptions) {
+    return this.client.diff(options);
   }
 
   async executeUpdate(perspectiveId: string) {

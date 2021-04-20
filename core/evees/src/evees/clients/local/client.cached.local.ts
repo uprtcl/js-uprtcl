@@ -36,10 +36,6 @@ export class ClientCachedLocal extends ClientCachedBase {
     return this.cache as CacheLocal;
   }
 
-  get searchEngine() {
-    return this.base ? this.base.searchEngine : undefined;
-  }
-
   setStore(store: CASStore) {
     this.store = store;
     (this.cache as CacheLocal).setStore(store);

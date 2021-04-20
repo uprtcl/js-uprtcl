@@ -8,8 +8,8 @@ import {
   PerspectiveGetResult,
   GetPerspectiveOptions,
   SearchOptions,
+  SearchResult,
 } from './types';
-import { SearchEngine } from './search.engine';
 import { EventEmitter } from 'events';
 import { Proposals } from '../proposals/proposals';
 
@@ -25,7 +25,6 @@ export enum ClientEvents {
 
 export interface Client {
   readonly store: CASStore;
-  readonly searchEngine?: SearchEngine;
   readonly events?: EventEmitter;
   readonly proposals?: Proposals;
 
@@ -54,4 +53,10 @@ export interface Client {
 
   /** returns true if the user can update the perspective */
   canUpdate(perspectiveId: string, userId?: string): Promise<boolean>;
+
+  /** a single endpoint to search the graph of linked perspectives */
+  readonly explore?: (
+    searchOptions: SearchOptions,
+    fetchOptions?: GetPerspectiveOptions
+  ) => Promise<SearchResult>;
 }

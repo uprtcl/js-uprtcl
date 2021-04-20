@@ -2,11 +2,10 @@ import { Update } from '../interfaces/types';
 import { CreateCommit, Evees } from '../evees.service';
 
 import { Entity } from '../../cas/interfaces/entity';
+import { CASStore } from '../../cas/interfaces/cas-store';
 
 import findMostRecentCommonAncestor from './common-ancestor';
-import { Client } from '../interfaces/client';
 import { MergeConfig, MergeStrategy } from './merge-strategy';
-import { CASStore } from 'src/cas/interfaces/cas-store';
 
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(protected evees: Evees) {}

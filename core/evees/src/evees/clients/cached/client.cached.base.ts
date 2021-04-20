@@ -66,14 +66,6 @@ export class ClientCachedBase implements ClientCached {
     }
   }
 
-  get searchEngine() {
-    if (this.base) {
-      return this.base.searchEngine;
-    }
-
-    return undefined;
-  }
-
   get proposals() {
     if (this.base) {
       return this.base.proposals;
@@ -182,6 +174,13 @@ export class ClientCachedBase implements ClientCached {
     });
   }
 
+  explore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions) {
+    if (this.base && this.base.explore) {
+      return this.base.explore(searchOptions, fetchOptions);
+    }
+    throw new Error('base client not defined or not have explore function');
+  }
+
   async updatePerspectiveEffective(update: Update) {
     if (LOGINFO) this.logger.log(`${this.name} updatePerspectiveEffective()`, { update });
 
@@ -235,15 +234,16 @@ export class ClientCachedBase implements ClientCached {
     await this.cache.setCachedPerspective(update.perspectiveId, cachedUpdate);
 
     /** emit update */
-    if (this.searchEngine) {
-      const parents = await this.searchEngine.locate(update.perspectiveId, false);
+    const under: SearchOptions = {
+      above: { elements: [{ id: update.perspectiveId }] },
+    };
 
-      const parentsIds = parents.map((parent) => parent.parentId);
-      if (LOGINFO)
-        this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, parentsIds);
+    const { perspectiveIds: parentsIds } = await this.explore(under);
 
-      this.events.emit(ClientEvents.ecosystemUpdated, parentsIds);
-    }
+    if (LOGINFO)
+      this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, parentsIds);
+
+    this.events.emit(ClientEvents.ecosystemUpdated, parentsIds);
 
     if (LOGINFO)
       this.logger.log(`${this.name} event : ${ClientEvents.updated}`, [update.perspectiveId]);
