@@ -79,7 +79,7 @@ export class AppElements {
     });
 
     /** make sure the perspective is in the store to be resolved */
-    await this.evees.client.store.storeEntity({
+    await this.evees.storeEntity({
       id: element.perspective.id,
       object: element.perspective.object,
       remote: element.perspective.object.payload.remote,
@@ -116,14 +116,14 @@ export class AppElements {
   // make sure a perspective exist, or creates it
   async checkOrCreateHome(perspective: Secured<Perspective>) {
     /** make sure the perspective is in the store to be resolved */
-    await this.evees.client.store.storeEntity({
+    await this.evees.storeEntity({
       object: perspective.object,
       remote: perspective.object.payload.remote,
     });
 
     /** get the perspective data */
     const levels = getLevels(this.home);
-    const { details } = await this.evees.client.getPerspective(perspective.id, { levels });
+    const { details } = await this.evees.getPerspective(perspective.id, { levels });
 
     /** canUpdate is used as the flag to detect if the home space exists */
     if (!details.headId) {
@@ -171,7 +171,7 @@ export class AppElements {
       throw new Error('home perspective must exist at this point');
     }
 
-    await this.evees.client.flush({
+    await this.evees.flush({
       under: { elements: [{ id: this.home.perspective.id, levels: 3 }] },
     });
   }
@@ -210,7 +210,7 @@ export class AppElements {
           return;
         }
 
-        const perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(childId);
+        const perspective = await this.evees.getEntity<Signed<Perspective>>(childId);
 
         if (!perspective) {
           /** if perspective does not exist maybe the user removed part of the scheleton */

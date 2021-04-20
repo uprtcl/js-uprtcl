@@ -47,7 +47,6 @@ export interface Commit {
 export interface Update {
   perspectiveId: string;
   details: PerspectiveDetails;
-  oldDetails?: PerspectiveDetails;
   fromPerspectiveId?: string;
   indexData?: IndexData;
 }

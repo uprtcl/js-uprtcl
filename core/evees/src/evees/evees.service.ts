@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 
 import { CASOnMemory } from '../cas/stores/cas.memory';
-import { signObject } from '../cas/utils/signed';
+import { deriveSecured, signObject } from '../cas/utils/signed';
 import { Secured } from '../cas/utils/cid-hash';
 import { CASRemote } from '../cas/interfaces/cas-remote';
 import { Client } from './interfaces/client';
@@ -23,9 +23,12 @@ import {
   EveesMutationCreate,
   FlushConfig,
   PartialPerspective,
+  SearchOptions,
+  PerspectiveGetResult,
+  GetPerspectiveOptions,
 } from './interfaces/types';
 
-import { Entity } from '../cas/interfaces/entity';
+import { Entity, EntityCreate } from '../cas/interfaces/entity';
 import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
 import { Logger } from '../utils/logger';
 import { Signed } from '../patterns/interfaces/signable';
@@ -38,6 +41,7 @@ import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
 import { FindAncestor } from './utils/find.ancestor';
 import { ClientCached } from './interfaces/client.cached';
+import { CASStore } from 'src/cas/interfaces/cas-store';
 
 const LOGINFO = false;
 
@@ -71,18 +75,23 @@ export enum EveesEvents {
   pending = 'changes-pending',
 }
 
+interface PendingUpdateDetails {
+  flush: FlushConfig;
+  update: Update;
+  commit: Secured<Commit>;
+  data: Entity;
+  timeout?: NodeJS.Timeout;
+}
+
 export class Evees {
   readonly events: EventEmitter;
   protected logger = new Logger('Evees');
 
   /** debounce updates to the same perspective */
-  protected pendingUpdates: Map<
-    string,
-    { action: Function; timeout: NodeJS.Timeout; flush: FlushConfig }
-  > = new Map();
+  protected pendingUpdates: Map<string, PendingUpdateDetails> = new Map();
 
   constructor(
-    readonly client: ClientCached,
+    private client: ClientCached,
     readonly recognizer: PatternRecognizer,
     readonly remotes: RemoteEvees[],
     readonly stores: CASRemote[],
@@ -158,10 +167,41 @@ export class Evees {
     return perspective.object.payload.context;
   }
 
+  async getEntity<T = any>(hash: string): Promise<Entity<T>> {
+    return this.client.store.getEntity<T>(hash);
+  }
+
+  async storeEntity(entity: EntityCreate): Promise<Entity> {
+    return this.client.store.storeEntity(entity);
+  }
+
+  async hashEntity(entity: EntityCreate): Promise<Entity> {
+    return this.client.store.hashEntity(entity);
+  }
+
+  async getPerspective(
+    perspectiveId: string,
+    options?: GetPerspectiveOptions
+  ): Promise<PerspectiveGetResult> {
+    return this.client.getPerspective(perspectiveId, options);
+  }
+
+  getStore(): CASStore {
+    return this.client.store;
+  }
+
   async getPerspectiveData<T = any>(perspectiveId: string): Promise<Entity<T>> {
+    /** pending updates are considered applied */
+    const pending = this.pendingUpdates.get(perspectiveId);
+    if (pending) {
+      return pending.data;
+    }
+
     const result = await this.client.getPerspective(perspectiveId);
+
     if (result.details.headId === undefined)
       throw new Error(`Data not found for perspective ${perspectiveId}`);
+
     return this.getCommitData<T>(result.details.headId);
   }
 
@@ -276,20 +316,6 @@ export class Evees {
     return [...uniqueMatches];
   }
 
-  /** a helper to add the old details on un update to have a set of added and removed
-   * children consiste */
-  async checkOldDetails(update: Update): Promise<Update> {
-    if (update.oldDetails) {
-      return update;
-    }
-
-    // the old details are the current details.
-    const { details } = await this.client.getPerspective(update.perspectiveId);
-
-    update.oldDetails = details;
-    return update;
-  }
-
   async checkText(update: Update): Promise<Update> {
     const hasData = update.details.headId;
 
@@ -313,7 +339,10 @@ export class Evees {
     const hasData = update.details.headId;
 
     if (hasData) {
-      const data = await this.getCommitData(update.details.headId as string);
+      const head = await this.client.store.getEntity<Signed<Commit>>(
+        update.details.headId as string
+      );
+      const data = await this.client.store.getEntity(head.object.payload.dataId);
       const has = this.hasBehavior(data.object, patternName);
 
       if (has) {
@@ -321,8 +350,11 @@ export class Evees {
 
         let oldChildren: string[] = [];
 
-        if (update.oldDetails && update.oldDetails.headId) {
-          const oldData = await this.getCommitData(update.oldDetails.headId);
+        if (head && head.object.payload.parentsIds.length > 0) {
+          const parent = await this.client.store.getEntity<Signed<Commit>>(
+            head.object.payload.parentsIds[0]
+          );
+          const oldData = await this.client.store.getEntity(parent.object.payload.dataId);
 
           const oldHas = this.hasBehavior(oldData.object, patternName);
           oldChildren = oldHas ? this.behaviorConcat(oldData.object, patternName) : [];
@@ -368,7 +400,6 @@ export class Evees {
 
   // index an update (injects metadata to the update object)
   async indexUpdate(update: Update): Promise<void> {
-    await this.checkOldDetails(update);
     await this.appendIndexing(update);
   }
 
@@ -491,22 +522,24 @@ export class Evees {
     return this.getPerspectiveData(perspectiveId);
   }
 
-  async flushPendingUpdates() {
+  async awaitPending() {
     const pending = Array.from(this.pendingUpdates.entries());
     await Promise.all(
       pending.map(([perspectiveId, e]) => {
-        clearTimeout(e.timeout);
-        return this.executePending(perspectiveId);
+        if (e.timeout) {
+          clearTimeout(e.timeout);
+        }
+        return this.executeUpdate(perspectiveId);
       })
     );
   }
 
-  async flush() {
-    await this.flushPendingUpdates();
-    return this.client.flush();
+  async flush(options: SearchOptions) {
+    await this.awaitPending();
+    return this.client.flush(options);
   }
 
-  async executePending(perspectiveId: string) {
+  async executeUpdate(perspectiveId: string) {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
 
@@ -518,7 +551,12 @@ export class Evees {
         pendingUpdates: Array.from(this.pendingUpdates.entries()),
       });
 
-    await pending.action();
+    await Promise.all([
+      this.client.store.storeEntity(pending.commit),
+      this.client.store.storeEntity(pending.data),
+    ]);
+
+    await this.updatePerspective(pending.update, pending.flush.autoflush);
 
     if (this.pendingUpdates.size === 0) {
       if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, false);
@@ -526,86 +564,89 @@ export class Evees {
     }
   }
 
+  /** Handles the pending updates, removes the old one if needed and creates a new
+   * timeout */
   private async updatePerspectiveDebounce(
     perspectiveId: string,
-    action: () => Promise<any>,
-    flush: FlushConfig
+    updateDetails: PendingUpdateDetails
   ) {
     const pending = this.pendingUpdates.get(perspectiveId);
-    if (LOGINFO) this.logger.log('updatePerspectiveDebounce()', { perspectiveId, pending, action });
+    if (LOGINFO) this.logger.log('updatePerspectiveDebounce()', { updateDetails });
 
     if (pending && pending.timeout) {
       clearTimeout(pending.timeout);
     }
 
-    const newTimeout = setTimeout(() => this.executePending(perspectiveId), flush.debounce);
+    updateDetails.timeout = setTimeout(
+      () => this.executeUpdate(perspectiveId),
+      updateDetails.flush.debounce
+    );
 
     if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, true);
     this.events.emit(EveesEvents.pending, true);
 
     /** create a timeout to execute (queue) this update */
-    this.pendingUpdates.set(perspectiveId, {
-      timeout: newTimeout,
-      action,
-      flush,
-    });
+    this.pendingUpdates.set(perspectiveId, updateDetails);
   }
 
-  /** returns the entities on the trash */
+  /** Computes and update made on top of the current head in the client. If debounce is true,
+   * postpones it, if false, applies it. */
   async updatePerspectiveData(options: UpdatePerspectiveData): Promise<void> {
     if (LOGINFO) this.logger.log('updatePerspectiveData()', options);
 
-    const action = async (flushAction: boolean) => {
-      const { perspectiveId, object, onHeadId: onHeadIdIn, guardianId } = options;
-      let onHeadId = onHeadIdIn;
+    /** the head commit is chosen based on the client  */
+    const { perspectiveId, object, guardianId } = options;
 
-      const remote = await this.getPerspectiveRemote(perspectiveId);
-      const data = await this.client.store.storeEntity({ object, remote: remote.id });
+    let onHeadId: string | undefined = options.onHeadId;
+    let parentsIds: string[] | undefined = undefined;
 
-      if (LOGINFO) this.logger.log('updatePerspectiveData() - storeEntity data', data);
+    if (!onHeadId) {
+      /** the parent is chosen based on the current head on the client */
+      const { details } = await this.client.getPerspective(perspectiveId);
+      onHeadId = details.headId;
+      parentsIds = onHeadId ? [onHeadId] : undefined;
+    }
 
-      if (!onHeadId) {
-        const { details } = await this.client.getPerspective(perspectiveId);
-        onHeadId = details.headId;
-      }
+    /** data and commit are built and hashed but not stored */
+    const remote = await this.getPerspectiveRemote(perspectiveId);
+    const data = await this.client.store.hashEntity({ object, remote: remote.id });
 
-      let parentsIds = onHeadId ? [onHeadId] : undefined;
+    const headObject = await createCommit({
+      dataId: data.id,
+      parentsIds,
+    });
 
-      const head = await this.createCommit(
-        {
-          dataId: data.id,
-          parentsIds,
-        },
-        remote.id
-      );
+    const head = await this.client.store.hashEntity({ object: headObject, remote: remote.id });
 
-      if (LOGINFO) this.logger.log('updatePerspectiveData() - createCommit after', head);
+    if (LOGINFO) this.logger.log('updatePerspectiveData() - createCommit after', head);
 
-      const update: Update = {
-        perspectiveId,
-        details: {
-          headId: head.id,
-          guardianId,
-        },
-        oldDetails: {
-          headId: onHeadId,
-        },
-        indexData: options.indexData,
-      };
-
-      await this.updatePerspective(update, flushAction);
+    const update: Update = {
+      perspectiveId,
+      details: {
+        headId: head.id,
+        guardianId,
+      },
+      indexData: options.indexData,
     };
 
     const flush = this.config.flush || options.flush;
 
+    const pendingUpdate: PendingUpdateDetails = {
+      commit: head,
+      data: data,
+      flush: options.flush as FlushConfig,
+      update: update,
+    };
+
     if (flush && flush.debounce) {
-      return this.updatePerspectiveDebounce(
-        options.perspectiveId,
-        () => action(flush.autoflush),
-        flush
-      );
+      return this.updatePerspectiveDebounce(options.perspectiveId, pendingUpdate);
     } else {
-      return action(flush ? flush.autoflush : false);
+      await Promise.all([
+        this.client.store.storeEntity(pendingUpdate.commit),
+        this.client.store.storeEntity(pendingUpdate.data),
+      ]);
+
+      await this.updatePerspective(pendingUpdate.update, pendingUpdate.flush.autoflush);
     }
   }
 
@@ -881,7 +922,6 @@ export class Evees {
       update: {
         perspectiveId: perspective.id,
         details: { headId: forkCommitId, guardianId },
-        oldDetails: { headId: undefined },
       },
     });
 

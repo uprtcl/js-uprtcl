@@ -6,6 +6,7 @@ import { Entity } from '../../cas/interfaces/entity';
 import findMostRecentCommonAncestor from './common-ancestor';
 import { Client } from '../interfaces/client';
 import { MergeConfig, MergeStrategy } from './merge-strategy';
+import { CASStore } from 'src/cas/interfaces/cas-store';
 
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(protected evees: Evees) {}
@@ -24,7 +25,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     config: MergeConfig
   ): Promise<string> {
     const promises = [toPerspectiveId, fromPerspectiveId].map(
-      async (id) => (await this.evees.client.getPerspective(id)).details.headId
+      async (id) => (await this.evees.getPerspective(id)).details.headId
     );
     const [toHeadId, fromHeadId] = await Promise.all(promises);
 
@@ -48,7 +49,6 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const request: Update = {
       fromPerspectiveId,
       perspectiveId: toPerspectiveId,
-      oldDetails: { headId: toHeadId },
       details: { headId: newHead },
     };
 
@@ -56,12 +56,12 @@ export class SimpleMergeStrategy implements MergeStrategy {
     return toPerspectiveId;
   }
 
-  async findLatestNonFork(commitId: string, client: Client) {
-    const commit = await client.store.getEntity(commitId);
+  async findLatestNonFork(commitId: string, store: CASStore) {
+    const commit = await store.getEntity(commitId);
     if (commit === undefined) throw new Error('commit not found');
 
     if (commit.object.payload.forking !== undefined) {
-      return this.findLatestNonFork(commit.object.payload.forking, client);
+      return this.findLatestNonFork(commit.object.payload.forking, store);
     } else {
       return commitId;
     }
@@ -74,9 +74,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     config: MergeConfig
   ): Promise<string> {
     const toCommitId = toCommitIdOrg
-      ? await this.findLatestNonFork(toCommitIdOrg, this.evees.client)
+      ? await this.findLatestNonFork(toCommitIdOrg, this.evees.getStore())
       : undefined;
-    const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg, this.evees.client);
+    const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg, this.evees.getStore());
 
     const commitsIds = [toCommitId, fromCommitId];
 
@@ -102,7 +102,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const ancestorId: string | undefined = undefined;
     if (toCommitId) {
       try {
-        await findMostRecentCommonAncestor(this.evees.client)(commitsIds);
+        await findMostRecentCommonAncestor(this.evees.getStore())(commitsIds);
       } catch (e) {
         console.error(`Error in findMostRecentCommonAncestor`, { commitsIds, e });
       }
@@ -112,7 +112,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const mergedObject = await this.mergeData(ancestorData, newDatasDefined, config);
 
-    const data = await this.evees.client.store.hashEntity({ object: mergedObject, remote });
+    const data = await this.evees.hashEntity({ object: mergedObject, remote });
     /** prevent an update head to the same data */
     if (
       ((!!newDatas[0] && data.id === newDatas[0].id) || toCommitId === fromCommitId) &&
@@ -121,7 +121,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       return toCommitIdOrg;
     }
 
-    await this.evees.client.store.storeEntity({ object: mergedObject, remote });
+    await this.evees.storeEntity({ object: mergedObject, remote });
 
     /** some commits might be undefined */
     const parentsIds = config.detach
@@ -137,7 +137,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     };
 
     const securedCommit = await this.evees.createCommit(newCommit, remote);
-    await this.evees.client.store.storeEntity({ object: securedCommit, remote });
+    await this.evees.storeEntity({ object: securedCommit, remote });
 
     return securedCommit.id;
   }

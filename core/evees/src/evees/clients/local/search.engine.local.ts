@@ -67,7 +67,7 @@ export class LocalSearchEngine implements SearchEngine {
   }
 
   async getContext(perspectiveId: string): Promise<string> {
-    const perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(perspectiveId);
+    const perspective = await this.evees.getEntity<Signed<Perspective>>(perspectiveId);
     return perspective.object.payload.context;
   }
 

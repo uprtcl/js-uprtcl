@@ -1,6 +1,7 @@
 import { Client } from '../interfaces/client';
 import { Commit } from '../interfaces/types';
 import { Secured } from '../../cas/utils/cid-hash';
+import { CASStore } from 'src/cas/interfaces/cas-store';
 
 interface Path {
   visited: { [commitId: string]: boolean };
@@ -11,7 +12,7 @@ export class FindMostRecentCommonAncestor {
   allCommits: { [key: string]: Secured<Commit> } = {};
   paths: Path[];
 
-  constructor(protected client: Client, commitsIds: string[]) {
+  constructor(protected store: CASStore, commitsIds: string[]) {
     this.paths = commitsIds.map((commitId) => ({
       visited: {},
       heads: [commitId],
@@ -34,7 +35,7 @@ export class FindMostRecentCommonAncestor {
       let commit: Secured<Commit> | undefined = this.allCommits[commitId];
       if (!commit) {
         try {
-          commit = await this.client.store.getEntity(commitId);
+          commit = await this.store.getEntity(commitId);
         } catch (e) {
           console.error(`explorePath() state`, { paths: this.paths, commits: this.allCommits });
           throw new Error(`Could not get ancestor commit ${commitId}`);
@@ -79,7 +80,7 @@ export class FindMostRecentCommonAncestor {
 }
 
 export default function findMostRecentCommonAncestor(
-  client: Client
+  store: CASStore
 ): (commitsIds: string[]) => Promise<string | undefined> {
-  return (commitsIds: string[]) => new FindMostRecentCommonAncestor(client, commitsIds).compute();
+  return (commitsIds: string[]) => new FindMostRecentCommonAncestor(store, commitsIds).compute();
 }
