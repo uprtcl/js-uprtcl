@@ -1,11 +1,10 @@
 import { Update } from '../interfaces/types';
 import { CreateCommit, Evees } from '../evees.service';
 
-import { Entity } from '../../cas/interfaces/entity';
-import { CASStore } from '../../cas/interfaces/cas-store';
-
 import findMostRecentCommonAncestor from './common-ancestor';
 import { MergeConfig, MergeStrategy } from './merge-strategy';
+import { Entity } from '../interfaces/entity';
+import { Client } from '../interfaces/client';
 
 export class SimpleMergeStrategy implements MergeStrategy {
   constructor(protected evees: Evees) {}
@@ -55,12 +54,12 @@ export class SimpleMergeStrategy implements MergeStrategy {
     return toPerspectiveId;
   }
 
-  async findLatestNonFork(commitId: string, store: CASStore) {
-    const commit = await store.getEntity(commitId);
+  async findLatestNonFork(commitId: string, client: Client) {
+    const commit = await client.getEntity(commitId);
     if (commit === undefined) throw new Error('commit not found');
 
     if (commit.object.payload.forking !== undefined) {
-      return this.findLatestNonFork(commit.object.payload.forking, store);
+      return this.findLatestNonFork(commit.object.payload.forking, client);
     } else {
       return commitId;
     }
@@ -73,9 +72,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     config: MergeConfig
   ): Promise<string> {
     const toCommitId = toCommitIdOrg
-      ? await this.findLatestNonFork(toCommitIdOrg, this.evees.getStore())
+      ? await this.findLatestNonFork(toCommitIdOrg, this.evees.getClient())
       : undefined;
-    const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg, this.evees.getStore());
+    const fromCommitId = await this.findLatestNonFork(fromCommitIdOrg, this.evees.getClient());
 
     const commitsIds = [toCommitId, fromCommitId];
 
@@ -94,14 +93,14 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const emptyObject = this.evees.behaviorFirst(fromData.object, 'empty');
     const emptyEntity = await this.evees
       .getRemote(remote)
-      .store.hashEntity({ object: emptyObject, remote: remote });
+      .hashEntity({ object: emptyObject, remote: remote });
 
     const newDatasDefined = newDatas.map((data) => (data === undefined ? emptyEntity : data));
 
     const ancestorId: string | undefined = undefined;
     if (toCommitId) {
       try {
-        await findMostRecentCommonAncestor(this.evees.getStore())(commitsIds);
+        await findMostRecentCommonAncestor(this.evees.getClient())(commitsIds);
       } catch (e) {
         console.error(`Error in findMostRecentCommonAncestor`, { commitsIds, e });
       }

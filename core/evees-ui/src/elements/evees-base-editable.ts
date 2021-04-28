@@ -63,12 +63,11 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   async load() {
     await super.load();
 
-    /** it's assumed that there is only one fork per user on the remote  */
-    if (!this.editRemote.searchEngine) {
-      throw new Error(`search engine not defined for remote ${this.editRemote.id}`);
+    if (!this.editRemote.explore) {
+      throw new Error('explore is undefined');
     }
 
-    const { perspectiveIds: drafts } = await this.editRemote.searchEngine.explore({
+    const { perspectiveIds: drafts } = await this.editRemote.explore({
       under: { elements: [{ id: this.firstRef }] },
       forks: { include: true, independent: true },
     });
@@ -131,7 +130,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.mineId = await this.evees.forkPerspective(this.firstRef, this.editRemote.id, undefined, {
       recurse,
     });
-    await this.evees.client.flush();
+    await this.evees.flush();
     this.logger.log('BaseDraft -- createDraft()', this.mineId);
     return this.seeDraft();
   }

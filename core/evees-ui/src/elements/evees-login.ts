@@ -32,7 +32,6 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
 
   async reload() {
     /** refresh details to include */
-    await this.evees.client.refresh();
     this.dispatchEvent(new CustomEvent('changed'));
     await this.load();
   }

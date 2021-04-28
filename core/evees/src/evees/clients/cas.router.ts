@@ -1,9 +1,11 @@
 import { Logger } from '../../utils/logger';
 import { CASRemote } from '../interfaces/cas-remote';
-import { CASStore, EntityGetResult } from '../interfaces/cas-store';
+import { CASStore } from '../interfaces/cas-store';
 import { Entity, EntityCreate } from '../interfaces/entity';
 import { validateEntities } from '../utils/cid-hash';
 
+/** CASRouter is the gateway to resolve hashes into Entities, and to store entities into CASRemotes. It also caches all read entities to
+ * resolve them fast and serve as a global Entitie store. */
 export class CASRouter implements CASStore {
   protected logger = new Logger('CASRouter');
 
@@ -20,27 +22,16 @@ export class CASRouter implements CASStore {
     throw new Error('Method not implemented.');
   }
 
-  async getEntities(hashes: string[]): Promise<EntityGetResult> {
-    const entities = await this.tryGetFromSources(hashes);
-    return {
-      entities,
-    };
-  }
-
-  async flush(): Promise<void> {
-    throw new Error('Router dont cache');
-  }
-
-  async diff(): Promise<Entity[]> {
-    return [];
+  async getEntities(hashes: string[]): Promise<Entity[]> {
+    return this.tryGetFromSources(hashes);
   }
 
   async getEntity(uref: string): Promise<Entity> {
-    const { entities } = await this.getEntities([uref]);
+    const entities = await this.getEntities([uref]);
     return entities[0];
   }
 
-  splitEntities(entities: (EntityCreate | Entity)[]): Map<string, EntityCreate[]> {
+  splitEntities(entities: EntityCreate[]): Map<string, EntityCreate[]> {
     const entitiesPerStore = new Map<string, EntityCreate[]>();
 
     entities.forEach((entity) => {
@@ -56,7 +47,7 @@ export class CASRouter implements CASStore {
     return entitiesPerStore;
   }
 
-  async storeEntities(entities: EntityCreate[]): Promise<Entity[]> {
+  async storeEntities(entities: Entity[]): Promise<Entity[]> {
     const entitiesPerStore = this.splitEntities(entities);
 
     const entitiesPerRemote = await Promise.all(
@@ -87,7 +78,7 @@ export class CASRouter implements CASStore {
     return Array.prototype.concat.apply([], entitiesPerRemote);
   }
 
-  async storeEntity(entity: EntityCreate): Promise<Entity> {
+  async storeEntity(entity: Entity): Promise<Entity> {
     const entities = await this.storeEntities([entity]);
     return entities[0];
   }
@@ -128,21 +119,13 @@ export class CASRouter implements CASStore {
     );
   }
 
-  public getAllCASIds(): string[] {
-    return Array.from(this.storesMap.keys());
-  }
-
-  public getAllCASSources(): CASRemote[] {
-    return Array.from(this.storesMap.values());
-  }
-
   public getSource(casID: string): CASRemote {
     const source = this.storesMap.get(casID);
     if (!source) throw new Error(`Source not found for casID ${casID}`);
     return source;
   }
 
-  public async getFromSource(hashes: string[], casID: string): Promise<EntityGetResult> {
+  public async getFromSource(hashes: string[], casID: string): Promise<Entity[]> {
     const source = this.getSource(casID);
     if (!source) throw new Error(`Source ${casID} not found`);
     return source.getEntities(hashes);
@@ -157,7 +140,7 @@ export class CASRouter implements CASStore {
     return new Promise((resolve) => {
       Array.from(this.storesMap.keys()).map(async (casID) => {
         try {
-          const { entities } = await this.getFromSource(hashes, casID);
+          const entities = await this.getFromSource(hashes, casID);
           requestedOn.push(casID);
 
           // append to all found objects (prevent duplicates)

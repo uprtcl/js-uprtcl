@@ -23,7 +23,7 @@ export class FindAncestor {
       }
     }
 
-    const commit = await this.client.store.getEntity(commitId);
+    const commit = await this.client.getEntity(commitId);
 
     if (commit.object.payload.parentsIds.length === 0) {
       return false;

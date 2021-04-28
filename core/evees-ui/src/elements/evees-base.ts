@@ -1,6 +1,17 @@
 import { property, LitElement, internalProperty } from 'lit-element';
 
-import { ClientEvents, Commit, Entity, Evees, Logger, Perspective, RemoteEvees, RemoteLoggedEvents, Secured, Signed } from '@uprtcl/evees';
+import {
+  ClientEvents,
+  Commit,
+  Entity,
+  Evees,
+  Logger,
+  Perspective,
+  RemoteEvees,
+  RemoteLoggedEvents,
+  Secured,
+  Signed,
+} from '@uprtcl/evees';
 
 import { servicesConnect } from '../container/multi-connect.mixin';
 
@@ -46,8 +57,8 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
     await this.load();
     this.loading = false;
 
-    if (this.localEvees.client.events) {
-      this.localEvees.client.events.on(ClientEvents.updated, (perspectives) =>
+    if (this.localEvees.events) {
+      this.localEvees.events.on(ClientEvents.updated, (perspectives) =>
         this.perspectiveUpdated(perspectives)
       );
     }
@@ -82,14 +93,14 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
 
     if (this.uref === undefined) return;
 
-    this.perspective = await this.localEvees.client.store.getEntity<Signed<Perspective>>(this.uref);
-    const { details } = await this.localEvees.client.getPerspective(this.uref);
+    this.perspective = await this.localEvees.getEntity<Signed<Perspective>>(this.uref);
+    const { details } = await this.localEvees.getPerspective(this.uref);
     this.canUpdate = details.canUpdate !== undefined ? details.canUpdate : false;
     this.guardianId = details.guardianId;
 
     if (details.headId) {
-      this.head = await this.localEvees.client.store.getEntity<Signed<Commit>>(details.headId);
-      this.data = await this.localEvees.client.store.getEntity<T>(this.head.object.payload.dataId);
+      this.head = await this.localEvees.getEntity<Signed<Commit>>(details.headId);
+      this.data = await this.localEvees.getEntity<T>(this.head.object.payload.dataId);
     }
 
     await this.dataUpdated();

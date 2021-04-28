@@ -1,9 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { CASOnMemory } from '../cas/stores/cas.memory';
-import { signObject } from '../cas/utils/signed';
-import { Secured } from '../cas/utils/cid-hash';
-import { CASRemote } from '../cas/interfaces/cas-remote';
+import { Secured } from './utils/cid-hash';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
@@ -28,8 +25,6 @@ import {
   SearchResult,
 } from './interfaces/types';
 
-import { Entity, EntityCreate } from '../cas/interfaces/entity';
-import { CASStore } from '../cas/interfaces/cas-store';
 import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
 import { Logger } from '../utils/logger';
 import { Signed } from '../patterns/interfaces/signable';
@@ -42,6 +37,11 @@ import { ClientOnMemory } from './clients/memory/client.memory';
 import { arrayDiff } from './merge/utils';
 import { FindAncestor } from './utils/find.ancestor';
 import { ClientCached } from './interfaces/client.cached';
+import { Proposals } from './proposals/proposals';
+import { Entity, EntityCreate } from './interfaces/entity';
+import { CASRemote } from './interfaces/cas-remote';
+import { Client } from './interfaces/client';
+import { signObject } from './utils/signed';
 
 const LOGINFO = false;
 
@@ -83,7 +83,7 @@ interface PendingUpdateDetails {
   timeout?: number;
 }
 
-export class Evees {
+export class Evees implements Client {
   readonly events: EventEmitter;
   protected logger = new Logger('Evees');
 
@@ -94,30 +94,26 @@ export class Evees {
     private client: ClientCached,
     readonly recognizer: PatternRecognizer,
     readonly remotes: RemoteEvees[],
-    readonly stores: CASRemote[],
     readonly config: EveesConfig,
     readonly modules: Map<string, EveesContentModule>
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
   }
+  proposals?: Proposals | undefined;
 
   getClient(): ClientCached {
     return this.client;
   }
 
-  clone(name: string = 'NewClient', client?: ClientCached, config?: EveesConfig): Evees {
-    const store = client ? client.store : new CASOnMemory(this.client.store);
-    client = client || new ClientOnMemory(this.client, store, name);
+  getProposals(): Proposals | undefined {
+    return this.client.proposals;
+  }
 
-    return new Evees(
-      client,
-      this.recognizer,
-      this.remotes,
-      this.stores,
-      config || this.config,
-      this.modules
-    );
+  clone(name: string = 'new-client', client?: ClientCached, config?: EveesConfig): Evees {
+    client = client || new ClientOnMemory(this.client, name);
+
+    return new Evees(client, this.recognizer, this.remotes, config || this.config, this.modules);
   }
 
   /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
@@ -152,35 +148,29 @@ export class Evees {
     }
   }
 
-  getCASRemote<T extends CASRemote>(casID: string): T {
-    const store = this.stores.find((r) => r.casID === casID);
-    if (!store) throw new Error(`store ${store} not found`);
-    return store as T;
-  }
-
   async getPerspectiveRemote<T extends RemoteEvees>(perspectiveId: string): Promise<T> {
-    const perspective = await this.client.store.getEntity(perspectiveId);
+    const perspective = await this.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     const remoteId = perspective.object.payload.remote;
     return this.getRemote<T>(remoteId);
   }
 
   async getPerspectiveContext(perspectiveId: string): Promise<string> {
-    const perspective = await this.client.store.getEntity(perspectiveId);
+    const perspective = await this.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     return perspective.object.payload.context;
   }
 
   async getEntity<T = any>(hash: string): Promise<Entity<T>> {
-    return this.client.store.getEntity<T>(hash);
+    return this.client.getEntity<T>(hash);
   }
 
   async storeEntity(entity: EntityCreate): Promise<Entity> {
-    return this.client.store.storeEntity(entity);
+    return this.client.storeEntity(entity);
   }
 
   async hashEntity(entity: EntityCreate): Promise<Entity> {
-    return this.client.store.hashEntity(entity);
+    return this.client.hashEntity(entity);
   }
 
   async explore(
@@ -205,10 +195,6 @@ export class Evees {
     }
 
     return this.client.getPerspective(perspectiveId, options);
-  }
-
-  getStore(): CASStore {
-    return this.client.store;
   }
 
   async getPerspectiveData<T = any>(perspectiveId: string): Promise<Entity<T>> {
@@ -236,29 +222,29 @@ export class Evees {
     const dataId = await this.tryGetCommitDataId(commitId);
     if (!dataId) return undefined;
 
-    const data = await this.client.store.getEntity<T>(dataId);
+    const data = await this.getEntity<T>(dataId);
     return data;
   }
 
   async getCommitData<T = any>(commitId: string): Promise<Entity> {
     const dataId = await this.getCommitDataId(commitId);
-    const data = await this.client.store.getEntity<T>(dataId);
+    const data = await this.getEntity<T>(dataId);
     return data;
   }
 
   async tryGetCommitDataId(commitId: string | undefined): Promise<string | undefined> {
     if (commitId === undefined) return commitId;
-    const commit = await this.client.store.getEntity(commitId);
+    const commit = await this.getEntity(commitId);
     return commit ? commit.object.payload.dataId : undefined;
   }
 
   async getCommitDataId(commitId: string): Promise<string> {
-    const commit = await this.client.store.getEntity(commitId);
+    const commit = await this.getEntity(commitId);
     return commit.object.payload.dataId;
   }
 
   async getData(uref: string) {
-    const entity = await this.client.store.getEntity(uref);
+    const entity = await this.getEntity(uref);
 
     let entityType: string = this.recognizer.recognizeType(entity.object);
 
@@ -360,10 +346,8 @@ export class Evees {
     const hasData = update.details.headId;
 
     if (hasData) {
-      const head = await this.client.store.getEntity<Signed<Commit>>(
-        update.details.headId as string
-      );
-      const data = await this.client.store.getEntity(head.object.payload.dataId);
+      const head = await this.getEntity<Signed<Commit>>(update.details.headId as string);
+      const data = await this.getEntity(head.object.payload.dataId);
       const has = this.hasBehavior(data.object, patternName);
 
       if (has) {
@@ -372,10 +356,8 @@ export class Evees {
         let oldChildren: string[] = [];
 
         if (head && head.object.payload.parentsIds.length > 0) {
-          const parent = await this.client.store.getEntity<Signed<Commit>>(
-            head.object.payload.parentsIds[0]
-          );
-          const oldData = await this.client.store.getEntity(parent.object.payload.dataId);
+          const parent = await this.getEntity<Signed<Commit>>(head.object.payload.parentsIds[0]);
+          const oldData = await this.getEntity(parent.object.payload.dataId);
 
           const oldHas = this.hasBehavior(oldData.object, patternName);
           oldChildren = oldHas ? this.behaviorConcat(oldData.object, patternName) : [];
@@ -439,7 +421,7 @@ export class Evees {
   // add indexing data to all updates on a mutation
   async update(mutation: EveesMutationCreate) {
     if (mutation.entities) {
-      await this.client.store.storeEntities(mutation.entities);
+      await this.storeEntities(mutation.entities);
     }
 
     if (mutation.newPerspectives) {
@@ -487,7 +469,7 @@ export class Evees {
     let headId;
 
     if (object) {
-      const dataId = await this.client.store.storeEntity({
+      const dataId = await this.storeEntity({
         object,
         remote: remoteId,
       });
@@ -505,7 +487,7 @@ export class Evees {
     const remote = this.getRemote(remoteId);
 
     const perspective = input.perspectiveId
-      ? await this.client.store.getEntity(input.perspectiveId)
+      ? await this.getEntity(input.perspectiveId)
       : await remote.snapPerspective(partialPerspective ? partialPerspective : {});
 
     await this.newPerspective({
@@ -533,7 +515,7 @@ export class Evees {
     const data = await this.getPerspectiveData<{ proposals: string[] }>(perspectiveId);
     if (!data) {
       // initializes the home space with an empty object {}
-      const perspective = await this.client.store.getEntity<Signed<Perspective>>(perspectiveId);
+      const perspective = await this.getEntity<Signed<Perspective>>(perspectiveId);
       await this.createEvee({
         partialPerspective: perspective.object.payload,
         object,
@@ -576,10 +558,7 @@ export class Evees {
         pendingUpdates: Array.from(this.pendingUpdates.entries()),
       });
 
-    await Promise.all([
-      this.client.store.storeEntity(pending.commit),
-      this.client.store.storeEntity(pending.data),
-    ]);
+    await Promise.all([this.storeEntity(pending.commit), this.storeEntity(pending.data)]);
 
     await this.updatePerspective(pending.update, pending.flush);
 
@@ -634,14 +613,14 @@ export class Evees {
 
     /** data and commit are built and hashed but not stored */
     const remote = await this.getPerspectiveRemote(perspectiveId);
-    const data = await this.client.store.hashEntity({ object, remote: remote.id });
+    const data = await this.hashEntity({ object, remote: remote.id });
 
     const headObject = await createCommit({
       dataId: data.id,
       parentsIds,
     });
 
-    const head = await this.client.store.hashEntity({ object: headObject, remote: remote.id });
+    const head = await this.hashEntity({ object: headObject, remote: remote.id });
 
     if (LOGINFO) this.logger.log('updatePerspectiveData() - createCommit after', head);
 
@@ -667,8 +646,8 @@ export class Evees {
       return this.updatePerspectiveDebounce(options.perspectiveId, pendingUpdate);
     } else {
       await Promise.all([
-        this.client.store.storeEntity(pendingUpdate.commit),
-        this.client.store.storeEntity(pendingUpdate.data),
+        this.storeEntity(pendingUpdate.commit),
+        this.storeEntity(pendingUpdate.data),
       ]);
 
       await this.updatePerspective(pendingUpdate.update, pendingUpdate.flush);
@@ -842,7 +821,7 @@ export class Evees {
 
   async createCommit(commit: CreateCommit, remote: string): Promise<Secured<Commit>> {
     const commitObject = createCommit(commit);
-    return this.client.store.storeEntity({ object: commitObject, remote });
+    return this.storeEntity({ object: commitObject, remote });
   }
 
   async isAncestorCommit(perspectiveId: string, commitId: string, stopAt?: string) {
@@ -865,7 +844,7 @@ export class Evees {
   }
 
   async isOfPattern(uref: string, pattern: string): Promise<boolean> {
-    const entity = await this.client.store.getEntity(uref);
+    const entity = await this.getEntity(uref);
     const type = this.recognizer.recognizeType(entity.object);
     return type === pattern;
   }
@@ -905,9 +884,7 @@ export class Evees {
     guardianId?: string,
     options: ForkOptions = { recurse: true, detach: false }
   ): Promise<string> {
-    const refPerspective: Entity<Signed<Perspective>> = await this.client.store.getEntity(
-      perspectiveId
-    );
+    const refPerspective: Entity<Signed<Perspective>> = await this.getEntity(perspectiveId);
     const remote = await this.getRemote(remoteId);
 
     const { details } = await this.client.getPerspective(perspectiveId);
@@ -926,7 +903,7 @@ export class Evees {
 
     const perspective = await remote.snapPerspective(perspectivePartial, guardianId);
 
-    await this.client.store.storeEntity({ object: perspective.object, remote: remote.id });
+    await this.storeEntity({ object: perspective.object, remote: remote.id });
 
     let forkCommitId: string | undefined = undefined;
 
@@ -956,7 +933,7 @@ export class Evees {
     parentId?: string,
     options: ForkOptions = { recurse: true, detach: false }
   ): Promise<string> {
-    const commit: Secured<Commit> = await this.client.store.getEntity(commitId);
+    const commit: Secured<Commit> = await this.getEntity(commitId);
 
     const dataId = commit.object.payload.dataId;
     const dataForkId = await this.forkEntity(dataId, remoteId, parentId, options);
@@ -978,53 +955,9 @@ export class Evees {
 
     const signedCommit = signObject(newCommit);
 
-    const entity = await this.client.store.storeEntity({ object: signedCommit, remote: remoteId });
-
-    /** store also the linked commits and their datas if not on the target remote */
-    const fromStore = this.getCASRemote(commit.casID);
-
-    if (fromStore.isLocal) {
-      const toRemote = this.getRemote(remoteId);
-      await this.cloneCommitRec(commitId, toRemote.id);
-    }
+    const entity = await this.storeEntity({ object: signedCommit, remote: remoteId });
 
     return entity.id;
-  }
-
-  async cloneEntity<T = any>(id: string, onRemoteId: string): Promise<Entity<T>> {
-    const onRemote = this.getRemote(onRemoteId);
-    const entity = await this.client.store.getEntity<T>(id);
-
-    if (entity.casID !== onRemote.casID) {
-      // change the target remote and casId and store it again
-      const storeEntity = { ...entity };
-
-      storeEntity.casID = onRemote.casID;
-      storeEntity.remote = onRemote.id;
-
-      await this.client.store.storeEntity(storeEntity);
-      return storeEntity;
-    }
-
-    return entity;
-  }
-
-  /** clone (not fork) the commit and its links if they are not in a target casID. This
-   * is usefull to clone local objects on another environment that will not have access to them */
-  async cloneCommitRec(commitId: string, onRemoteId: string): Promise<void> {
-    const commit = await this.cloneEntity<Signed<Commit>>(commitId, onRemoteId);
-
-    /** recursively call on commit links */
-    const linkedCommits: string[] = commit.object.payload.parentsIds;
-
-    if (commit.object.payload.forking) {
-      linkedCommits.push(commit.object.payload.forking);
-    }
-
-    await this.cloneEntity(commit.object.payload.dataId, onRemoteId);
-
-    /** recursive call on linked commits */
-    await Promise.all(linkedCommits.map((link) => this.cloneCommitRec(link, onRemoteId)));
   }
 
   async forkEntity(
@@ -1034,7 +967,7 @@ export class Evees {
     options: ForkOptions = { recurse: true, detach: false }
   ): Promise<string> {
     if (options.recurse) {
-      const data = await this.client.store.getEntity(entityId);
+      const data = await this.getEntity(entityId);
       if (!data) throw new Error(`data ${entityId} not found`);
 
       /** createOwnerPreservingEntity of children */
@@ -1045,7 +978,7 @@ export class Evees {
       // TODO how can replace children when matching multiple patterns?
       const newObject = this.behaviorFirst(data.object, 'replaceChildren')(newLinks);
 
-      const entity = await this.client.store.storeEntity({ object: newObject, remote: remoteId });
+      const entity = await this.storeEntity({ object: newObject, remote: remoteId });
       return entity.id;
     } else {
       return entityId;
@@ -1055,7 +988,7 @@ export class Evees {
   async getHome(remoteId?: string, userId?: string): Promise<Secured<Perspective>> {
     const remote = this.getRemote(remoteId);
     const home = await getHome(remote, userId ? userId : remote.userId);
-    await this.client.store.storeEntity({ object: home.object, remote: remote.id });
+    await this.storeEntity({ object: home.object, remote: remote.id });
     return home;
   }
 
@@ -1075,17 +1008,17 @@ export class Evees {
     const update = mutation.updates.find((update) => update.perspectiveId === perspectiveId);
 
     if (update && update.details.headId) {
-      const head = await localEvees.client.store.getEntity<Signed<Commit>>(update.details.headId);
-      const newData = await localEvees.client.store.getEntity(head.object.payload.dataId);
+      const head = await localEvees.getEntity<Signed<Commit>>(update.details.headId);
+      const newData = await localEvees.getEntity(head.object.payload.dataId);
 
       let oldData: Entity<any> | undefined = undefined;
 
       if (head.object.payload.parentsIds.length > 0) {
         console.warn('Old data could be more than one in case of a merge');
-        const oldHead = await localEvees.client.store.getEntity<Signed<Commit>>(
+        const oldHead = await localEvees.getEntity<Signed<Commit>>(
           head.object.payload.parentsIds[0]
         );
-        oldData = await localEvees.client.store.getEntity(oldHead.object.payload.dataId);
+        oldData = await localEvees.getEntity(oldHead.object.payload.dataId);
       }
 
       const updateDetail: UpdateDetails = {
@@ -1107,5 +1040,24 @@ export class Evees {
     }
 
     return updateDetails;
+  }
+
+  getUserPerspectives(perspectiveId: string): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
+  canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
+  storeEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  removeEntities(hashes: string[]): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getEntities(hashes: string[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
   }
 }

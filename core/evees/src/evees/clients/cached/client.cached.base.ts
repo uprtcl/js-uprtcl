@@ -6,21 +6,20 @@ import {
   GetPerspectiveOptions,
   PerspectiveGetResult,
   EveesMutation,
-  EveesMutationCreate,
   Commit,
   SearchOptions,
   FlushConfig,
+  EveesMutationCreate,
 } from '../../interfaces/types';
-import { CASStore } from '../../../cas/interfaces/cas-store';
-import { Entity, EntityCreate } from '../../../cas/interfaces/entity';
 import { Logger } from '../../../utils/logger';
+import { Signed } from '../../../patterns/interfaces/signable';
+import { AsyncQueue } from '../../../utils/async';
 
 import { Client, ClientEvents } from '../../interfaces/client';
 import { ClientCache } from '../../interfaces/client.cache';
-import { Signed } from 'src/patterns/interfaces/signable';
-import { AsyncQueue } from 'src/utils/async';
 import { ClientCached } from '../../interfaces/client.cached';
 import { condensateUpdates } from '../../utils/condensate.updates';
+import { Entity, EntityCreate } from '../../interfaces/entity';
 
 const LOGINFO = false;
 
@@ -28,12 +27,10 @@ export enum ClientCachedEvents {
   pending = 'changes-pending',
 }
 
-/** a reusable cache base to be used for different cache implementations */
+/** Reusable implementation of a ClientCached service.
+ * Uses a ClientCache to store mutations */
 export class ClientCachedBase implements ClientCached {
   logger = new Logger('ClientCachedWithBase');
-
-  cache!: ClientCache;
-  store!: CASStore;
 
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
@@ -43,7 +40,8 @@ export class ClientCachedBase implements ClientCached {
   private lastQueued: Promise<any> | undefined = undefined;
 
   constructor(
-    readonly base?: Client | ClientCached,
+    readonly base: Client,
+    readonly cache: ClientCache,
     readonly name: string = 'client',
     readonly readCacheEnabled: boolean = true
   ) {
@@ -129,7 +127,7 @@ export class ClientCachedBase implements ClientCached {
 
       if (result.slice) {
         /** entities are sent to the store to be cached there */
-        await this.store.cacheEntities(result.slice.entities);
+        await this.storeEntities(result.slice.entities);
 
         await Promise.all(
           result.slice.perspectives.map(async (perspectiveAndDetails) => {
@@ -155,10 +153,11 @@ export class ClientCachedBase implements ClientCached {
       if (LOGINFO) this.logger.log(`${this.name} createPerspectives() - exec`, newPerspectives);
       return Promise.all(
         newPerspectives.map(async (newPerspective) => {
-          await this.store.storeEntity({
+          const perspective = await this.base.hashEntity({
             object: newPerspective.perspective.object,
             remote: newPerspective.perspective.object.payload.remote,
           });
+          await this.storeEntity(perspective);
 
           await this.cache.newPerspective(newPerspective);
 
@@ -188,7 +187,7 @@ export class ClientCachedBase implements ClientCached {
     let timexstamp: number | undefined = undefined;
 
     if (update.details.headId) {
-      const head = await this.store.getEntity<Signed<Commit>>(update.details.headId);
+      const head = await this.getEntity<Signed<Commit>>(update.details.headId);
       timexstamp = head.object.payload.timestamp;
     }
 
@@ -300,7 +299,7 @@ export class ClientCachedBase implements ClientCached {
     if (LOGINFO) this.logger.log(`${this.name} update()`, { mutation });
 
     if (mutation.entities) {
-      await this.store.storeEntities(mutation.entities);
+      await this.storeEntities(mutation.entities);
     }
 
     if (mutation.newPerspectives) {
@@ -326,11 +325,6 @@ export class ClientCachedBase implements ClientCached {
     await this.update({ deletedPerspectives: [perspectiveId] });
   }
 
-  async hashEntities(entities: EntityCreate[]): Promise<Entity[]> {
-    if (LOGINFO) this.logger.log(`${this.name} hashEntities()`, { entities });
-    return this.store.hashEntities(entities);
-  }
-
   async flush(options?: SearchOptions, flush?: FlushConfig): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} flush()`, { updateQueue: this.updateQueue });
 
@@ -338,9 +332,6 @@ export class ClientCachedBase implements ClientCached {
       if (!this.base) {
         throw new Error('base not defined');
       }
-
-      // TODO: flush only entities related to the options... oh god!
-      await this.store.flush();
 
       const diff = await this.diff(options);
 
@@ -354,13 +345,14 @@ export class ClientCachedBase implements ClientCached {
         }
       }
 
-      await this.clear();
+      await this.clear(diff);
     });
   }
 
-  async clear(): Promise<void> {
+  async clear(elements: EveesMutation): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} clear()`, { updateQueue: this.updateQueue });
-    this.cache.clear();
+    this.cache.clear(elements);
+    this.removeEntities(elements.entities.map((e) => e.id));
   }
 
   /** a mutation with all the changes made relative to the base client */
@@ -370,12 +362,9 @@ export class ClientCachedBase implements ClientCached {
     const mutation = await this.cache.diff(options);
 
     if (condensate) {
-      mutation.updates = await condensateUpdates(mutation.updates, this.store);
+      mutation.updates = await condensateUpdates(mutation.updates, this);
       if (LOGINFO) this.logger.log('condensate diff', { options, mutation });
     }
-
-    /** append store entities to the mutation */
-    mutation.entities = await this.store.diff();
 
     return mutation;
   }
@@ -386,4 +375,26 @@ export class ClientCachedBase implements ClientCached {
   }
 
   async refresh(): Promise<void> {}
+
+  storeEntities(entities: Entity<any>[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  storeEntity(entity: Entity<any>): Promise<Entity<any>> {
+    throw new Error('Method not implemented.');
+  }
+  removeEntities(hashes: string[]): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getEntities(hashes: string[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  getEntity<T = any>(hash: string): Promise<Entity<T>> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntity<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
+    throw new Error('Method not implemented.');
+  }
 }

@@ -1,4 +1,5 @@
-import { EveesMutation, NewPerspective, PerspectiveDetails, SearchOptions, Update } from './types';
+import { Entity } from 'src/cas/interfaces/entity';
+import { EveesMutation, NewPerspective, SearchOptions, Update } from './types';
 
 export interface CachedUpdate {
   update: Update;
@@ -12,9 +13,10 @@ export interface ClientCache {
 
   newPerspective(newPerspective: NewPerspective): Promise<void>;
   addUpdate(update: Update, timestamp: number): Promise<void>;
-  deletedPerspective(perspectiveId: string);
+  deletedPerspective(perspectiveId: string): Promise<void>;
+  storeEntity(entity: Entity): Promise<void>;
 
-  deleteNewPerspective(perspectiveId: string);
+  deleteNewPerspective(perspectiveId: string): Promise<void>;
 
   getNewPerspectives(): Promise<NewPerspective[]>;
   getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined>;
@@ -22,10 +24,10 @@ export interface ClientCache {
   getUpdates(): Promise<Update[]>;
   getUpdatesOf(perspectiveId: string): Promise<Update[]>;
 
-  getDeletedPerspective(): Promise<string[]>;
-
-  clearPerspective(perspectiveId: string);
+  getDeletedPerspectives(): Promise<string[]>;
 
   diff(options?: SearchOptions): Promise<EveesMutation>;
-  clear(): Promise<void>;
+
+  clearPerspective(perspectiveId: string): Promise<void>;
+  clear(elements?: EveesMutation): Promise<void>;
 }

@@ -31,6 +31,13 @@ export { Evees, EveesEvents } from './evees/evees.service';
 export { RemoteEvees } from './evees/interfaces/remote.evees';
 export { Client, ClientEvents } from './evees/interfaces/client';
 
+export { Entity, EntityCreate } from './evees/interfaces/entity';
+export { Signed } from './patterns/interfaces/signable';
+export { CidConfig } from './evees/interfaces/cid-config';
+export { Secured } from './evees/utils/cid-hash';
+
+export { hashObject } from './evees/utils/cid-hash';
+
 /** Default Perspectives */
 export {
   getHome,
@@ -69,24 +76,6 @@ export { RemoteLogged, RemoteLoggedEvents } from './evees/interfaces/remote.logg
 
 export { Logger } from './utils/logger';
 
-/** CAS */
-export {
-  Secured,
-  hashObject,
-  deriveEntity,
-  sortObject,
-  cidConfigOf,
-  validateEntities,
-  cidToHex32,
-  bytes32ToCid,
-} from './cas/utils/cid-hash';
-export { deriveSecured, signObject } from './cas/utils/signed';
-export { Signed } from './patterns/interfaces/signable';
-export { Entity, EntityCreate } from './cas/interfaces/entity';
-export { CASStore, EntityGetResult } from './cas/interfaces/cas-store';
-export { CASRemote } from './cas/interfaces/cas-remote';
-export { CidConfig, defaultCidConfig } from './cas/interfaces/cid-config';
-
 /* merge */
 export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
 
@@ -107,14 +96,9 @@ export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Clients */
 export { ClientOnMemory } from './evees/clients/memory/client.memory';
-export { RemoteEveesLocal } from './evees/clients/local/remote.local';
 export { ClientCachedLocal } from './evees/clients/local/client.cached.local';
 export { CacheLocal } from './evees/clients/local/cache.local';
 export { ClientCachedBase, ClientCachedEvents } from './evees/clients/cached/client.cached.base';
-
-export { CASOnMemory } from './cas/stores/cas.memory';
-export { CASLocal } from './cas/stores/cas.local';
-export { CASRemoteLocal } from './cas/stores/cas.remote.local';
 
 /** Evees Utils */
 export { CondensateCommits } from './evees/utils/condensate.commits';

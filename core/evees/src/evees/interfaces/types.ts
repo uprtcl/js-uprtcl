@@ -1,9 +1,6 @@
-import { Behaviour } from '../../patterns/interfaces/behaviour';
-import { Secured } from '../../cas/utils/cid-hash';
-import { Entity, EntityCreate } from '../../cas/interfaces/entity';
-
+import { Secured } from '../utils/cid-hash';
+import { Entity } from './entity';
 import { RemoteEvees } from './remote.evees';
-import { Evees } from '../evees.service';
 
 export declare enum Join {
   inner = 'INNER_JOIN',
@@ -143,7 +140,7 @@ export interface EveesMutationCreate {
   newPerspectives?: NewPerspective[];
   updates?: Update[];
   deletedPerspectives?: string[];
-  entities?: EntityCreate[];
+  entities?: Entity[];
 }
 
 export interface EveesOptions {

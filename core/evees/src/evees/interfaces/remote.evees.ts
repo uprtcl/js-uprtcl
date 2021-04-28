@@ -1,6 +1,4 @@
-import { Secured } from '../../cas/utils/cid-hash';
-import { CASRemote } from '../../cas/interfaces/cas-remote';
-import { CASStore } from '../../cas/interfaces/cas-store';
+import { Secured } from '../utils/cid-hash';
 
 import { Client } from './client';
 import { AccessControl } from './access-control';
@@ -12,14 +10,6 @@ import { Proposals } from '../proposals/proposals';
 export interface RemoteEvees extends Client, RemoteLogged {
   accessControl: AccessControl;
   proposals?: Proposals;
-
-  /** The id of the CASRemote where objects of this Remote should be
-   * persisted */
-  casID: string;
-
-  /** a method to set the CASStore to be used to fetch entities after
-   * this service contruction */
-  setStore(store: CASStore);
 
   snapPerspective(
     perspective: PartialPerspective,

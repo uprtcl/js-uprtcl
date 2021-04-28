@@ -1,21 +1,16 @@
 import Dexie from 'dexie';
+import { Entity } from '../../interfaces/entity';
 import { NewPerspective, PerspectiveDetails, Update } from '../../interfaces/types';
 
 export interface PerspectiveLocal {
   id: string;
-  context: string;
-  details: PerspectiveDetails;
-  /** need to index to decide if delete a data entity */
-  dataId: string | undefined;
-  children?: string[];
   onEcosystem?: string[];
+  details: PerspectiveDetails;
   levels?: number;
 }
 
 export interface NewPerspectiveLocal {
   id: string;
-  /** need to index to decide if delete a data entity */
-  dataId: string | undefined;
   newPerspective: NewPerspective;
 }
 
@@ -23,9 +18,6 @@ export interface UpdateLocal {
   /** the id is a combination of perspectiveId and newHeadId */
   id: string;
   perspectiveId: string;
-  timextamp: number;
-  /** need to index to decide if delete a data entity */
-  dataId: string | undefined;
   update: Update;
 }
 
@@ -35,6 +27,7 @@ export class EveesCacheDB extends Dexie {
   newPerspectives: Dexie.Table<NewPerspectiveLocal, string>;
   updates: Dexie.Table<UpdateLocal, string>;
   deletedPerspectives: Dexie.Table<string, string>;
+  entities: Dexie.Table<Entity, string>;
 
   constructor(prefix: string = 'client-local') {
     super(`${prefix}-evees-store`);
@@ -50,5 +43,6 @@ export class EveesCacheDB extends Dexie {
     this.newPerspectives = this.table('newPerspectives');
     this.updates = this.table('updates');
     this.deletedPerspectives = this.table('deletedPerspectives');
+    this.entities = this.table('entities');
   }
 }

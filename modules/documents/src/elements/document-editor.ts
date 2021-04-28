@@ -129,8 +129,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async loadDoc() {
-    if (!this.localEvees.client) return;
-
     if (LOGINFO) this.logger.log('loadDoc()', this.uref);
 
     if (!this.uref) return;
@@ -163,7 +161,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async refToNode(uref: string, parent?: DocNode, ix?: number) {
-    const entity = await this.localEvees.client.store.getEntity(uref);
+    const entity = await this.localEvees.getEntity(uref);
 
     let entityType = this.localEvees.recognizer.recognizeType(entity.object);
 
@@ -175,7 +173,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       const remote = await this.localEvees.getPerspectiveRemote(entity.id);
       remoteId = remote.id;
 
-      const { details } = await this.localEvees.client.getPerspective(uref, { levels: -1 });
+      const { details } = await this.localEvees.getPerspective(uref, { levels: -1 });
       const headId = details.headId;
 
       if (!this.readOnly) {
@@ -188,7 +186,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         editable = false;
       }
 
-      const head = headId ? await this.localEvees.client.store.getEntity(headId) : undefined;
+      const head = headId ? await this.localEvees.getEntity(headId) : undefined;
       dataId = head ? head.object.payload.dataId : undefined;
     } else {
       if (entityType === CommitType) {
@@ -197,7 +195,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         editable = parent.editable;
         remoteId = parent.remoteId;
 
-        const head = await this.localEvees.client.store.getEntity(uref);
+        const head = await this.localEvees.getEntity(uref);
         dataId = head ? head.object.payload.dataId : undefined;
       } else {
         entityType = 'Data';
@@ -210,7 +208,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     if (!dataId || !entityType) throw Error(`data not loaded for uref ${uref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
-    const data = await this.localEvees.client.store.getEntity(dataId);
+    const data = await this.localEvees.getEntity(dataId);
     const dataType = this.localEvees.recognizer.recognizeType(data.object);
     const canConvertTo = this.customBlocks
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
@@ -271,7 +269,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     /** snap is async because it performs a hash, should be fast enough for UX flow */
     const perspective = await this.localEvees.getRemote(remoteId).snapPerspective({});
     /** Perspective entity is created and await for it to be ready for immediate reading. */
-    await this.localEvees.client.store.storeEntity(perspective);
+    await this.localEvees.storeEntity(perspective);
 
     const creteEvee: CreateEvee = {
       object: draft,
@@ -684,7 +682,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     const newObject = await this.customBlocks[node.draftType].canConvertTo[type](
       node,
-      this.localEvees.client
+      this.localEvees
     );
 
     /** update all the node properties */

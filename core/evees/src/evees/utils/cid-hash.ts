@@ -2,10 +2,10 @@ import multihashing from 'multihashing-async';
 import CBOR from 'cbor-js';
 import CID from 'cids';
 
-import { CidConfig, defaultCidConfig } from '../../cas/interfaces/cid-config';
 import { Signed } from '../../patterns/interfaces/signable';
 import { Entity, EntityCreate } from '../interfaces/entity';
 import { Logger } from 'src/utils/logger';
+import { CidConfig, defaultCidConfig } from '../interfaces/cid-config';
 
 export type Secured<T> = Entity<Signed<T>>;
 
@@ -125,14 +125,14 @@ const LOGINFO = false;
 export async function deriveEntity<O extends object>(
   object: O,
   config: CidConfig = defaultCidConfig,
-  casID: string
+  remote: string
 ): Promise<Entity<O>> {
   const hash = await hashObject(object, config);
 
   const entity = {
     id: hash,
     object,
-    casID,
+    remote,
   };
 
   if (LOGINFO) console.log('deriveEntity', { entity, config });

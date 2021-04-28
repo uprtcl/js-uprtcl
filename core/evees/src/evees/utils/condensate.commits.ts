@@ -1,10 +1,10 @@
 import { Logger } from '../../utils/logger';
-import { Secured } from '../../cas/utils/cid-hash';
+import { Secured } from './cid-hash';
 import { createCommit } from '../default.perspectives';
 import { IndexDataHelper } from '../index.data.helper';
 import { Commit, IndexData, Perspective, Update } from '../interfaces/types';
-import { CASStore } from '../../cas/interfaces/cas-store';
 import { Signed } from '../../patterns/interfaces/signable';
+import { Client } from '../interfaces/client';
 
 export interface CommitDAG {
   commits: Set<Secured<Commit>>;
@@ -28,7 +28,7 @@ export class CondensateCommits {
   logger = new Logger('CondensateCommits');
 
   constructor(
-    protected store: CASStore,
+    protected client: Client,
     protected updates: Update[],
     protected squash: boolean = true,
     protected logEnabled = false
@@ -37,7 +37,7 @@ export class CondensateCommits {
   async init() {
     this.perspectiveId = this.updates[0].perspectiveId;
 
-    const perspective = await this.store.getEntity<Signed<Perspective>>(this.perspectiveId);
+    const perspective = await this.client.getEntity<Signed<Perspective>>(this.perspectiveId);
     this.remoteId = perspective.object.payload.remote;
 
     if (this.logEnabled) this.logger.log('init()', { updates: this.updatesMap, perspective });
@@ -64,8 +64,8 @@ export class CondensateCommits {
       })
       .filter((head) => head !== undefined) as string[];
 
-    const commits = await this.store.getEntities(headIds);
-    commits.entities.map((commit) => this.allCommits.set(commit.id, commit));
+    const commits = await this.client.getEntities(headIds);
+    commits.map((commit) => this.allCommits.set(commit.id, commit));
 
     if (this.logEnabled) this.logger.log('readAllCommits()', { allCommits: this.allCommits });
   }
@@ -170,7 +170,7 @@ export class CondensateCommits {
         forking: forking,
       });
 
-      const head = await this.store.storeEntity({
+      const head = await this.client.storeEntity({
         object: newCommitObject,
         remote: this.remoteId,
       });

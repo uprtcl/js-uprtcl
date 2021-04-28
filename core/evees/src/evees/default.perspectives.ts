@@ -1,11 +1,11 @@
-import { Secured } from '../cas/utils/cid-hash';
-import { CidConfig, defaultCidConfig } from '../cas/interfaces/cid-config';
-import { deriveSecured, signObject } from '../cas/utils/signed';
+import { Secured } from './utils/cid-hash';
 import { Signed } from '../patterns/interfaces/signable';
 
 import { RemoteEvees } from './interfaces/remote.evees';
 import { Commit, PartialPerspective, Perspective } from './interfaces/types';
 import { CreateCommit } from './evees.service';
+import { CidConfig, defaultCidConfig } from './interfaces/cid-config';
+import { deriveSecured, signObject } from './utils/signed';
 
 export const snapDefaultPerspective = async (
   remote: RemoteEvees,
@@ -19,7 +19,7 @@ export const snapDefaultPerspective = async (
   const timestamp = perspective.timestamp !== undefined ? perspective.timestamp : Date.now();
   const path = perspective.path !== undefined ? perspective.path : remote.defaultPath;
 
-  const defaultContext = await remote.store.hashEntity({
+  const defaultContext = await remote.hashEntity({
     object: {
       creatorId,
       timestamp,
@@ -49,7 +49,7 @@ export const snapDefaultPerspective = async (
     },
   };
 
-  return remote.store.hashEntity({ object: secured, remote: remote.id });
+  return remote.hashEntity({ object: secured, remote: remote.id });
 };
 
 export const getHome = async (
@@ -74,7 +74,7 @@ export const getHome = async (
     },
   };
 
-  return remote.store.hashEntity({ object: secured, remote: remote.id });
+  return remote.hashEntity({ object: secured, remote: remote.id });
 };
 
 export const getConceptPerspective = async (

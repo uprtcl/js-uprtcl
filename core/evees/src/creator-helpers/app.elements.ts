@@ -1,6 +1,6 @@
 import { Signed } from '../patterns/interfaces/signable';
 import { Logger } from '../utils/logger';
-import { Secured } from '../cas/utils/cid-hash';
+import { Secured } from '../evees/utils/cid-hash';
 import { Evees } from '../evees/evees.service';
 import { RemoteEvees } from '../evees/interfaces/remote.evees';
 import { Perspective } from '../evees/interfaces/types';

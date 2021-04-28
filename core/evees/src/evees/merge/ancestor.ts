@@ -1,7 +1,7 @@
-import { Entity } from '../../cas/interfaces/entity';
 import { Signed } from '../../patterns/interfaces/signable';
 
 import { Client } from '../interfaces/client';
+import { Entity } from '../interfaces/entity';
 import { Commit } from '../interfaces/types';
 
 export const isAncestorOf = (client: Client) => async (
@@ -10,7 +10,7 @@ export const isAncestorOf = (client: Client) => async (
 ): Promise<boolean> => {
   if (ancestorId === commitId) return true;
 
-  const commit: Entity<Signed<Commit>> = await client.store.getEntity(commitId);
+  const commit: Entity<Signed<Commit>> = await client.getEntity(commitId);
   const parentsIds = commit.object.payload.parentsIds;
 
   if (parentsIds.includes(ancestorId)) {

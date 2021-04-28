@@ -7,54 +7,57 @@ import {
   NewPerspective,
   Perspective,
   Secured,
-  CASStore,
   PartialPerspective,
   snapDefaultPerspective,
   getHome,
   Update,
   EveesMutation,
-  SearchEngine,
   EveesMutationCreate,
   PerspectiveGetResult,
-  CASRemote,
+  Entity,
+  SearchOptions,
+  SearchResult,
+  hashObject,
+  CidConfig,
+  EntityCreate,
 } from '@uprtcl/evees';
 
 import { HttpAuthenticatedConnection } from '@uprtcl/http-provider';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
-import { EveesHttpSearchEngine } from './evees.search-engine.http';
-import { PostResult } from '@uprtcl/http-provider/dist/types/http.connection';
 
 const evees_api = 'evees-v1';
 const LOGINFO = false;
+
+const httpCidConfig: CidConfig = {
+  base: 'base58btc',
+  version: 1,
+  codec: 'raw',
+  type: 'sha3-256',
+};
 
 export class EveesHttp implements RemoteEvees {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   accessControl: EveesAccessControlHttp;
   proposals: ProposalsHttp;
-  store!: CASStore;
-  searchEngine!: SearchEngine;
 
-  constructor(public connection: HttpAuthenticatedConnection, public casID: string) {
+  constructor(public connection: HttpAuthenticatedConnection) {
     this.accessControl = new EveesAccessControlHttp(this.connection);
     this.proposals = new ProposalsHttp(this.connection);
-    this.searchEngine = new EveesHttpSearchEngine(this.connection);
   }
 
   get id() {
     return `http:${evees_api}`;
   }
+
   get defaultPath() {
     return this.connection.host;
   }
+
   get userId() {
     return this.connection.userId;
-  }
-
-  setStore(store: CASStore) {
-    this.store = store;
   }
 
   async getHome(userId?: string) {
@@ -138,14 +141,14 @@ export class EveesHttp implements RemoteEvees {
     return this.updatePerspectives([update]);
   }
 
-  async deletePerspectives(perspectiveIds: string[]): Promise<PostResult> {
+  async deletePerspectives(perspectiveIds: string[]): Promise<void> {
     if (LOGINFO) this.logger.log('deletePerspectives()', perspectiveIds);
 
     if (perspectiveIds.length === 0) {
-      return { result: 'success', message: '', elementIds: [] };
+      return;
     }
 
-    return this.connection.put('/deletePersp', {
+    await this.connection.put('/deletePersp', {
       perspectiveIds,
     });
   }
@@ -170,10 +173,6 @@ export class EveesHttp implements RemoteEvees {
         `/persp/${perspectiveId}`,
         options
       );
-      // Mark the entities as coming from this remote casID
-      if (result.slice && result.slice.entities) {
-        result.slice.entities.forEach((e) => (e.casID = this.casID));
-      }
     } catch (e) {
       this.logger.warn(`Error fetching perspective ${perspectiveId}`, e);
       result = {
@@ -188,6 +187,64 @@ export class EveesHttp implements RemoteEvees {
 
   async deletePerspective(perspectiveId: string): Promise<void> {
     await this.connection.delete(`/persp/${perspectiveId}`);
+  }
+
+  explore(
+    searchOptions: SearchOptions,
+    fetchOptions: GetPerspectiveOptions = {
+      levels: 0,
+      entities: true,
+      details: true,
+    }
+  ) {
+    return this.connection.getWithPut<SearchResult>('/explore', {
+      searchOptions: searchOptions,
+      fetchOptions: fetchOptions,
+    });
+  }
+
+  async hash(object: object): Promise<Entity> {
+    const cidConfig = httpCidConfig;
+    /** optimistically hash based on the CidConfig without asking the server */
+    const id = await hashObject(object, cidConfig);
+
+    const entity = {
+      id,
+      object: { ...object },
+      remote: this.id,
+    };
+
+    if (LOGINFO)
+      this.logger.log('hash', {
+        entity,
+        cidConfig,
+        objectStr: JSON.stringify(entity.object),
+        cidConfigStr: JSON.stringify(cidConfig),
+      });
+
+    return entity;
+  }
+
+  storeEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  storeEntity(entity: EntityCreate<any>): Promise<Entity<any>> {
+    throw new Error('Method not implemented.');
+  }
+  removeEntities(hashes: string[]): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getEntities(hashes: string[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  getEntity<T = any>(hash: string): Promise<Entity<T>> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+  hashEntity<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
+    throw new Error('Method not implemented.');
   }
 
   connect() {

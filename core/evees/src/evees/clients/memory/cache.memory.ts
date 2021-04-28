@@ -70,10 +70,6 @@ export class CacheOnMemory implements ClientCache {
     return updates.filter((u) => u.perspectiveId === perspectiveId);
   }
 
-  async clearPerspective(perspectiveId: string) {
-    throw new Error('Method not implemented');
-  }
-
   async diff(): Promise<EveesMutation> {
     const newPerspectives = Array.from(this.newPerspectives.values());
     const updates = Array.prototype.concat.apply([], Array.from(this.updates.values()));
@@ -91,5 +87,15 @@ export class CacheOnMemory implements ClientCache {
     this.newPerspectives.clear();
     this.updates.clear();
     this.deletedPerspectives.clear();
+  }
+
+  storeEntity(entity: any): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  getDeletedPerspectives(): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
+  clearPerspective(perspectiveId: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 }

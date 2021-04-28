@@ -1,9 +1,6 @@
-import { CASStore } from '../../cas/interfaces/cas-store';
-
 import {
   Update,
   NewPerspective,
-  EveesMutation,
   EveesMutationCreate,
   PerspectiveGetResult,
   GetPerspectiveOptions,
@@ -12,19 +9,14 @@ import {
 } from './types';
 import { EventEmitter } from 'events';
 import { Proposals } from '../proposals/proposals';
+import { CASStore } from './cas-store';
 
 export enum ClientEvents {
   updated = 'updated',
   ecosystemUpdated = 'ecosystem-updated',
 }
 
-// All evees clients must call the .on('') method with in the following cases
-// 'updated': When an perspective head is new.
-// 'logged-status-changed': When the logges status has changed.
-// 'canUpdate': When the logged user canUpdate status over a perspective changes.
-
-export interface Client {
-  readonly store: CASStore;
+export interface Client extends CASStore {
   readonly events?: EventEmitter;
   readonly proposals?: Proposals;
 
@@ -36,9 +28,9 @@ export interface Client {
   ): Promise<PerspectiveGetResult>;
 
   /** create/update perspectives and entities in batch */
-  update(mutation: EveesMutationCreate);
+  update(mutation: EveesMutationCreate): Promise<void>;
 
-  /** convenient methods to edit a single perspective at a time */
+  /** convenient methods to edit a single perspective or set one entity at a time */
   newPerspective(newPerspective: NewPerspective): Promise<void>;
   deletePerspective(perspectiveId: string): Promise<void>;
   updatePerspective(update: Update): Promise<void>;
