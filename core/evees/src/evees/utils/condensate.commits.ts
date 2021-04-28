@@ -5,6 +5,7 @@ import { IndexDataHelper } from '../index.data.helper';
 import { Commit, IndexData, Perspective, Update } from '../interfaces/types';
 import { Signed } from '../../patterns/interfaces/signable';
 import { Client } from '../interfaces/client';
+import { CASStore } from '../interfaces/cas-store';
 
 export interface CommitDAG {
   commits: Set<Secured<Commit>>;
@@ -28,7 +29,7 @@ export class CondensateCommits {
   logger = new Logger('CondensateCommits');
 
   constructor(
-    protected client: Client,
+    protected store: CASStore,
     protected updates: Update[],
     protected squash: boolean = true,
     protected logEnabled = false
@@ -37,7 +38,7 @@ export class CondensateCommits {
   async init() {
     this.perspectiveId = this.updates[0].perspectiveId;
 
-    const perspective = await this.client.getEntity<Signed<Perspective>>(this.perspectiveId);
+    const perspective = await this.store.getEntity<Signed<Perspective>>(this.perspectiveId);
     this.remoteId = perspective.object.payload.remote;
 
     if (this.logEnabled) this.logger.log('init()', { updates: this.updatesMap, perspective });
@@ -64,7 +65,7 @@ export class CondensateCommits {
       })
       .filter((head) => head !== undefined) as string[];
 
-    const commits = await this.client.getEntities(headIds);
+    const commits = await this.store.getEntities(headIds);
     commits.map((commit) => this.allCommits.set(commit.id, commit));
 
     if (this.logEnabled) this.logger.log('readAllCommits()', { allCommits: this.allCommits });
@@ -170,7 +171,7 @@ export class CondensateCommits {
         forking: forking,
       });
 
-      const head = await this.client.storeEntity({
+      const head = await this.store.storeEntity({
         object: newCommitObject,
         remote: this.remoteId,
       });

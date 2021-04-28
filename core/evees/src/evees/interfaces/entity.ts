@@ -1,11 +1,11 @@
 export interface Entity<T = any> {
-  id: string; // The id must be set
+  hash: string; // The id must be set
   object: T;
   remote: string; // The remote must be set
 }
 
 export interface EntityCreate<T = any> {
-  id?: string; // The id may be specified
+  hash?: string; // The id may be specified
   object: T;
   remote?: string; // The remote may be specified
 }

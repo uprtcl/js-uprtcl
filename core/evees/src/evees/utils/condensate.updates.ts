@@ -1,8 +1,9 @@
 import { CondensateCommits } from './condensate.commits';
 import { Update } from '../interfaces/types';
 import { Client } from '../interfaces/client';
+import { CASStore } from '../interfaces/cas-store';
 
-export const condensateUpdates = async (updates: Update[], client: Client): Promise<Update[]> => {
+export const condensateUpdates = async (updates: Update[], store: CASStore): Promise<Update[]> => {
   interface UpdateGroup {
     orgUpdates: Update[];
     eqUpdate?: Update;
@@ -20,7 +21,7 @@ export const condensateUpdates = async (updates: Update[], client: Client): Prom
 
   await Promise.all(
     Array.from(updatesPerPerspective.entries()).map(async ([perspectiveId, group]) => {
-      const condensate = new CondensateCommits(client, group.orgUpdates, false);
+      const condensate = new CondensateCommits(store, group.orgUpdates, false);
       await condensate.init();
       const eqUpdates = await condensate.condensate();
       if (eqUpdates.length !== 1) {

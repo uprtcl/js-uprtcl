@@ -1,4 +1,4 @@
-import { Entity } from 'src/cas/interfaces/entity';
+import { Entity } from './entity';
 import { EveesMutation, NewPerspective, SearchOptions, Update } from './types';
 
 export interface CachedUpdate {

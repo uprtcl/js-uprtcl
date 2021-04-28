@@ -16,6 +16,12 @@ export enum ClientEvents {
   ecosystemUpdated = 'ecosystem-updated',
 }
 
+/** A Client can store mutable references (perspectives) and support basic CRUD operation on them.
+ * The content of a perspective is reduced to a single hash of its head commit. The actual commit
+ * and the data payload are entities.
+ *
+ * An evees mutation is a batch of Create, Update or Delete operations that also includes
+ * the new entities referenced in the mutation. */
 export interface Client extends CASStore {
   readonly events?: EventEmitter;
   readonly proposals?: Proposals;
@@ -38,17 +44,6 @@ export interface Client extends CASStore {
   /** await for all update transactions received to be processed (visible to read queries) */
   ready?(): Promise<void>;
 
-  /** a custom method that search other perspectives based on the logged user,
-   * its kept aside from the searchEngine.otherPerspectives method because we need
-   * cache and reactivity of the results this is not possible for the searchEngine.  */
-  getUserPerspectives(perspectiveId: string): Promise<string[]>;
-
   /** returns true if the user can update the perspective */
   canUpdate(perspectiveId: string, userId?: string): Promise<boolean>;
-
-  /** a single endpoint to search the graph of linked perspectives */
-  readonly explore?: (
-    searchOptions: SearchOptions,
-    fetchOptions?: GetPerspectiveOptions
-  ) => Promise<SearchResult>;
 }

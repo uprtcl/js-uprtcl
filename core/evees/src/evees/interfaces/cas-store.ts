@@ -1,8 +1,14 @@
 import { Entity, EntityCreate } from './entity';
 
+/** A CASStore stores entities (hashed objects). Entities can't be updated and thus they can be stored in a different
+ * platform or network to the perspectives, which are mutable.
+ *
+ * Each store can hash the objects with its own algorithm and encoding, as long as the result is a valid CID.
+ *
+ * When storing new entities, the entity payload should include the remote id where that entity is expected to be
+ * stored.*/
 export interface CASStore {
-  /** store already-hashed objects
-   * must include the remoteId in which the entities should be ultimately stored */
+  /** store objects which may or may not be already hashed. If hashed */
   storeEntities(entities: EntityCreate[]): Promise<Entity[]>;
   storeEntity(entity: EntityCreate): Promise<Entity>;
 

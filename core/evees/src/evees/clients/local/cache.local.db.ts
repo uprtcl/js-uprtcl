@@ -37,6 +37,7 @@ export class EveesCacheDB extends Dexie {
       newPerspectives: '&id,dataId',
       updates: '&id,perspectiveId,timexstamp,dataId',
       deletedPerspectives: '&id',
+      entities: '&id',
     });
 
     this.perspectives = this.table('perspectives');
