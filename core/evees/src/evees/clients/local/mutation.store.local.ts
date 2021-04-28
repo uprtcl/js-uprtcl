@@ -1,26 +1,23 @@
 import { IndexDataHelper } from '../../index.data.helper';
-import { Signed } from '../../../patterns/interfaces/signable';
 import { Logger } from '../../../utils/logger';
 import {
   NewPerspective,
   Update,
   EveesMutation,
-  Perspective,
-  Commit,
   LinksType,
   SearchOptions,
 } from '../../interfaces/types';
-import { CachedUpdate, ClientCache } from '../../interfaces/client.cache';
-import { EveesCacheDB, NewPerspectiveLocal, UpdateLocal } from './cache.local.db';
+import { CachedUpdate, ClientMutationStore } from '../../interfaces/client.mutation.store';
+import { MutationStoreDB, NewPerspectiveLocal, UpdateLocal } from './mutation.store.local.db';
 
 /** use local storage as cache of ClientCachedWithBase */
-export class CacheLocal implements ClientCache {
+export class MutationStoreLocal implements ClientMutationStore {
   logger = new Logger('CacheLocal');
 
-  readonly db: EveesCacheDB;
+  readonly db: MutationStoreDB;
 
   constructor(name: string) {
-    this.db = new EveesCacheDB(name);
+    this.db = new MutationStoreDB(name);
   }
 
   async clearCachedPerspective(perspectiveId: string): Promise<void> {
@@ -66,7 +63,7 @@ export class CacheLocal implements ClientCache {
 
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     await this.db.newPerspectives.put({
-      id: newPerspective.perspective.id,
+      id: newPerspective.perspective.hash,
       newPerspective,
     });
   }

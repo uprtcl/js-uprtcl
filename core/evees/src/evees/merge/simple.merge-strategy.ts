@@ -113,7 +113,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const data = await this.evees.hashEntity({ object: mergedObject, remote });
     /** prevent an update head to the same data */
     if (
-      ((!!newDatas[0] && data.id === newDatas[0].id) || toCommitId === fromCommitId) &&
+      ((!!newDatas[0] && data.hash === newDatas[0].hash) || toCommitId === fromCommitId) &&
       toCommitIdOrg !== undefined
     ) {
       return toCommitIdOrg;
@@ -129,7 +129,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       : commitsIds.filter((commit) => !!commit);
 
     const newCommit: CreateCommit = {
-      dataId: data.id,
+      dataId: data.hash,
       parentsIds: parentsIds,
       message: `Merging commits ${parentsIds.toString()}`,
     };
@@ -137,7 +137,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const securedCommit = await this.evees.createCommit(newCommit, remote);
     await this.evees.storeEntity({ object: securedCommit, remote });
 
-    return securedCommit.id;
+    return securedCommit.hash;
   }
 
   async mergeData<T extends object>(

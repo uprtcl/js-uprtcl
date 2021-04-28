@@ -2,7 +2,7 @@ import { Signed } from '../patterns/interfaces/signable';
 import { Logger } from '../utils/logger';
 import { Secured } from '../evees/utils/cid-hash';
 import { Evees } from '../evees/evees.service';
-import { RemoteEvees } from '../evees/interfaces/remote.evees';
+import { ClientRemote } from '../evees/interfaces/client.remote';
 import { Perspective } from '../evees/interfaces/types';
 
 /** a services that builds tree of perspectives that is apended to
@@ -19,7 +19,7 @@ export interface AppElement {
 const LOGINFO = false;
 /** the relative (to home) path of each app element */
 export class AppElements {
-  readonly remote: RemoteEvees;
+  readonly remote: ClientRemote;
   logger = new Logger('AppElements');
 
   constructor(protected evees: Evees, protected home: AppElement, remoteId?: string) {
@@ -80,7 +80,7 @@ export class AppElements {
 
     /** make sure the perspective is in the store to be resolved */
     await this.evees.storeEntity({
-      id: element.perspective.id,
+      hash: element.perspective.hash,
       object: element.perspective.object,
       remote: element.perspective.object.payload.remote,
     });
@@ -108,7 +108,7 @@ export class AppElements {
 
     if (element.children) {
       await Promise.all(
-        element.children.map((child) => this.initPerspectiveDataRec(child, perspective.id))
+        element.children.map((child) => this.initPerspectiveDataRec(child, perspective.hash))
       );
     }
   }
@@ -123,7 +123,7 @@ export class AppElements {
 
     /** get the perspective data */
     const levels = getLevels(this.home);
-    const { details } = await this.evees.getPerspective(perspective.id, { levels });
+    const { details } = await this.evees.getPerspective(perspective.hash, { levels });
 
     /** canUpdate is used as the flag to detect if the home space exists */
     if (!details.headId) {
@@ -139,7 +139,7 @@ export class AppElements {
     if (!element.perspective)
       throw new Error(`perspective not found for element ${JSON.stringify(element)}`);
 
-    const data = await this.evees.tryGetPerspectiveData(element.perspective.id);
+    const data = await this.evees.tryGetPerspectiveData(element.perspective.hash);
     if (LOGINFO) this.logger.log('getOrCreateElementData()', { element, data });
 
     if (!data) {
@@ -158,7 +158,7 @@ export class AppElements {
       await Promise.all(element.children.map((child) => this.createSnapElementRec(child)));
 
       if (!element.perspective) throw new Error('Element perspective not defined');
-      const elementId = element.perspective.id;
+      const elementId = element.perspective.hash;
     }
 
     // set perspectives data
@@ -172,7 +172,7 @@ export class AppElements {
     }
 
     await this.evees.flush({
-      under: { elements: [{ id: this.home.perspective.id, levels: 3 }] },
+      under: { elements: [{ id: this.home.perspective.hash, levels: 3 }] },
     });
   }
 
@@ -186,7 +186,7 @@ export class AppElements {
     if (!element.perspective)
       throw new Error(`Element ${JSON.stringify(element)} doest not have the perspective set`);
 
-    const data = await this.evees.getPerspectiveData(element.perspective.id);
+    const data = await this.evees.getPerspectiveData(element.perspective.hash);
 
     /** if the scheleton does not have children, then stop reading the tree here */
     if (!element.children) {
@@ -203,7 +203,7 @@ export class AppElements {
           if (child.optional !== true) {
             throw new Error(
               `Child not found for expected element ${
-                element.perspective ? element.perspective.id : ''
+                element.perspective ? element.perspective.hash : ''
               }`
             );
           }

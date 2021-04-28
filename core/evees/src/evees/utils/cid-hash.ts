@@ -130,7 +130,7 @@ export async function deriveEntity<O extends object>(
   const hash = await hashObject(object, config);
 
   const entity = {
-    id: hash,
+    hash,
     object,
     remote,
   };
@@ -143,14 +143,14 @@ export async function deriveEntity<O extends object>(
 /** verify that the reference entities that have a hash were created with the same hash */
 export function validateEntities(entities: Entity[], references: EntityCreate[]) {
   references.map((ref) => {
-    if (ref.id) {
-      const entity = entities.find((e) => e.id === ref.id);
+    if (ref.hash) {
+      const entity = entities.find((e) => e.hash === ref.hash);
       if (!entity) {
         /** append stringified object */
         entities.forEach((entity) => ((entity as any).objectStr = JSON.stringify(entity.object)));
         references.forEach((entity) => ((entity as any).objectStr = JSON.stringify(entity.object)));
 
-        console.error(`Entity ${ref.id} not correctly created`, { entities, references });
+        console.error(`Entity ${ref.hash} not correctly created`, { entities, references });
         throw new Error(`Entity ${JSON.stringify(ref)} not found in entity set`);
       }
     }

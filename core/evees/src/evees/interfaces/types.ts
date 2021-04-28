@@ -1,6 +1,6 @@
 import { Secured } from '../utils/cid-hash';
 import { Entity } from './entity';
-import { RemoteEvees } from './remote.evees';
+import { ClientRemote } from './client.remote';
 
 export declare enum Join {
   inner = 'INNER_JOIN',
@@ -207,8 +207,8 @@ export interface ForkOf {
 }
 
 export interface EveesConfig {
-  defaultRemote?: RemoteEvees;
-  officialRemote?: RemoteEvees;
+  defaultRemote?: ClientRemote;
+  officialRemote?: ClientRemote;
   editableRemotesIds?: string[];
   emitIf?: {
     remote: string;

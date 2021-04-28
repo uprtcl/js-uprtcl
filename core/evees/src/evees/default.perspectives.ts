@@ -1,14 +1,14 @@
 import { Secured } from './utils/cid-hash';
 import { Signed } from '../patterns/interfaces/signable';
 
-import { RemoteEvees } from './interfaces/remote.evees';
+import { ClientRemote } from './interfaces/client.remote';
 import { Commit, PartialPerspective, Perspective } from './interfaces/types';
 import { CreateCommit } from './evees.service';
 import { CidConfig, defaultCidConfig } from './interfaces/cid-config';
 import { deriveSecured, signObject } from './utils/signed';
 
 export const snapDefaultPerspective = async (
-  remote: RemoteEvees,
+  remote: ClientRemote,
   perspective: PartialPerspective
 ): Promise<Secured<Perspective>> => {
   const creatorId = perspective.creatorId
@@ -27,7 +27,7 @@ export const snapDefaultPerspective = async (
     remote: remote.id,
   });
 
-  const context = perspective.context !== undefined ? perspective.context : defaultContext.id;
+  const context = perspective.context !== undefined ? perspective.context : defaultContext.hash;
 
   const object: Perspective = {
     creatorId: creatorId,
@@ -53,7 +53,7 @@ export const snapDefaultPerspective = async (
 };
 
 export const getHome = async (
-  remote: RemoteEvees,
+  remote: ClientRemote,
   userId?: string
 ): Promise<Secured<Perspective>> => {
   const creatorId = userId === undefined ? (remote.userId ? remote.userId : '') : userId;

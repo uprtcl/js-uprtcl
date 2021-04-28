@@ -1,7 +1,7 @@
 import { Update, NewPerspective, EveesMutation } from '../../interfaces/types';
-import { CachedUpdate, ClientCache } from '../../interfaces/client.cache';
+import { CachedUpdate, ClientMutationStore } from '../../interfaces/client.mutation.store';
 
-export class CacheOnMemory implements ClientCache {
+export class MutationStoreMemory implements ClientMutationStore {
   /** a map with the new perspectives to be created */
   private newPerspectives = new Map<string, NewPerspective>();
 
@@ -30,7 +30,7 @@ export class CacheOnMemory implements ClientCache {
   }
 
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
-    this.newPerspectives.set(newPerspective.perspective.id, newPerspective);
+    this.newPerspectives.set(newPerspective.perspective.hash, newPerspective);
   }
 
   async addUpdate(update: Update): Promise<void> {

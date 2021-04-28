@@ -22,7 +22,7 @@ export interface UpdateLocal {
 }
 
 // temporary service for documents modile. Should be replaced by a LocalClient with version history.
-export class EveesCacheDB extends Dexie {
+export class MutationStoreDB extends Dexie {
   perspectives: Dexie.Table<PerspectiveLocal, string>;
   newPerspectives: Dexie.Table<NewPerspectiveLocal, string>;
   updates: Dexie.Table<UpdateLocal, string>;

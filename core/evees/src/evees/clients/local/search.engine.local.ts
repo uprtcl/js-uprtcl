@@ -11,13 +11,13 @@ import {
   GetPerspectiveOptions,
 } from '../../interfaces/types';
 
-import { EveesCacheDB, PerspectiveLocal } from './cache.local.db';
+import { MutationStoreDB, PerspectiveLocal } from './mutation.store.local.db';
 
 export class LocalExplore {
   /** The evees service is needed to navigate a tree of perspectives stored on other remotes */
   private evees!: Evees;
 
-  constructor(readonly db: EveesCacheDB) {}
+  constructor(readonly db: MutationStoreDB) {}
 
   public setEvees(evees: Evees) {
     this.evees = evees;

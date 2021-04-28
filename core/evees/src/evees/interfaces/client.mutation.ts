@@ -1,19 +1,20 @@
 import { Client } from './client';
-import { ClientCache } from './client.cache';
 import { EveesMutation, FlushConfig, SearchOptions } from './types';
 
-/** A ClientCached is a Client that can batch mutations and store them in a ClientCache service.
+/** A ClientMutation is a Client that can batch mutations and store them in a ClientMutationStore service.
  * It is built on top of another Client, and, thus, the mutations it store are to be
- * considered to be applied on top of the base client data.
+ * considered to be applied on top of the base client.
  *
- * A ClientCached also offer methods to see the current changes and to flush them (apply them
+ * A ClientMutation offer methods to see the current changes and to flush them (apply them
  * as an update) on the base client.
- */
-export interface ClientCached extends Client {
-  cache: ClientCache;
+ *
+ * Some methods can receive an optional `options` input with the criteria to filter the
+ * current mutation elements. For example, get all the changes that have been applied under
+ * a given perspective. */
+export interface ClientMutation extends Client {
   base: Client;
 
-  /** get all the changes relative to the underlying client(s) */
+  /** get all the changes relative to the underlying client */
   diff(options?: SearchOptions): Promise<EveesMutation>;
 
   /** sync all the temporary changes made on this client with the base layer, if recurse

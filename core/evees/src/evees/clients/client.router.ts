@@ -1,8 +1,8 @@
 import EventEmitter from 'events';
 import { Logger } from 'src/utils/logger';
 import { Client, ClientEvents } from '../interfaces/client';
+import { ClientRemote } from '../interfaces/client.remote';
 import { EntityCreate, Entity } from '../interfaces/entity';
-import { RemoteEvees } from '../interfaces/remote.evees';
 import {
   GetPerspectiveOptions,
   NewPerspective,
@@ -21,7 +21,7 @@ export class RemoteRouter implements Client {
   proposals?: Proposals | undefined;
   events: EventEmitter;
 
-  constructor(protected remotes: RemoteEvees[]) {
+  constructor(protected remotes: ClientRemote[]) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
 
@@ -40,7 +40,7 @@ export class RemoteRouter implements Client {
   async getPerspectiveRemote(
     perspectiveId: string,
     entities?: Map<string, Entity>
-  ): Promise<RemoteEvees> {
+  ): Promise<ClientRemote> {
     let perspective;
 
     if (entities) {
@@ -56,7 +56,7 @@ export class RemoteRouter implements Client {
     const mutationPerRemote = new Map<string, EveesMutationCreate>();
     const entitiesMap = new Map<string, Entity>();
     if (mutation.entities) {
-      mutation.entities.forEach((e) => entitiesMap.set(e.id, e));
+      mutation.entities.forEach((e) => entitiesMap.set(e.hash, e));
     }
 
     const fillEntities = mutation.entities
@@ -116,7 +116,7 @@ export class RemoteRouter implements Client {
           mutation.newPerspectives.map(
             async (newPerspective): Promise<void> => {
               const remote = await this.getPerspectiveRemote(
-                newPerspective.perspective.id,
+                newPerspective.perspective.hash,
                 entitiesMap
               );
               let mutation = mutationPerRemote.get(remote.id);
@@ -238,17 +238,7 @@ export class RemoteRouter implements Client {
     );
   }
 
-  /** get all user perspectives on all registered remotes */
-  async getUserPerspectives(perspectiveId: string) {
-    const all = await Promise.all(
-      this.remotes.map((remote) => {
-        return remote.getUserPerspectives(perspectiveId);
-      })
-    );
-    return Array.prototype.concat.apply([], all);
-  }
-
-  getRemote(remoteId?: string): RemoteEvees {
+  getRemote(remoteId?: string): ClientRemote {
     if (!remoteId) {
       return this.remotes[0];
     }

@@ -28,7 +28,7 @@ export {
 export { EveesContentModule } from './evees/interfaces/evees.content.module';
 
 export { Evees, EveesEvents } from './evees/evees.service';
-export { RemoteEvees } from './evees/interfaces/remote.evees';
+export { ClientRemote } from './evees/interfaces/client.remote';
 export { Client, ClientEvents } from './evees/interfaces/client';
 export { CASStore } from './evees/interfaces/cas-store';
 
@@ -73,7 +73,6 @@ export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 
 /** Aceess Control */
 export { AccessControl } from './evees/interfaces/access-control';
-export { RemoteLogged, RemoteLoggedEvents } from './evees/interfaces/remote.logged';
 
 export { Logger } from './utils/logger';
 
@@ -96,10 +95,13 @@ export { init } from './creator-helpers/init';
 export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Clients */
-export { ClientOnMemory } from './evees/clients/memory/client.memory';
-export { ClientCachedLocal } from './evees/clients/local/client.cached.local';
-export { CacheLocal } from './evees/clients/local/cache.local';
-export { ClientCachedBase, ClientCachedEvents } from './evees/clients/cached/client.cached.base';
+export { ClientMutationMemory } from './evees/clients/memory/mutation.memory';
+export { ClientMutationLocal } from './evees/clients/local/client.mutation.local';
+export { MutationStoreLocal } from './evees/clients/local/mutation.store.local';
+export {
+  ClientMutationBase,
+  ClientCachedEvents,
+} from './evees/clients/cached/client.mutation.base';
 
 /** Evees Utils */
 export { CondensateCommits } from './evees/utils/condensate.commits';

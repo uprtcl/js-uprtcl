@@ -15,11 +15,12 @@ import { Logger } from '../../../utils/logger';
 import { Signed } from '../../../patterns/interfaces/signable';
 import { AsyncQueue } from '../../../utils/async';
 
-import { Client, ClientEvents } from '../../interfaces/client';
-import { ClientCache } from '../../interfaces/client.cache';
-import { ClientCached } from '../../interfaces/client.cached';
+import { ClientEvents } from '../../interfaces/client';
 import { condensateUpdates } from '../../utils/condensate.updates';
 import { Entity, EntityCreate } from '../../interfaces/entity';
+import { ClientFull } from '../../interfaces/client.full';
+import { ClientMutationCached } from '../../interfaces/client.mutation.cached';
+import { ClientExplore } from '../../interfaces/client.explore';
 
 const LOGINFO = false;
 
@@ -27,9 +28,9 @@ export enum ClientCachedEvents {
   pending = 'changes-pending',
 }
 
-/** Reusable implementation of a ClientCached service.
- * Uses a ClientCache to store mutations */
-export class ClientCachedBase implements ClientCached {
+/** Reusable implementation of a ClientMutation service.
+ * Uses a ClientMutationStore to store mutations */
+export class ClientMutationBase implements ClientExplore {
   logger = new Logger('ClientCachedWithBase');
 
   /** A service to subsribe to udpate on perspectives */
@@ -40,8 +41,8 @@ export class ClientCachedBase implements ClientCached {
   private lastQueued: Promise<any> | undefined = undefined;
 
   constructor(
-    readonly base: Client,
-    readonly cache: ClientCache,
+    readonly base: ClientExplore,
+    readonly cache: ClientMutationCached,
     readonly name: string = 'client',
     readonly readCacheEnabled: boolean = true
   ) {
@@ -165,7 +166,7 @@ export class ClientCachedBase implements ClientCached {
           const update = newPerspective.update;
           update.details.canUpdate = true;
 
-          return this.cache.setCachedPerspective(newPerspective.perspective.id, {
+          return this.cache.setCachedPerspective(newPerspective.perspective.hash, {
             update: update,
             levels: -1, // new perspectives are assumed to be fully on the cache
           });
@@ -340,8 +341,8 @@ export class ClientCachedBase implements ClientCached {
       await this.base.update(diff);
 
       if (flush && flush.recurse) {
-        if ((this.base as ClientCached).flush) {
-          await (this.base as ClientCached).flush(options);
+        if ((this.base as ClientFull).flush) {
+          await (this.base as ClientFull).flush(options);
         }
       }
 
@@ -352,7 +353,7 @@ export class ClientCachedBase implements ClientCached {
   async clear(elements: EveesMutation): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} clear()`, { updateQueue: this.updateQueue });
     this.cache.clear(elements);
-    this.removeEntities(elements.entities.map((e) => e.id));
+    this.removeEntities(elements.entities.map((e) => e.hash));
   }
 
   /** a mutation with all the changes made relative to the base client */

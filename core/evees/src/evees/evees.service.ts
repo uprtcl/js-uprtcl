@@ -31,17 +31,17 @@ import { Signed } from '../patterns/interfaces/signable';
 import { ErrorWithCode } from '../utils/error';
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 
-import { RemoteEvees } from './interfaces/remote.evees';
 import { createCommit, getHome } from './default.perspectives';
-import { ClientOnMemory } from './clients/memory/client.memory';
+import { ClientMutationMemory } from './clients/memory/mutation.memory';
 import { arrayDiff } from './merge/utils';
 import { FindAncestor } from './utils/find.ancestor';
-import { ClientCached } from './interfaces/client.cached';
 import { Proposals } from './proposals/proposals';
 import { Entity, EntityCreate } from './interfaces/entity';
-import { CASRemote } from './interfaces/cas-remote';
 import { Client } from './interfaces/client';
 import { signObject } from './utils/signed';
+import { ClientMutation } from './interfaces/client.mutation';
+import { ClientRemote } from './interfaces/client.remote';
+import { ClientFull } from './interfaces/client.full';
 
 const LOGINFO = false;
 
@@ -91,9 +91,9 @@ export class Evees implements Client {
   protected pendingUpdates: Map<string, PendingUpdateDetails> = new Map();
 
   constructor(
-    private client: ClientCached,
+    private client: ClientFull,
     readonly recognizer: PatternRecognizer,
-    readonly remotes: RemoteEvees[],
+    readonly remotes: ClientRemote[],
     readonly config: EveesConfig,
     readonly modules: Map<string, EveesContentModule>
   ) {
@@ -102,7 +102,7 @@ export class Evees implements Client {
   }
   proposals?: Proposals | undefined;
 
-  getClient(): ClientCached {
+  getClient(): ClientMutation {
     return this.client;
   }
 
@@ -110,8 +110,8 @@ export class Evees implements Client {
     return this.client.proposals;
   }
 
-  clone(name: string = 'new-client', client?: ClientCached, config?: EveesConfig): Evees {
-    client = client || new ClientOnMemory(this.client, name);
+  clone(name: string = 'new-client', client?: ClientFull, config?: EveesConfig): Evees {
+    client = client || new ClientMutationMemory(this.client, name);
 
     return new Evees(client, this.recognizer, this.remotes, config || this.config, this.modules);
   }
@@ -120,7 +120,7 @@ export class Evees implements Client {
    * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
   async cloneAndUpdate(
     name: string = 'NewClient',
-    client?: ClientCached,
+    client?: ClientFull,
     mutation?: EveesMutation
   ): Promise<Evees> {
     const evees = this.clone(name, client);
@@ -132,13 +132,13 @@ export class Evees implements Client {
     return evees;
   }
 
-  findRemote<T extends RemoteEvees>(query: string): T {
+  findRemote<T extends ClientRemote>(query: string): T {
     const remote = this.remotes.find((r) => r.id.includes(query));
     if (!remote) throw new Error(`remote starting with ${query} not found`);
     return remote as T;
   }
 
-  getRemote<T extends RemoteEvees>(remoteId?: string): T {
+  getRemote<T extends ClientRemote>(remoteId?: string): T {
     if (remoteId) {
       const remote = this.remotes.find((r) => r.id === remoteId);
       if (!remote) throw new Error(`remote ${remoteId} not found`);
@@ -148,7 +148,7 @@ export class Evees implements Client {
     }
   }
 
-  async getPerspectiveRemote<T extends RemoteEvees>(perspectiveId: string): Promise<T> {
+  async getPerspectiveRemote<T extends ClientRemote>(perspectiveId: string): Promise<T> {
     const perspective = await this.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     const remoteId = perspective.object.payload.remote;
@@ -177,7 +177,7 @@ export class Evees implements Client {
     searchOptions: SearchOptions,
     fetchOptions?: GetPerspectiveOptions
   ): Promise<SearchResult> {
-    if (!this.client.explore) {
+    if (!(this.client as any).explore) {
       throw new Error('explore not defined');
     }
 
@@ -476,12 +476,12 @@ export class Evees implements Client {
 
       const head = await this.createCommit(
         {
-          dataId: dataId.id,
+          dataId: dataId.hash,
         },
         remoteId
       );
 
-      headId = head.id;
+      headId = head.hash;
     }
 
     const remote = this.getRemote(remoteId);
@@ -493,7 +493,7 @@ export class Evees implements Client {
     await this.newPerspective({
       perspective,
       update: {
-        perspectiveId: perspective.id,
+        perspectiveId: perspective.hash,
         details: {
           headId,
           guardianId,
@@ -502,7 +502,7 @@ export class Evees implements Client {
       },
     });
 
-    return perspective.id;
+    return perspective.hash;
   }
 
   /** A method to get the data of a perspective, and if the perspective has no data, create that data and
@@ -616,7 +616,7 @@ export class Evees implements Client {
     const data = await this.hashEntity({ object, remote: remote.id });
 
     const headObject = await createCommit({
-      dataId: data.id,
+      dataId: data.hash,
       parentsIds,
     });
 
@@ -627,7 +627,7 @@ export class Evees implements Client {
     const update: Update = {
       perspectiveId,
       details: {
-        headId: head.id,
+        headId: head.hash,
         guardianId,
       },
       indexData: options.indexData,
@@ -895,7 +895,7 @@ export class Evees implements Client {
 
     if (!options.detach) {
       const forking: ForkDetails = {
-        perspectiveId: refPerspective.id,
+        perspectiveId: refPerspective.hash,
         headId: details.headId,
       };
       perspectivePartial.meta = { forking };
@@ -911,7 +911,7 @@ export class Evees implements Client {
       forkCommitId = await this.forkCommit(
         details.headId,
         perspective.object.payload.remote,
-        perspective.id, // this perspective is set as the parent of the children's new perspectives
+        perspective.hash, // this perspective is set as the parent of the children's new perspectives
         options
       );
     }
@@ -919,12 +919,12 @@ export class Evees implements Client {
     await this.newPerspective({
       perspective,
       update: {
-        perspectiveId: perspective.id,
+        perspectiveId: perspective.hash,
         details: { headId: forkCommitId, guardianId },
       },
     });
 
-    return perspective.id;
+    return perspective.hash;
   }
 
   async forkCommit(
@@ -957,7 +957,7 @@ export class Evees implements Client {
 
     const entity = await this.storeEntity({ object: signedCommit, remote: remoteId });
 
-    return entity.id;
+    return entity.hash;
   }
 
   async forkEntity(
@@ -979,7 +979,7 @@ export class Evees implements Client {
       const newObject = this.behaviorFirst(data.object, 'replaceChildren')(newLinks);
 
       const entity = await this.storeEntity({ object: newObject, remote: remoteId });
-      return entity.id;
+      return entity.hash;
     } else {
       return entityId;
     }

@@ -66,7 +66,7 @@ export class CondensateCommits {
       .filter((head) => head !== undefined) as string[];
 
     const commits = await this.store.getEntities(headIds);
-    commits.map((commit) => this.allCommits.set(commit.id, commit));
+    commits.map((commit) => this.allCommits.set(commit.hash, commit));
 
     if (this.logEnabled) this.logger.log('readAllCommits()', { allCommits: this.allCommits });
   }
@@ -87,7 +87,7 @@ export class CondensateCommits {
       /** add this commit as child of all its parents */
       parentsIds.forEach((parentId) => {
         const children = this.childrenMap.get(parentId) || new Set();
-        children.add(commit.id);
+        children.add(commit.hash);
         this.childrenMap.set(parentId, children);
       });
     });
@@ -104,7 +104,7 @@ export class CondensateCommits {
         /** internal commit */
       } else {
         /** tail commit */
-        tails.push(commit.id);
+        tails.push(commit.hash);
       }
     });
 
@@ -179,7 +179,7 @@ export class CondensateCommits {
       newUpdate = {
         details: {
           ...update.details,
-          headId: head.id,
+          headId: head.hash,
         },
         perspectiveId: update.perspectiveId,
         fromPerspectiveId: update.fromPerspectiveId,
