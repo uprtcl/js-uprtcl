@@ -51,7 +51,7 @@ export class EveesPerspectivesList extends servicesConnect(LitElement) {
           const remote = this.evees.remotes.find((r) => r.id === perspective.object.payload.remote);
           if (!remote) throw new Error(`remote not found for ${perspective.object.payload.remote}`);
           return {
-            id: perspective.id,
+            id: perspective.hash,
             name: perspective.object.name,
             creatorId: perspective.object.payload.creatorId,
             timestamp: perspective.object.payload.timestamp,

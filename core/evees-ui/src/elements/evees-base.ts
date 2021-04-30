@@ -7,8 +7,8 @@ import {
   Evees,
   Logger,
   Perspective,
-  RemoteEvees,
-  RemoteLoggedEvents,
+  ClientRemote,
+  ConnectionLoggedEvents,
   Secured,
   Signed,
 } from '@uprtcl/evees';
@@ -40,7 +40,7 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
   head: Secured<Commit> | undefined;
   data: Entity<T> | undefined;
 
-  protected remote!: RemoteEvees;
+  protected remote!: ClientRemote;
 
   async firstUpdated() {
     this.setEvees();
@@ -50,7 +50,7 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
     this.checkLogged();
 
     if (this.remote.events) {
-      this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.checkLogged());
+      this.remote.events.on(ConnectionLoggedEvents.logged_status_changed, () => this.checkLogged());
     }
 
     this.loading = true;

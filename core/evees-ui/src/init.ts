@@ -1,5 +1,5 @@
 import {
-  RemoteEvees,
+  ClientRemote,
   EveesConfig,
   EveesContentModule,
   Pattern,
@@ -10,7 +10,7 @@ import { registerComponents } from './register.components';
 
 /** a top level wrapper that registers everything */
 export const init = (
-  remotes: RemoteEvees[],
+  remotes: ClientRemote[],
   modules: Map<string, EveesContentModule>,
   patterns?: Pattern<any>[],
   config?: EveesConfig

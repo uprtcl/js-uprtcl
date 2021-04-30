@@ -1,11 +1,10 @@
 import { Secured } from '../utils/cid-hash';
 
-import { Client } from './client';
 import { AccessControl } from './access-control';
 import { PartialPerspective, Perspective } from './types';
 import { Proposals } from '../proposals/proposals';
 import { Ready } from '../../utils/ready';
-import { ConnectionLogged } from '../../utils/connection.logged';
+import { ConnectionLogged } from './connection.logged';
 import { ClientExplore } from './client.explore';
 
 /** A remote is a Client that connects to backend. It is identified within

@@ -7,7 +7,7 @@ import {
   Commit,
   Logger,
   Evees,
-  RemoteEvees,
+  ClientRemote,
   PerspectiveType,
   CommitType,
   MergeConfig,
@@ -98,7 +98,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   perspectiveData!: PerspectiveData;
   eveesPull: Evees | undefined = undefined;
 
-  protected remote!: RemoteEvees;
+  protected remote!: ClientRemote;
 
   async firstUpdated() {}
 

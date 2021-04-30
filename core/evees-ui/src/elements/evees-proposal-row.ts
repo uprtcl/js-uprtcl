@@ -80,8 +80,9 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     this.toRemote = await this.evees.getPerspectiveRemote(this.proposal.toPerspectiveId);
 
-    if (!this.toRemote.proposals) throw new Error('ToRemote dont have proposals service');
-    this.proposals = this.toRemote.proposals as ProposalsWithUI;
+    const proposals = this.toRemote.proposals;
+    if (!proposals) throw new Error('ToRemote dont have proposals service');
+    this.proposals = proposals as ProposalsWithUI;
 
     /** the author is the creator of the fromPerspective */
     this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
@@ -96,8 +97,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     await this.checkExecuted();
 
     /** the proposal creator is set at proposal creation */
-    const proposals = this.evees.getProposals();
-    this.canRemove = proposals ? await proposals.canDelete(this.proposalId) : false;
+    this.canRemove = proposals ? await this.proposals.canDelete(this.proposalId) : false;
 
     this.loading = false;
   }

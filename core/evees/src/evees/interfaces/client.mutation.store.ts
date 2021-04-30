@@ -11,12 +11,14 @@ export interface ClientMutationStore {
   newPerspective(newPerspective: NewPerspective): Promise<void>;
   addUpdate(update: Update, timestamp: number): Promise<void>;
   deletedPerspective(perspectiveId: string): Promise<void>;
-  storeEntity(entity: Entity): Promise<void>;
 
   deleteNewPerspective(perspectiveId: string): Promise<void>;
 
   getNewPerspectives(): Promise<NewPerspective[]>;
   getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined>;
+
+  storeEntity(entity: Entity): Promise<void>;
+  getNewEntity(hash: string): Promise<Entity | undefined>;
 
   getUpdates(): Promise<Update[]>;
   getUpdatesOf(perspectiveId: string): Promise<Update[]>;

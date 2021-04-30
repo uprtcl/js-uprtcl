@@ -170,7 +170,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     let remoteId: string | undefined;
 
     if (entityType === PerspectiveType) {
-      const remote = await this.localEvees.getPerspectiveRemote(entity.id);
+      const remote = await this.localEvees.getPerspectiveRemote(entity.hash);
       remoteId = remote.id;
 
       const { details } = await this.localEvees.getPerspective(uref, { levels: -1 });
@@ -226,7 +226,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     const level = this.getLevel(coord);
 
     const node: DocNode = {
-      uref: entity.id,
+      uref: entity.hash,
       remoteId,
       type: entityType,
       ix,
@@ -275,7 +275,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       object: draft,
       guardianId: parent ? parent.uref : undefined,
       remoteId: remoteId,
-      perspectiveId: perspective.id,
+      perspectiveId: perspective.hash,
       indexData: {
         linkChanges: {
           onEcosystem: {
@@ -298,7 +298,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     const level = this.getLevel(coord);
 
     return {
-      uref: perspective.id,
+      uref: perspective.hash,
       remoteId,
       ix,
       parent,

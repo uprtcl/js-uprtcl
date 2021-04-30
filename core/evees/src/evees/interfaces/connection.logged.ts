@@ -1,3 +1,9 @@
+export enum ConnectionLoggedEvents {
+  logged_out = 'logged_out',
+  logged_in = 'logged_in',
+  logged_status_changed = 'logged_status_changed',
+}
+
 export interface ConnectionLogged {
   userId?: string | undefined;
 

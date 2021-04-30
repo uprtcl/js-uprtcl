@@ -19,7 +19,7 @@ import { ClientEvents } from '../../interfaces/client';
 import { condensateUpdates } from '../../utils/condensate.updates';
 import { Entity, EntityCreate } from '../../interfaces/entity';
 import { ClientFull } from '../../interfaces/client.full';
-import { ClientMutationCached } from '../../interfaces/client.mutation.cached';
+import { ClientMutationAndCache } from '../../interfaces/client.mutation.and.cache';
 import { ClientExplore } from '../../interfaces/client.explore';
 
 const LOGINFO = false;
@@ -42,7 +42,7 @@ export class ClientMutationBase implements ClientExplore {
 
   constructor(
     readonly base: ClientExplore,
-    readonly cache: ClientMutationCached,
+    readonly cache: ClientMutationAndCache,
     readonly name: string = 'client',
     readonly readCacheEnabled: boolean = true
   ) {
@@ -377,25 +377,83 @@ export class ClientMutationBase implements ClientExplore {
 
   async refresh(): Promise<void> {}
 
-  storeEntities(entities: Entity<any>[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
+  async storeEntities(entities: Entity[]): Promise<Entity<any>[]> {
+    /** store perspective details */
+    if (LOGINFO) this.logger.log(`${this.name} storeEntities()`, entities);
+    await Promise.all(
+      entities.map(async (entity) => {
+        if (!entity.hash) {
+          /** inject hash */
+          entity = await this.hashEntity(entity);
+        }
+        this.cache.storeEntity(entity);
+      })
+    );
+    return entities;
   }
-  storeEntity(entity: Entity<any>): Promise<Entity<any>> {
-    throw new Error('Method not implemented.');
+
+  async storeEntity(entity: Entity<any>): Promise<Entity<any>> {
+    const entities = await this.storeEntities([entity]);
+    return entities[0];
   }
+
   removeEntities(hashes: string[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  getEntities(hashes: string[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
+
+  async getEntities(hashes: string[]): Promise<Entity<any>[]> {
+    const found: Entity[] = [];
+    const notFound: string[] = [];
+
+    /** Check the cache */
+    await Promise.all(
+      hashes.map(async (hash) => {
+        const entityCached = await this.cache.getCachedEntity(hash);
+        if (entityCached) {
+          found.push({ ...entityCached });
+        } else {
+          /** Check the new entities buffer
+           * TODO: better to add th new entities to the cachedEntities already, and only check that map.
+           */
+          const entityNew = await this.cache.getNewEntity(hash);
+          if (entityNew) {
+            found.push({ ...entityNew });
+          } else {
+            notFound.push(hash);
+          }
+        }
+      })
+    );
+
+    if (notFound.length === 0) {
+      return found;
+    }
+
+    if (!this.base) {
+      throw new Error('Based store not defined');
+    }
+
+    // if not found, then ask the base store
+    const entities = await this.base.getEntities(notFound);
+
+    if (entities.length !== notFound.length) {
+      throw new Error(`Entities not found ${JSON.stringify(notFound)}`);
+    }
+
+    return found.concat(entities);
   }
-  getEntity<T = any>(hash: string): Promise<Entity<T>> {
-    throw new Error('Method not implemented.');
+
+  async getEntity<T = any>(hash: string): Promise<Entity<T>> {
+    const entities = await this.getEntities([hash]);
+    return entities[0];
   }
+
   hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
+    return this.base.hashEntities(entities);
   }
-  hashEntity<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
-    throw new Error('Method not implemented.');
+
+  async hashEntity<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
+    const entities = await this.hashEntities([entity]);
+    return entities[0];
   }
 }

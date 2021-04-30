@@ -1,7 +1,7 @@
 import { css, html, internalProperty, property } from 'lit-element';
 
 import { icons } from '@uprtcl/common-ui';
-import { RemoteEvees, Logger, RemoteLoggedEvents } from '@uprtcl/evees';
+import { ClientRemote, ConnectionLoggedEvents, Logger } from '@uprtcl/evees';
 
 import { EveesBaseElement } from './evees-base';
 
@@ -26,7 +26,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   protected case: EditableCase = EditableCase.IS_OFFICIAL_DONT_HAVE_DRAFT;
 
   protected mineId: string | undefined = undefined;
-  protected editRemote!: RemoteEvees;
+  protected editRemote!: ClientRemote;
 
   async firstUpdated() {
     this.uref = this.firstRef;
@@ -36,7 +36,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.checkLoggedOnEdit();
 
     if (this.editRemote.events) {
-      this.editRemote.events.on(RemoteLoggedEvents.logged_status_changed, () =>
+      this.editRemote.events.on(ConnectionLoggedEvents.logged_status_changed, () =>
         this.checkLoggedOnEdit()
       );
     }
@@ -44,8 +44,8 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     await super.firstUpdated();
 
     if (this.remote.events) {
-      this.remote.events.on(RemoteLoggedEvents.logged_out, () => this.seeOfficial());
-      this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.load());
+      this.remote.events.on(ConnectionLoggedEvents.logged_out, () => this.seeOfficial());
+      this.remote.events.on(ConnectionLoggedEvents.logged_status_changed, () => this.load());
     }
   }
 

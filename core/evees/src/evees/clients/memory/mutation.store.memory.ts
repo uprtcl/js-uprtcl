@@ -1,7 +1,9 @@
 import { Update, NewPerspective, EveesMutation } from '../../interfaces/types';
-import { CachedUpdate, ClientMutationStore } from '../../interfaces/client.mutation.store';
+import { CachedUpdate } from '../../interfaces/client.mutation.store';
+import { Entity } from '../../interfaces/entity';
+import { ClientMutationAndCache } from '../../interfaces/client.mutation.and.cache';
 
-export class MutationStoreMemory implements ClientMutationStore {
+export class MutationStoreMemory implements ClientMutationAndCache {
   /** a map with the new perspectives to be created */
   private newPerspectives = new Map<string, NewPerspective>();
 
@@ -14,6 +16,9 @@ export class MutationStoreMemory implements ClientMutationStore {
    * known to this client, it might have come from the remote, or because the client knows
    * of an update to it */
   private cachedPerspectives = new Map<string, CachedUpdate>();
+
+  private newEntities = new Map<string, Entity>();
+  private cachedEntities = new Map<string, Entity>();
 
   async clearCachedPerspective(perspectiveId: string): Promise<void> {
     if (this.cachedPerspectives.get(perspectiveId)) {
@@ -89,12 +94,26 @@ export class MutationStoreMemory implements ClientMutationStore {
     this.deletedPerspectives.clear();
   }
 
-  storeEntity(entity: any): Promise<void> {
+  async storeEntity(entity: Entity): Promise<void> {
+    this.newEntities.set(entity.hash, entity);
+  }
+
+  getCachedEntity(hash: string): Promise<Entity<any> | undefined> {
     throw new Error('Method not implemented.');
   }
+
+  async cacheEntity(entity: Entity<any>): Promise<void> {
+    this.cachedEntities.set(entity.hash, entity);
+  }
+
+  getNewEntity(hash: string): Promise<Entity<any> | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
   getDeletedPerspectives(): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
+
   clearPerspective(perspectiveId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }

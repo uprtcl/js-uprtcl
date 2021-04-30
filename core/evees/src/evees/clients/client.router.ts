@@ -14,6 +14,7 @@ import {
   SearchResult,
 } from '../interfaces/types';
 import { Proposals } from '../proposals/proposals';
+import { validateEntities } from '../utils/cid-hash';
 
 export class RemoteRouter implements Client {
   logger = new Logger('RemoteRouter');
@@ -21,12 +22,18 @@ export class RemoteRouter implements Client {
   proposals?: Proposals | undefined;
   events: EventEmitter;
 
+  remotesMap: Map<string, ClientRemote>;
+
   constructor(protected remotes: ClientRemote[]) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
 
-    /** forward events */
+    this.remotesMap = new Map();
+    remotes.forEach((remote) => {
+      this.remotesMap.set(remote.id, remote);
+    });
 
+    /** forward events */
     this.remotes.forEach((remote) => {
       if (remote.events) {
         remote.events.on(ClientEvents.updated, (perspectiveIds) => {
@@ -264,25 +271,89 @@ export class RemoteRouter implements Client {
     return entitiesPerRemote;
   }
 
-  storeEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
+  async storeEntities(entities: EntityCreate<any>[]): Promise<Entity[]> {
+    const entitiesPerStore = this.splitEntities(entities);
+
+    const entitiesPerRemote = await Promise.all(
+      Array.from(entitiesPerStore.entries()).map(async ([remoteId, entities]) => {
+        const remote = this.getRemote(remoteId);
+        const storedEntities = await remote.storeEntities(entities);
+        validateEntities(storedEntities, entities);
+      })
+    );
+
+    return Array.prototype.concat.apply([], entitiesPerRemote);
   }
-  storeEntity(entity: EntityCreate<any>): Promise<Entity<any>> {
-    throw new Error('Method not implemented.');
+
+  async storeEntity(entity: EntityCreate<any>): Promise<Entity> {
+    const entities = await this.storeEntities([entity]);
+    return entities[0];
   }
+
   removeEntities(hashes: string[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  getEntities(hashes: string[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
+
+  async getEntities(hashes: string[]): Promise<Entity[]> {
+    return this.tryGetFromSources(hashes);
   }
-  getEntity<T = any>(hash: string): Promise<Entity<T>> {
-    throw new Error('Method not implemented.');
+
+  async getEntity(uref: string): Promise<Entity> {
+    const entities = await this.getEntities([uref]);
+    return entities[0];
   }
-  hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
+
+  async hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    const entitiesPerStore = this.splitEntities(entities);
+
+    const entitiesPerRemote = await Promise.all(
+      Array.from(entitiesPerStore.entries()).map(async ([remoteId, entities]) => {
+        const remote = this.getRemote(remoteId);
+        return remote.hashEntities(entities);
+      })
+    );
+
+    return Array.prototype.concat.apply([], entitiesPerRemote);
   }
-  hashEntity<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
-    throw new Error('Method not implemented.');
+
+  async hashEntity<T = any>(entity: Entity): Promise<Entity<T>> {
+    const entities = await this.hashEntities([entity]);
+    return entities[0];
+  }
+
+  private async tryGetFromSources(hashes: string[]): Promise<Entity[]> {
+    const requestedOn: string[] = [];
+    const allObjects: Map<string, Entity> = new Map();
+
+    return new Promise((resolve) => {
+      Array.from(this.remotesMap.keys()).map(async (remoteId) => {
+        try {
+          const entities = await this.getFromRemote(hashes, remoteId);
+          requestedOn.push(remoteId);
+
+          // append to all found objects (prevent duplicates)
+          entities.map((e) => allObjects.set(e.hash, e));
+
+          // if found as many objects as hashes requested, resove (dont wait for other sources to return)
+          if (entities.length === hashes.length) {
+            resolve(Array.from(allObjects.values()));
+          }
+        } catch (e) {
+          // a failure to get objects from a source is consider as objects not present
+          requestedOn.push(remoteId);
+        }
+
+        // resolve once all sources have been requested
+        if (requestedOn.length === this.remotesMap.size) {
+          resolve(Array.from(allObjects.values()));
+        }
+      });
+    });
+  }
+
+  public async getFromRemote(hashes: string[], remoteId: string): Promise<Entity[]> {
+    const remote = this.getRemote(remoteId);
+    if (!remote) throw new Error(`Remote ${remoteId} not found`);
+    return remote.getEntities(hashes);
   }
 }

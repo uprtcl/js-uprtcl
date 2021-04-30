@@ -7,11 +7,13 @@ import {
   LinksType,
   SearchOptions,
 } from '../../interfaces/types';
-import { CachedUpdate, ClientMutationStore } from '../../interfaces/client.mutation.store';
+import { CachedUpdate } from '../../interfaces/client.mutation.store';
+import { ClientMutationAndCache } from '../../interfaces/client.mutation.and.cache';
 import { MutationStoreDB, NewPerspectiveLocal, UpdateLocal } from './mutation.store.local.db';
+import { Entity } from '../../interfaces/entity';
 
 /** use local storage as cache of ClientCachedWithBase */
-export class MutationStoreLocal implements ClientMutationStore {
+export class MutationStoreLocal implements ClientMutationAndCache {
   logger = new Logger('CacheLocal');
 
   readonly db: MutationStoreDB;
@@ -174,9 +176,23 @@ export class MutationStoreLocal implements ClientMutationStore {
   storeEntity(entity: any): Promise<void> {
     throw new Error('Method not implemented.');
   }
+
+  getNewEntity(hash: string): Promise<Entity<any> | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
+  getCachedEntity(hash: string): Promise<Entity<any> | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
+  cacheEntity(entity: Entity<any>): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   getDeletedPerspectives(): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
+
   clearPerspective(perspectiveId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }

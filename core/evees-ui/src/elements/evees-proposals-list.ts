@@ -1,5 +1,5 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
-import { Evees, Logger, ProposalEvents, RemoteEvees } from '@uprtcl/evees';
+import { Evees, Logger, ProposalEvents, ClientRemote } from '@uprtcl/evees';
 
 import { servicesConnect } from '../container/multi-connect.mixin';
 
@@ -15,7 +15,7 @@ export class ProposalsList extends servicesConnect(LitElement) {
   @internalProperty()
   proposalsIds: string[] = [];
 
-  remote!: RemoteEvees;
+  remote!: ClientRemote;
   evees!: Evees;
 
   async firstUpdated() {
