@@ -19,8 +19,8 @@ import { ClientEvents } from '../../interfaces/client';
 import { condensateUpdates } from '../../utils/condensate.updates';
 import { Entity, EntityCreate } from '../../interfaces/entity';
 import { ClientFull } from '../../interfaces/client.full';
-import { ClientMutationAndCache } from '../../interfaces/client.mutation.and.cache';
 import { ClientExplore } from '../../interfaces/client.explore';
+import { ClientMutationStore } from '../../interfaces/client.mutation.store';
 
 const LOGINFO = false;
 
@@ -42,7 +42,7 @@ export class ClientMutationBase implements ClientExplore {
 
   constructor(
     readonly base: ClientExplore,
-    readonly cache: ClientMutationAndCache,
+    readonly mutationStore: ClientMutationStore,
     readonly name: string = 'client',
     readonly readCacheEnabled: boolean = true
   ) {
@@ -53,11 +53,6 @@ export class ClientMutationBase implements ClientExplore {
     /** subscribe to base client events to update the cache */
     if (this.base && this.base.events) {
       this.base.events.on(ClientEvents.updated, (perspectiveIds: string[]) => {
-        /** remove the cached perspectives if updated */
-        perspectiveIds.forEach((id) => {
-          this.cache.clearCachedPerspective(id);
-        });
-
         if (LOGINFO)
           this.logger.log(`${this.name} event : ${ClientEvents.updated}`, perspectiveIds);
 
@@ -81,16 +76,7 @@ export class ClientMutationBase implements ClientExplore {
   }
 
   async canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
-    await this.ready();
-
-    if (!userId) {
-      const cachedDetails = await this.cache.getCachedPerspective(perspectiveId);
-      if (cachedDetails && cachedDetails.update.details.canUpdate) {
-        return cachedDetails.update.details.canUpdate;
-      }
-    }
-
-    return true;
+    return this.base.canUpdate(perspectiveId, userId);
   }
 
   async getPerspective(
@@ -99,50 +85,7 @@ export class ClientMutationBase implements ClientExplore {
   ): Promise<PerspectiveGetResult> {
     await this.ready();
 
-    const cachedPerspective = await this.cache.getCachedPerspective(perspectiveId);
-    if (cachedPerspective) {
-      /** skip asking the base client only if we already search for the requested levels under
-       * this perspective */
-      if (
-        !options ||
-        options.levels === undefined ||
-        options.levels === cachedPerspective.levels ||
-        !this.readCacheEnabled
-      ) {
-        return { details: { ...cachedPerspective.update.details } };
-      }
-    }
-
-    if (!this.base) {
-      return { details: {} };
-    }
-
     const result = await this.base.getPerspective(perspectiveId, options);
-
-    if (this.readCacheEnabled) {
-      /** cache result and slice */
-      await this.cache.setCachedPerspective(perspectiveId, {
-        update: { perspectiveId, details: result.details },
-        levels: options ? options.levels : undefined,
-      });
-
-      if (result.slice) {
-        /** entities are sent to the store to be cached there */
-        await this.storeEntities(result.slice.entities);
-
-        await Promise.all(
-          result.slice.perspectives.map(async (perspectiveAndDetails) => {
-            await this.cache.setCachedPerspective(perspectiveAndDetails.id, {
-              update: {
-                perspectiveId: perspectiveAndDetails.id,
-                details: perspectiveAndDetails.details,
-              },
-              levels: options ? options.levels : undefined,
-            });
-          })
-        );
-      }
-    }
 
     return { details: result.details };
   }
@@ -160,16 +103,7 @@ export class ClientMutationBase implements ClientExplore {
           });
           await this.storeEntity(perspective);
 
-          await this.cache.newPerspective(newPerspective);
-
-          /** set the current known details of that perspective, can update is set to true */
-          const update = newPerspective.update;
-          update.details.canUpdate = true;
-
-          return this.cache.setCachedPerspective(newPerspective.perspective.hash, {
-            update: update,
-            levels: -1, // new perspectives are assumed to be fully on the cache
-          });
+          await this.mutationStore.newPerspective(newPerspective);
         })
       );
     });
@@ -192,47 +126,7 @@ export class ClientMutationBase implements ClientExplore {
       timexstamp = head.object.payload.timestamp;
     }
 
-    this.cache.addUpdate(update, timexstamp ? timexstamp : Date.now());
-
-    /** update the cache with the new head (keep previous values if update does not
-     * specify them)
-     * TODO: what if the perpspective is not in the cache? */
-    let cachedUpdate = await this.cache.getCachedPerspective(update.perspectiveId);
-
-    if (!cachedUpdate) {
-      /** if the perspective was not in the cache, ask the base layer for the initial details */
-      const currentDetails = this.base
-        ? await this.base.getPerspective(update.perspectiveId, { levels: 0 })
-        : { details: {} };
-
-      cachedUpdate = {
-        update: {
-          perspectiveId: update.perspectiveId,
-          details: currentDetails.details,
-        },
-        levels: 0,
-      };
-    }
-
-    /** keep original update properties add those new */
-    cachedUpdate.update = {
-      perspectiveId: update.perspectiveId,
-      details: {
-        headId: update.details.headId ? update.details.headId : cachedUpdate.update.details.headId,
-        canUpdate: update.details.canUpdate
-          ? update.details.canUpdate
-          : cachedUpdate.update.details.canUpdate,
-        guardianId: update.details.guardianId
-          ? update.details.guardianId
-          : cachedUpdate.update.details.guardianId,
-      },
-      indexData: {
-        ...cachedUpdate.update.indexData,
-        ...update.indexData,
-      },
-    };
-
-    await this.cache.setCachedPerspective(update.perspectiveId, cachedUpdate);
+    this.mutationStore.addUpdate(update);
 
     /** emit update */
     const under: SearchOptions = {
@@ -286,11 +180,9 @@ export class ClientMutationBase implements ClientExplore {
     await this.enqueueTask(() =>
       Promise.all(
         perspectiveIds.map(async (perspectiveId) => {
-          this.cache.deletedPerspective(perspectiveId);
+          this.mutationStore.deletedPerspective(perspectiveId);
           /** set the current known details of that perspective, can update is set to true */
-
-          this.cache.deleteNewPerspective(perspectiveId);
-          this.cache.clearCachedPerspective(perspectiveId);
+          this.mutationStore.deleteNewPerspective(perspectiveId);
         })
       )
     );
@@ -352,7 +244,7 @@ export class ClientMutationBase implements ClientExplore {
 
   async clear(elements: EveesMutation): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} clear()`, { updateQueue: this.updateQueue });
-    this.cache.clear(elements);
+    this.mutationStore.clear(elements);
     this.removeEntities(elements.entities.map((e) => e.hash));
   }
 
@@ -360,7 +252,7 @@ export class ClientMutationBase implements ClientExplore {
   async diff(options?: SearchOptions, condensate: boolean = false): Promise<EveesMutation> {
     if (LOGINFO) this.logger.log(`${this.name} diff()`, {});
 
-    const mutation = await this.cache.diff(options);
+    const mutation = await this.mutationStore.diff(options);
 
     if (condensate) {
       mutation.updates = await condensateUpdates(mutation.updates, this);
@@ -386,7 +278,7 @@ export class ClientMutationBase implements ClientExplore {
           /** inject hash */
           entity = await this.hashEntity(entity);
         }
-        this.cache.storeEntity(entity);
+        this.mutationStore.storeEntity(entity);
       })
     );
     return entities;
@@ -408,29 +300,17 @@ export class ClientMutationBase implements ClientExplore {
     /** Check the cache */
     await Promise.all(
       hashes.map(async (hash) => {
-        const entityCached = await this.cache.getCachedEntity(hash);
-        if (entityCached) {
-          found.push({ ...entityCached });
+        const entityNew = await this.mutationStore.getNewEntity(hash);
+        if (entityNew) {
+          found.push({ ...entityNew });
         } else {
-          /** Check the new entities buffer
-           * TODO: better to add th new entities to the cachedEntities already, and only check that map.
-           */
-          const entityNew = await this.cache.getNewEntity(hash);
-          if (entityNew) {
-            found.push({ ...entityNew });
-          } else {
-            notFound.push(hash);
-          }
+          notFound.push(hash);
         }
       })
     );
 
     if (notFound.length === 0) {
       return found;
-    }
-
-    if (!this.base) {
-      throw new Error('Based store not defined');
     }
 
     // if not found, then ask the base store

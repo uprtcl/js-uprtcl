@@ -1,7 +1,7 @@
 import { Logger } from '../../../utils/logger';
 
 import { ClientExplore } from '../../interfaces/client.explore';
-import { ClientMutationBase } from '../cached/client.mutation.base';
+import { ClientMutationBase } from '../base/client.mutation.base';
 import { MutationStoreLocal } from './mutation.store.local';
 
 const LOGINFO = false;

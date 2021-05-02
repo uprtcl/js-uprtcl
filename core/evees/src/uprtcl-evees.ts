@@ -98,10 +98,6 @@ export { AppElement, AppElements } from './creator-helpers/app.elements';
 export { ClientMutationMemory } from './evees/clients/memory/mutation.memory';
 export { ClientMutationLocal } from './evees/clients/local/client.mutation.local';
 export { MutationStoreLocal } from './evees/clients/local/mutation.store.local';
-export {
-  ClientMutationBase,
-  ClientCachedEvents,
-} from './evees/clients/cached/client.mutation.base';
 
 /** Evees Utils */
 export { CondensateCommits } from './evees/utils/condensate.commits';

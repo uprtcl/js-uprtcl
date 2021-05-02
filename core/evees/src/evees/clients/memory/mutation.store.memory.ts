@@ -1,38 +1,14 @@
 import { Update, NewPerspective, EveesMutation } from '../../interfaces/types';
-import { CachedUpdate } from '../../interfaces/client.mutation.store';
 import { Entity } from '../../interfaces/entity';
-import { ClientMutationAndCache } from '../../interfaces/client.mutation.and.cache';
+import { ClientMutationStore } from '../../interfaces/client.mutation.store';
 
-export class MutationStoreMemory implements ClientMutationAndCache {
+export class MutationStoreMemory implements ClientMutationStore {
   /** a map with the new perspectives to be created */
   private newPerspectives = new Map<string, NewPerspective>();
-
   /** a map with the updates for each perspective. There might be more than on update ordered as they arrive */
   private updates = new Map<string, Update[]>();
-
   private deletedPerspectives = new Set<string>();
-
-  /** A map from perspective id to head id, it holds the latest head of a perspective
-   * known to this client, it might have come from the remote, or because the client knows
-   * of an update to it */
-  private cachedPerspectives = new Map<string, CachedUpdate>();
-
   private newEntities = new Map<string, Entity>();
-  private cachedEntities = new Map<string, Entity>();
-
-  async clearCachedPerspective(perspectiveId: string): Promise<void> {
-    if (this.cachedPerspectives.get(perspectiveId)) {
-      this.cachedPerspectives.delete(perspectiveId);
-    }
-  }
-
-  async getCachedPerspective(perspectiveId: string): Promise<CachedUpdate | undefined> {
-    return this.cachedPerspectives.get(perspectiveId);
-  }
-
-  async setCachedPerspective(perspectiveId: string, details: CachedUpdate): Promise<void> {
-    this.cachedPerspectives.set(perspectiveId, details);
-  }
 
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     this.newPerspectives.set(newPerspective.perspective.hash, newPerspective);
@@ -98,20 +74,12 @@ export class MutationStoreMemory implements ClientMutationAndCache {
     this.newEntities.set(entity.hash, entity);
   }
 
-  getCachedEntity(hash: string): Promise<Entity<any> | undefined> {
-    throw new Error('Method not implemented.');
+  async getNewEntity(hash: string): Promise<Entity<any> | undefined> {
+    return this.newEntities.get(hash);
   }
 
-  async cacheEntity(entity: Entity<any>): Promise<void> {
-    this.cachedEntities.set(entity.hash, entity);
-  }
-
-  getNewEntity(hash: string): Promise<Entity<any> | undefined> {
-    throw new Error('Method not implemented.');
-  }
-
-  getDeletedPerspectives(): Promise<string[]> {
-    throw new Error('Method not implemented.');
+  async getDeletedPerspectives(): Promise<string[]> {
+    return Array.from(this.deletedPerspectives.values());
   }
 
   clearPerspective(perspectiveId: string): Promise<void> {

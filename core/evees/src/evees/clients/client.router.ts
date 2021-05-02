@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
 import { Logger } from 'src/utils/logger';
+import { CASStore } from '../interfaces/cas-store';
 import { Client, ClientEvents } from '../interfaces/client';
 import { ClientRemote } from '../interfaces/client.remote';
 import { EntityCreate, Entity } from '../interfaces/entity';
@@ -21,6 +22,7 @@ export class RemoteRouter implements Client {
 
   proposals?: Proposals | undefined;
   events: EventEmitter;
+  storeCache!: CASStore;
 
   remotesMap: Map<string, ClientRemote>;
 
@@ -44,18 +46,36 @@ export class RemoteRouter implements Client {
     });
   }
 
+  /** inject a store to be used to resolve entities (usually a fast store cache from up the stack) */
+  setStore(store: CASStore) {
+    this.storeCache = store;
+  }
+
   async getPerspectiveRemote(
     perspectiveId: string,
     entities?: Map<string, Entity>
   ): Promise<ClientRemote> {
     let perspective;
 
+    /** resolve from the current entities batch */
     if (entities) {
       perspective = entities.get(perspectiveId);
     }
+
+    /** resolve from the storeCache */
+    if (!perspective) {
+      perspective = this.storeCache.getEntity(perspectiveId);
+    }
+
+    /** resolve from the base remotes */
     if (!perspective) {
       perspective = this.getEntity(perspectiveId);
     }
+
+    if (!perspective) {
+      throw new Error(`Perspective entity ${perspectiveId} not resolved`);
+    }
+
     return this.getRemote(perspective.object.payload.remote);
   }
 

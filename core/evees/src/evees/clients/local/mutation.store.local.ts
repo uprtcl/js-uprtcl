@@ -1,19 +1,11 @@
-import { IndexDataHelper } from '../../index.data.helper';
 import { Logger } from '../../../utils/logger';
-import {
-  NewPerspective,
-  Update,
-  EveesMutation,
-  LinksType,
-  SearchOptions,
-} from '../../interfaces/types';
-import { CachedUpdate } from '../../interfaces/client.mutation.store';
-import { ClientMutationAndCache } from '../../interfaces/client.mutation.and.cache';
+import { NewPerspective, Update, EveesMutation, SearchOptions } from '../../interfaces/types';
+import { ClientMutationStore } from '../../interfaces/client.mutation.store';
 import { MutationStoreDB, NewPerspectiveLocal, UpdateLocal } from './mutation.store.local.db';
 import { Entity } from '../../interfaces/entity';
 
 /** use local storage as cache of ClientCachedWithBase */
-export class MutationStoreLocal implements ClientMutationAndCache {
+export class MutationStoreLocal implements ClientMutationStore {
   logger = new Logger('CacheLocal');
 
   readonly db: MutationStoreDB;
@@ -22,45 +14,17 @@ export class MutationStoreLocal implements ClientMutationAndCache {
     this.db = new MutationStoreDB(name);
   }
 
-  async clearCachedPerspective(perspectiveId: string): Promise<void> {
-    if (this.db.perspectives.get(perspectiveId) !== undefined) {
-      await this.db.perspectives.delete(perspectiveId);
-    }
+  storeEntity(entity: Entity<any>): Promise<void> {
+    throw new Error('Method not implemented.');
   }
-
-  async getCachedPerspective(perspectiveId: string): Promise<CachedUpdate | undefined> {
-    const localPerspective = await this.db.perspectives.get(perspectiveId);
-    if (!localPerspective) return undefined;
-
-    return {
-      update: {
-        perspectiveId: perspectiveId,
-        details: localPerspective.details,
-      },
-      levels: 0,
-    };
+  getNewEntity(hash: string): Promise<Entity<any> | undefined> {
+    throw new Error('Method not implemented.');
   }
-
-  async setCachedPerspective(perspectiveId: string, cachedUpdate: CachedUpdate): Promise<void> {
-    const current = await this.db.perspectives.get(perspectiveId);
-
-    const onEcosystemChanges = IndexDataHelper.getArrayChanges(
-      cachedUpdate.update.indexData,
-      LinksType.onEcosystem
-    );
-
-    const currentOnEcosystem = current ? (current.onEcosystem ? current.onEcosystem : []) : [];
-
-    const newOnEcosystem = currentOnEcosystem.concat(
-      onEcosystemChanges.added.filter((e) => !currentOnEcosystem.includes(e))
-    );
-
-    await this.db.perspectives.put({
-      id: perspectiveId,
-      details: cachedUpdate.update.details,
-      levels: cachedUpdate.levels,
-      onEcosystem: newOnEcosystem,
-    });
+  getDeletedPerspectives(): Promise<string[]> {
+    throw new Error('Method not implemented.');
+  }
+  clearPerspective(perspectiveId: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
@@ -70,7 +34,7 @@ export class MutationStoreLocal implements ClientMutationAndCache {
     });
   }
 
-  async addUpdate(update: Update, timestamp: number): Promise<void> {
+  async addUpdate(update: Update): Promise<void> {
     await this.db.updates.put({
       id: update.perspectiveId + update.details.headId,
       perspectiveId: update.perspectiveId,
@@ -171,29 +135,5 @@ export class MutationStoreLocal implements ClientMutationAndCache {
   async getUpdatesOf(perspectiveId: string): Promise<Update[]> {
     const updates = await this.db.updates.where('perspectiveId').equals(perspectiveId).toArray();
     return updates.map((u) => u.update);
-  }
-
-  storeEntity(entity: any): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  getNewEntity(hash: string): Promise<Entity<any> | undefined> {
-    throw new Error('Method not implemented.');
-  }
-
-  getCachedEntity(hash: string): Promise<Entity<any> | undefined> {
-    throw new Error('Method not implemented.');
-  }
-
-  cacheEntity(entity: Entity<any>): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  getDeletedPerspectives(): Promise<string[]> {
-    throw new Error('Method not implemented.');
-  }
-
-  clearPerspective(perspectiveId: string): Promise<void> {
-    throw new Error('Method not implemented.');
   }
 }

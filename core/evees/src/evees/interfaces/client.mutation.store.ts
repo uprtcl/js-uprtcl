@@ -9,7 +9,7 @@ export interface CachedUpdate {
 /** A ClientMutation is a service that persists and manipulates an EveesMutation. */
 export interface ClientMutationStore {
   newPerspective(newPerspective: NewPerspective): Promise<void>;
-  addUpdate(update: Update, timestamp: number): Promise<void>;
+  addUpdate(update: Update): Promise<void>;
   deletedPerspective(perspectiveId: string): Promise<void>;
 
   deleteNewPerspective(perspectiveId: string): Promise<void>;
