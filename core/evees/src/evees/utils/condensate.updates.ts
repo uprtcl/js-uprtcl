@@ -1,7 +1,5 @@
 import { CondensateCommits } from './condensate.commits';
 import { Update } from '../interfaces/types';
-import { Client } from '../interfaces/client';
-import { CASStore } from '../interfaces/cas-store';
 
 export const condensateUpdates = async (updates: Update[], store: CASStore): Promise<Update[]> => {
   interface UpdateGroup {

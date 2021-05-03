@@ -1,7 +1,6 @@
 import { IndexDataHelper } from '../../index.data.helper';
 import { ClientCacheStore } from '../../interfaces/client.cache.store';
 import { CachedUpdate } from '../../interfaces/client.mutation.store';
-import { Entity } from '../../interfaces/entity';
 import { LinksType } from '../../interfaces/types';
 import { CacheStoreDB } from './cache.store.local.db';
 
@@ -51,18 +50,5 @@ export class ClientCacheStoreLocal implements ClientCacheStore {
       levels: cachedUpdate.levels,
       onEcosystem: newOnEcosystem,
     });
-  }
-
-  clearCachedEntity(entityId: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  getCachedEntity(entityId: string): Promise<Entity<any> | undefined> {
-    throw new Error('Method not implemented.');
-  }
-  setCachedEntity(entity: Entity<any>): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  setCachedEntities(entities: Entity<any>[]): Promise<void> {
-    throw new Error('Method not implemented.');
   }
 }

@@ -7,8 +7,9 @@ import { Evees } from '../evees/evees.service';
 import { RemoteRouter } from '../evees/clients/client.router';
 import { ClientMutationLocal } from '../evees/clients/local/client.mutation.local';
 import { ClientMutationMemory } from '../evees/clients/memory/mutation.memory';
-import { ClientCacheStoreMemory } from '../evees/clients/memory/cache.store.memory';
+import { ClientCacheStoreMemory } from '../evees/clients/memory/client.cache.store.memory';
 import { ClientCache } from '../evees/clients/base/client.cache';
+import { CasCacheStoreMemory } from 'src/evees/clients/memory/cas.cache.store.memory';
 
 /** a top level wrapper that registers everything */
 export const init = (
@@ -19,7 +20,9 @@ export const init = (
 ): Evees => {
   const recognizer = initRecognizer(modules, patterns);
 
+  const globalStoreCache = new CasCacheStoreMemory();
   const clientRouter = new RemoteRouter(remotes);
+
   const memoryCache = new ClientCacheStoreMemory();
   const clientCache = new ClientCache(clientRouter, memoryCache);
 

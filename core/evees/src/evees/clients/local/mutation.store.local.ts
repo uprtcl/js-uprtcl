@@ -2,7 +2,6 @@ import { Logger } from '../../../utils/logger';
 import { NewPerspective, Update, EveesMutation, SearchOptions } from '../../interfaces/types';
 import { ClientMutationStore } from '../../interfaces/client.mutation.store';
 import { MutationStoreDB, NewPerspectiveLocal, UpdateLocal } from './mutation.store.local.db';
-import { Entity } from '../../interfaces/entity';
 
 /** use local storage as cache of ClientCachedWithBase */
 export class MutationStoreLocal implements ClientMutationStore {
@@ -14,15 +13,14 @@ export class MutationStoreLocal implements ClientMutationStore {
     this.db = new MutationStoreDB(name);
   }
 
-  storeEntity(entity: Entity<any>): Promise<void> {
+  storeEntity(entityId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  getNewEntity(hash: string): Promise<Entity<any> | undefined> {
-    throw new Error('Method not implemented.');
-  }
+
   getDeletedPerspectives(): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
+
   clearPerspective(perspectiveId: string): Promise<void> {
     throw new Error('Method not implemented.');
   }

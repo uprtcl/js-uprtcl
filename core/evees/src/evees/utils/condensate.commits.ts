@@ -4,8 +4,7 @@ import { createCommit } from '../default.perspectives';
 import { IndexDataHelper } from '../index.data.helper';
 import { Commit, IndexData, Perspective, Update } from '../interfaces/types';
 import { Signed } from '../../patterns/interfaces/signable';
-import { Client } from '../interfaces/client';
-import { CASStore } from '../interfaces/cas-store';
+import { EntityResolver } from '../interfaces/entity.resolver';
 
 export interface CommitDAG {
   commits: Set<Secured<Commit>>;
@@ -17,6 +16,11 @@ export interface CommitDAG {
  * Processes a set of Update elements (representing a DAG) and returns another set with only one equivalent Update per DAG head.
  * It squashes all intermediate commits, combines their indexing operations, and create new head commits connected to the parents of the
  * tail commits in the DAG */
+
+export interface CondenseResult {
+  update: Update;
+  commit: Signed<Commit>;
+}
 export class CondensateCommits {
   allCommits: Map<string, Secured<Commit>> = new Map();
   updatesMap: Map<string, Update> = new Map();
@@ -24,12 +28,11 @@ export class CondensateCommits {
   /** reverse map parentIds */
   childrenMap: Map<string, Set<string>> = new Map();
 
-  remoteId!: string;
   perspectiveId!: string;
   logger = new Logger('CondensateCommits');
 
   constructor(
-    protected store: CASStore,
+    protected entityResolver: EntityResolver,
     protected updates: Update[],
     protected squash: boolean = true,
     protected logEnabled = false
@@ -38,8 +41,9 @@ export class CondensateCommits {
   async init() {
     this.perspectiveId = this.updates[0].perspectiveId;
 
-    const perspective = await this.store.getEntity<Signed<Perspective>>(this.perspectiveId);
-    this.remoteId = perspective.object.payload.remote;
+    const perspective = await this.entityResolver.getEntity<Signed<Perspective>>(
+      this.perspectiveId
+    );
 
     if (this.logEnabled) this.logger.log('init()', { updates: this.updatesMap, perspective });
 
@@ -65,7 +69,7 @@ export class CondensateCommits {
       })
       .filter((head) => head !== undefined) as string[];
 
-    const commits = await this.store.getEntities(headIds);
+    const commits = await this.entityResolver.getEntities(headIds);
     commits.map((commit) => this.allCommits.set(commit.hash, commit));
 
     if (this.logEnabled) this.logger.log('readAllCommits()', { allCommits: this.allCommits });
@@ -120,12 +124,12 @@ export class CondensateCommits {
     forking?: string,
     currentList: string[] = [],
     indexData?: IndexData
-  ): Promise<Update[]> {
+  ): Promise<CondenseResult[]> {
     const children = this.childrenMap.get(commitId);
     if (this.logEnabled) this.logger.log('condenseUpdate()', { commitId, children });
 
     if (children && children.size > 0) {
-      const childrenHeads = await Promise.all(
+      const allResults = await Promise.all(
         Array.from(children.values()).map(async (childId) => {
           const childUpdate = this.updatesMap.get(childId);
           if (!childUpdate) throw new Error('child Updated not found');
@@ -141,23 +145,26 @@ export class CondensateCommits {
           const newList = [...currentList];
           newList.push(commitId);
 
-          const updates = await this.condenseUpdate(
+          const result = await this.condenseUpdate(
             childId,
             onParents,
             forking,
             newList,
             combinedIndexData
           );
-          return updates;
+
+          return result;
         })
       );
 
-      return Array.prototype.concat.apply([], childrenHeads);
+      return Array.prototype.concat.apply([], allResults);
     }
 
     /** this is a head, so create a new Update object
      * that replaces all the updates in the list */
-    const update = this.updatesMap.get(commitId) as Update;
+    const update = this.updatesMap.get(commitId);
+    if (!update) throw new Error(`Update for commit ${commitId} not found`);
+
     let newUpdate: Update;
 
     if (this.squash) {
@@ -171,15 +178,9 @@ export class CondensateCommits {
         forking: forking,
       });
 
-      const head = await this.store.storeEntity({
-        object: newCommitObject,
-        remote: this.remoteId,
-      });
-
       newUpdate = {
         details: {
-          ...update.details,
-          headId: head.hash,
+          headId: undefined,
         },
         perspectiveId: update.perspectiveId,
         fromPerspectiveId: update.fromPerspectiveId,
@@ -198,7 +199,7 @@ export class CondensateCommits {
         newUpdate: newUpdate,
       });
 
-    return [newUpdate];
+    return { update, commit: };
   }
 
   async condensate(): Promise<Update[]> {

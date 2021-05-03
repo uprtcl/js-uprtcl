@@ -1,9 +1,11 @@
 import EventEmitter from 'events';
+import { Signed } from 'src/patterns/interfaces/signable';
 import { Logger } from 'src/utils/logger';
 import { CASStore } from '../interfaces/cas-store';
 import { Client, ClientEvents } from '../interfaces/client';
 import { ClientRemote } from '../interfaces/client.remote';
 import { EntityCreate, Entity } from '../interfaces/entity';
+import { EntityResolver } from '../interfaces/entity.resolver';
 import {
   GetPerspectiveOptions,
   NewPerspective,
@@ -13,9 +15,11 @@ import {
   PerspectiveGetResult,
   SearchOptions,
   SearchResult,
+  Perspective,
 } from '../interfaces/types';
 import { Proposals } from '../proposals/proposals';
-import { validateEntities } from '../utils/cid-hash';
+import { Secured } from '../utils/cid-hash';
+import { getMutationEntitiesHashes } from '../utils/mutation.entities';
 
 export class RemoteRouter implements Client {
   logger = new Logger('RemoteRouter');
@@ -26,7 +30,7 @@ export class RemoteRouter implements Client {
 
   remotesMap: Map<string, ClientRemote>;
 
-  constructor(protected remotes: ClientRemote[]) {
+  constructor(protected remotes: ClientRemote[], protected entityResolver: EntityResolver) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
 
@@ -51,26 +55,12 @@ export class RemoteRouter implements Client {
     this.storeCache = store;
   }
 
-  async getPerspectiveRemote(
-    perspectiveId: string,
-    entities?: Map<string, Entity>
-  ): Promise<ClientRemote> {
-    let perspective;
+  async getEntity<T = any>(hash: string): Promise<Entity<T>> {
+    return this.entityResolver.getEntity<T>(hash);
+  }
 
-    /** resolve from the current entities batch */
-    if (entities) {
-      perspective = entities.get(perspectiveId);
-    }
-
-    /** resolve from the storeCache */
-    if (!perspective) {
-      perspective = this.storeCache.getEntity(perspectiveId);
-    }
-
-    /** resolve from the base remotes */
-    if (!perspective) {
-      perspective = this.getEntity(perspectiveId);
-    }
+  async getPerspectiveRemote(perspectiveId: string): Promise<ClientRemote> {
+    const perspective = await this.getEntity<Signed<Entity>>(perspectiveId);
 
     if (!perspective) {
       throw new Error(`Perspective entity ${perspectiveId} not resolved`);
@@ -80,54 +70,22 @@ export class RemoteRouter implements Client {
   }
 
   async splitMutation(mutation: EveesMutationCreate): Promise<Map<string, EveesMutationCreate>> {
-    const mutationPerRemote = new Map<string, EveesMutationCreate>();
-    const entitiesMap = new Map<string, Entity>();
-    if (mutation.entities) {
-      mutation.entities.forEach((e) => entitiesMap.set(e.hash, e));
-    }
-
-    const fillEntities = mutation.entities
-      ? Promise.all(
-          mutation.entities.map(
-            async (entity): Promise<void> => {
-              if (!entity.remote) {
-                throw new Error('entities must include what remote the should go to');
-              }
-              const remote = entity.remote;
-              let mutation = mutationPerRemote.get(remote);
-
-              if (!mutation) {
-                mutation = {
-                  deletedPerspectives: [],
-                  newPerspectives: [],
-                  updates: [],
-                  entities: [],
-                };
-                mutationPerRemote.set(remote, mutation);
-              }
-              if (!mutation.entities) {
-                mutation.entities = [];
-              }
-              mutation.entities.push(entity);
-            }
-          )
-        )
-      : Promise.resolve([]);
+    const mutationsPerRemote = new Map<string, EveesMutation>();
 
     const fillDeleted = mutation.deletedPerspectives
       ? Promise.all(
           mutation.deletedPerspectives.map(
             async (deletedPerspective): Promise<void> => {
-              const remote = await this.getPerspectiveRemote(deletedPerspective, entitiesMap);
-              let mutation = mutationPerRemote.get(remote.id);
+              const remote = await this.getPerspectiveRemote(deletedPerspective);
+              let mutation = mutationsPerRemote.get(remote.id);
               if (!mutation) {
                 mutation = {
                   deletedPerspectives: [],
                   newPerspectives: [],
                   updates: [],
-                  entities: [],
+                  entitiesHashes: [],
                 };
-                mutationPerRemote.set(remote.id, mutation);
+                mutationsPerRemote.set(remote.id, mutation);
               }
               if (!mutation.deletedPerspectives) {
                 mutation.deletedPerspectives = [];
@@ -142,19 +100,16 @@ export class RemoteRouter implements Client {
       ? Promise.all(
           mutation.newPerspectives.map(
             async (newPerspective): Promise<void> => {
-              const remote = await this.getPerspectiveRemote(
-                newPerspective.perspective.hash,
-                entitiesMap
-              );
-              let mutation = mutationPerRemote.get(remote.id);
+              const remote = await this.getPerspectiveRemote(newPerspective.perspective.hash);
+              let mutation = mutationsPerRemote.get(remote.id);
               if (!mutation) {
                 mutation = {
                   deletedPerspectives: [],
                   newPerspectives: [],
                   updates: [],
-                  entities: [],
+                  entitiesHashes: [],
                 };
-                mutationPerRemote.set(remote.id, mutation);
+                mutationsPerRemote.set(remote.id, mutation);
               }
               if (!mutation.newPerspectives) {
                 mutation.newPerspectives = [];
@@ -169,16 +124,16 @@ export class RemoteRouter implements Client {
       ? Promise.all(
           mutation.updates.map(
             async (update): Promise<void> => {
-              const remote = await this.getPerspectiveRemote(update.perspectiveId, entitiesMap);
-              let mutation = mutationPerRemote.get(remote.id);
+              const remote = await this.getPerspectiveRemote(update.perspectiveId);
+              let mutation = mutationsPerRemote.get(remote.id);
               if (!mutation) {
                 mutation = {
                   deletedPerspectives: [],
                   newPerspectives: [],
                   updates: [],
-                  entities: [],
+                  entitiesHashes: [],
                 };
-                mutationPerRemote.set(remote.id, mutation);
+                mutationsPerRemote.set(remote.id, mutation);
               }
               if (!mutation.updates) {
                 mutation.updates = [];
@@ -189,9 +144,18 @@ export class RemoteRouter implements Client {
         )
       : Promise.resolve([]);
 
-    await Promise.all([fillEntities, fillDeleted, fillNew, fillUpdated]);
+    await Promise.all([fillDeleted, fillNew, fillUpdated]);
 
-    return mutationPerRemote;
+    /** extract mutation entities and store on the entitiesHashes property */
+    await Promise.all(
+      Array.from(mutationsPerRemote.entries()).map(async ([remoteId, mutation]) => {
+        const mutationEntities = await getMutationEntitiesHashes(mutation, this.entityResolver);
+        mutation.entitiesHashes = mutationEntities;
+      })
+    );
+
+    /** at this point each mutation has the updates and entities for each remote */
+    return mutationsPerRemote;
   }
 
   async newPerspective(newPerspective: NewPerspective) {
@@ -291,45 +255,13 @@ export class RemoteRouter implements Client {
     return entitiesPerRemote;
   }
 
-  async storeEntities(entities: EntityCreate<any>[]): Promise<Entity[]> {
-    const entitiesPerStore = this.splitEntities(entities);
-
-    const entitiesPerRemote = await Promise.all(
-      Array.from(entitiesPerStore.entries()).map(async ([remoteId, entities]) => {
-        const remote = this.getRemote(remoteId);
-        const storedEntities = await remote.storeEntities(entities);
-        validateEntities(storedEntities, entities);
-      })
-    );
-
-    return Array.prototype.concat.apply([], entitiesPerRemote);
-  }
-
-  async storeEntity(entity: EntityCreate<any>): Promise<Entity> {
-    const entities = await this.storeEntities([entity]);
-    return entities[0];
-  }
-
-  removeEntities(hashes: string[]): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  async getEntities(hashes: string[]): Promise<Entity[]> {
-    return this.tryGetFromSources(hashes);
-  }
-
-  async getEntity(uref: string): Promise<Entity> {
-    const entities = await this.getEntities([uref]);
-    return entities[0];
-  }
-
   async hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
     const entitiesPerStore = this.splitEntities(entities);
 
     const entitiesPerRemote = await Promise.all(
       Array.from(entitiesPerStore.entries()).map(async ([remoteId, entities]) => {
         const remote = this.getRemote(remoteId);
-        return remote.hashEntities(entities);
+        return remote.hashObjects(entities);
       })
     );
 

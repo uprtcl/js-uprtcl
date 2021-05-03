@@ -8,7 +8,7 @@ export class MutationStoreMemory implements ClientMutationStore {
   /** a map with the updates for each perspective. There might be more than on update ordered as they arrive */
   private updates = new Map<string, Update[]>();
   private deletedPerspectives = new Set<string>();
-  private newEntities = new Map<string, Entity>();
+  private newEntities = new Set<string>();
 
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     this.newPerspectives.set(newPerspective.perspective.hash, newPerspective);
@@ -60,7 +60,7 @@ export class MutationStoreMemory implements ClientMutationStore {
       newPerspectives,
       updates,
       deletedPerspectives,
-      entities: [],
+      entitiesHashes: [],
     };
   }
 
@@ -70,12 +70,8 @@ export class MutationStoreMemory implements ClientMutationStore {
     this.deletedPerspectives.clear();
   }
 
-  async storeEntity(entity: Entity): Promise<void> {
-    this.newEntities.set(entity.hash, entity);
-  }
-
-  async getNewEntity(hash: string): Promise<Entity<any> | undefined> {
-    return this.newEntities.get(hash);
+  async storeEntity(entityId: string): Promise<void> {
+    this.newEntities.add(entityId);
   }
 
   async getDeletedPerspectives(): Promise<string[]> {

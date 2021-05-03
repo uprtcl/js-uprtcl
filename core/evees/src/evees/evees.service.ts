@@ -42,6 +42,7 @@ import { signObject } from './utils/signed';
 import { ClientMutation } from './interfaces/client.mutation';
 import { ClientRemote } from './interfaces/client.remote';
 import { ClientFull } from './interfaces/client.full';
+import { EntityResolver } from './interfaces/entity.resolver';
 
 const LOGINFO = false;
 
@@ -92,6 +93,7 @@ export class Evees implements Client {
 
   constructor(
     private client: ClientFull,
+    readonly entityResolver: EntityResolver,
     readonly recognizer: PatternRecognizer,
     readonly remotes: ClientRemote[],
     readonly config: EveesConfig,
@@ -100,6 +102,7 @@ export class Evees implements Client {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
   }
+
   proposals?: Proposals | undefined;
 
   getClient(): ClientMutation {
@@ -113,7 +116,14 @@ export class Evees implements Client {
   clone(name: string = 'new-client', client?: ClientFull, config?: EveesConfig): Evees {
     client = client || new ClientMutationMemory(this.client, name);
 
-    return new Evees(client, this.recognizer, this.remotes, config || this.config, this.modules);
+    return new Evees(
+      client,
+      this.entityResolver,
+      this.recognizer,
+      this.remotes,
+      config || this.config,
+      this.modules
+    );
   }
 
   /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
@@ -156,21 +166,41 @@ export class Evees implements Client {
   }
 
   async getPerspectiveContext(perspectiveId: string): Promise<string> {
-    const perspective = await this.getEntity(perspectiveId);
+    const perspective = await this.getEntity<Signed<Perspective>>(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     return perspective.object.payload.context;
   }
 
+  async storeObject(entityCreate: EntityCreate): Promise<Entity> {
+    let entity: Entity;
+
+    if (!entityCreate.hash) {
+      entity = await this.hashObject(entityCreate);
+    } else {
+      entity = entityCreate as Entity;
+    }
+
+    /** inform the entity resolver and store in the client as a new entity */
+    await this.entityResolver.storeEntity(entity);
+    await this.client.storeEntity(entity.hash);
+
+    return entity;
+  }
+
+  storeEntity(entityId: string): Promise<void> {
+    return this.client.storeEntity(entityId);
+  }
+
   async getEntity<T = any>(hash: string): Promise<Entity<T>> {
-    return this.client.getEntity<T>(hash);
+    return this.entityResolver.getEntity<T>(hash);
   }
 
-  async storeEntity(entity: EntityCreate): Promise<Entity> {
-    return this.client.storeEntity(entity);
+  getEntities(hashes: string[]): Promise<Entity<any>[]> {
+    return this.entityResolver.getEntities(hashes);
   }
 
-  async hashEntity(entity: EntityCreate): Promise<Entity> {
-    return this.client.hashEntity(entity);
+  async hashObject(entity: EntityCreate): Promise<Entity> {
+    return this.client.hashObject(entity);
   }
 
   async explore(
@@ -221,7 +251,6 @@ export class Evees implements Client {
     if (commitId === undefined) return commitId;
     const dataId = await this.tryGetCommitDataId(commitId);
     if (!dataId) return undefined;
-
     const data = await this.getEntity<T>(dataId);
     return data;
   }
@@ -420,10 +449,6 @@ export class Evees implements Client {
 
   // add indexing data to all updates on a mutation
   async update(mutation: EveesMutationCreate) {
-    if (mutation.entities) {
-      await this.storeEntities(mutation.entities);
-    }
-
     if (mutation.newPerspectives) {
       await Promise.all(
         mutation.newPerspectives.map(async (np) => {
@@ -469,7 +494,7 @@ export class Evees implements Client {
     let headId;
 
     if (object) {
-      const dataId = await this.storeEntity({
+      const dataId = await this.storeObject({
         object,
         remote: remoteId,
       });
@@ -558,7 +583,7 @@ export class Evees implements Client {
         pendingUpdates: Array.from(this.pendingUpdates.entries()),
       });
 
-    await Promise.all([this.storeEntity(pending.commit), this.storeEntity(pending.data)]);
+    await Promise.all([this.storeObject(pending.commit), this.storeObject(pending.data)]);
 
     await this.updatePerspective(pending.update, pending.flush);
 
@@ -613,14 +638,14 @@ export class Evees implements Client {
 
     /** data and commit are built and hashed but not stored */
     const remote = await this.getPerspectiveRemote(perspectiveId);
-    const data = await this.hashEntity({ object, remote: remote.id });
+    const data = await this.hashObject({ object, remote: remote.id });
 
     const headObject = await createCommit({
       dataId: data.hash,
       parentsIds,
     });
 
-    const head = await this.hashEntity({ object: headObject, remote: remote.id });
+    const head = await this.hashObject({ object: headObject, remote: remote.id });
 
     if (LOGINFO) this.logger.log('updatePerspectiveData() - createCommit after', head);
 
@@ -646,8 +671,8 @@ export class Evees implements Client {
       return this.updatePerspectiveDebounce(options.perspectiveId, pendingUpdate);
     } else {
       await Promise.all([
-        this.storeEntity(pendingUpdate.commit),
-        this.storeEntity(pendingUpdate.data),
+        this.storeObject(pendingUpdate.commit),
+        this.storeObject(pendingUpdate.data),
       ]);
 
       await this.updatePerspective(pendingUpdate.update, pendingUpdate.flush);
@@ -821,7 +846,7 @@ export class Evees implements Client {
 
   async createCommit(commit: CreateCommit, remote: string): Promise<Secured<Commit>> {
     const commitObject = createCommit(commit);
-    return this.storeEntity({ object: commitObject, remote });
+    return this.storeObject({ object: commitObject, remote });
   }
 
   async isAncestorCommit(perspectiveId: string, commitId: string, stopAt?: string) {
@@ -903,7 +928,7 @@ export class Evees implements Client {
 
     const perspective = await remote.snapPerspective(perspectivePartial, guardianId);
 
-    await this.storeEntity({ object: perspective.object, remote: remote.id });
+    await this.storeObject({ object: perspective.object, remote: remote.id });
 
     let forkCommitId: string | undefined = undefined;
 
@@ -955,7 +980,7 @@ export class Evees implements Client {
 
     const signedCommit = signObject(newCommit);
 
-    const entity = await this.storeEntity({ object: signedCommit, remote: remoteId });
+    const entity = await this.storeObject({ object: signedCommit, remote: remoteId });
 
     return entity.hash;
   }
@@ -978,7 +1003,7 @@ export class Evees implements Client {
       // TODO how can replace children when matching multiple patterns?
       const newObject = this.behaviorFirst(data.object, 'replaceChildren')(newLinks);
 
-      const entity = await this.storeEntity({ object: newObject, remote: remoteId });
+      const entity = await this.storeObject({ object: newObject, remote: remoteId });
       return entity.hash;
     } else {
       return entityId;
@@ -988,7 +1013,7 @@ export class Evees implements Client {
   async getHome(remoteId?: string, userId?: string): Promise<Secured<Perspective>> {
     const remote = this.getRemote(remoteId);
     const home = await getHome(remote, userId ? userId : remote.userId);
-    await this.storeEntity({ object: home.object, remote: remote.id });
+    await this.storeObject({ object: home.object, remote: remote.id });
     return home;
   }
 
@@ -1045,19 +1070,12 @@ export class Evees implements Client {
   getUserPerspectives(perspectiveId: string): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
+
   canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
-  storeEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
-  }
-  removeEntities(hashes: string[]): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  getEntities(hashes: string[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
-  }
-  hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
+
+  hashObjects(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    return Promise.all(entities.map((entity) => this.hashObject(entity)));
   }
 }

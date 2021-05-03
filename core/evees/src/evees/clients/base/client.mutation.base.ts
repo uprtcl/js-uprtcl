@@ -21,6 +21,7 @@ import { Entity, EntityCreate } from '../../interfaces/entity';
 import { ClientFull } from '../../interfaces/client.full';
 import { ClientExplore } from '../../interfaces/client.explore';
 import { ClientMutationStore } from '../../interfaces/client.mutation.store';
+import { EntityResolver } from 'src/evees/interfaces/entity.resolver';
 
 const LOGINFO = false;
 
@@ -39,6 +40,8 @@ export class ClientMutationBase implements ClientExplore {
   /** A queue to enforce sequentiality between calls to update methods */
   private updateQueue: AsyncQueue;
   private lastQueued: Promise<any> | undefined = undefined;
+
+  private entityResolver!: EntityResolver;
 
   constructor(
     readonly base: ClientExplore,
@@ -59,6 +62,10 @@ export class ClientMutationBase implements ClientExplore {
         this.events.emit(ClientEvents.updated, perspectiveIds);
       });
     }
+  }
+
+  setEntityResolver(resolver: EntityResolver) {
+    this.entityResolver = resolver;
   }
 
   get proposals() {
@@ -97,11 +104,11 @@ export class ClientMutationBase implements ClientExplore {
       if (LOGINFO) this.logger.log(`${this.name} createPerspectives() - exec`, newPerspectives);
       return Promise.all(
         newPerspectives.map(async (newPerspective) => {
-          const perspective = await this.base.hashEntity({
+          const perspective = await this.base.hashObject({
             object: newPerspective.perspective.object,
             remote: newPerspective.perspective.object.payload.remote,
           });
-          await this.storeEntity(perspective);
+          await this.storeEntity(perspective.hash);
 
           await this.mutationStore.newPerspective(newPerspective);
         })
@@ -120,11 +127,6 @@ export class ClientMutationBase implements ClientExplore {
     if (LOGINFO) this.logger.log(`${this.name} updatePerspectiveEffective()`, { update });
 
     let timexstamp: number | undefined = undefined;
-
-    if (update.details.headId) {
-      const head = await this.getEntity<Signed<Commit>>(update.details.headId);
-      timexstamp = head.object.payload.timestamp;
-    }
 
     this.mutationStore.addUpdate(update);
 
@@ -191,8 +193,8 @@ export class ClientMutationBase implements ClientExplore {
   async update(mutation: EveesMutationCreate): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} update()`, { mutation });
 
-    if (mutation.entities) {
-      await this.storeEntities(mutation.entities);
+    if (mutation.entitiesHashes) {
+      await this.storeEntities(mutation.entitiesHashes);
     }
 
     if (mutation.newPerspectives) {
@@ -206,6 +208,22 @@ export class ClientMutationBase implements ClientExplore {
     if (mutation.deletedPerspectives) {
       await this.deletePerspectives(mutation.deletedPerspectives);
     }
+  }
+
+  async storeEntity(hash: string) {
+    return this.base.storeEntity(hash);
+  }
+
+  async storeEntities(hashes: string[]) {
+    return this.base.update({ entitiesHashes: hashes });
+  }
+
+  async getEntities(hashes: string[]): Promise<Entity<any>[]> {
+    this.entityResolver.getEntities(hashes);
+  }
+
+  async getEntity<T = any>(hash: string): Promise<Entity<T>> {
+    this.entityResolver.getEntity<T>(hashes);
   }
 
   newPerspective(newPerspective: NewPerspective): Promise<void> {
@@ -245,7 +263,6 @@ export class ClientMutationBase implements ClientExplore {
   async clear(elements: EveesMutation): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} clear()`, { updateQueue: this.updateQueue });
     this.mutationStore.clear(elements);
-    this.removeEntities(elements.entities.map((e) => e.hash));
   }
 
   /** a mutation with all the changes made relative to the base client */
@@ -269,71 +286,12 @@ export class ClientMutationBase implements ClientExplore {
 
   async refresh(): Promise<void> {}
 
-  async storeEntities(entities: Entity[]): Promise<Entity<any>[]> {
-    /** store perspective details */
-    if (LOGINFO) this.logger.log(`${this.name} storeEntities()`, entities);
-    await Promise.all(
-      entities.map(async (entity) => {
-        if (!entity.hash) {
-          /** inject hash */
-          entity = await this.hashEntity(entity);
-        }
-        this.mutationStore.storeEntity(entity);
-      })
-    );
-    return entities;
+  hashObjects(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    return this.base.hashObjects(entities);
   }
 
-  async storeEntity(entity: Entity<any>): Promise<Entity<any>> {
-    const entities = await this.storeEntities([entity]);
-    return entities[0];
-  }
-
-  removeEntities(hashes: string[]): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  async getEntities(hashes: string[]): Promise<Entity<any>[]> {
-    const found: Entity[] = [];
-    const notFound: string[] = [];
-
-    /** Check the cache */
-    await Promise.all(
-      hashes.map(async (hash) => {
-        const entityNew = await this.mutationStore.getNewEntity(hash);
-        if (entityNew) {
-          found.push({ ...entityNew });
-        } else {
-          notFound.push(hash);
-        }
-      })
-    );
-
-    if (notFound.length === 0) {
-      return found;
-    }
-
-    // if not found, then ask the base store
-    const entities = await this.base.getEntities(notFound);
-
-    if (entities.length !== notFound.length) {
-      throw new Error(`Entities not found ${JSON.stringify(notFound)}`);
-    }
-
-    return found.concat(entities);
-  }
-
-  async getEntity<T = any>(hash: string): Promise<Entity<T>> {
-    const entities = await this.getEntities([hash]);
-    return entities[0];
-  }
-
-  hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    return this.base.hashEntities(entities);
-  }
-
-  async hashEntity<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
-    const entities = await this.hashEntities([entity]);
+  async hashObject<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
+    const entities = await this.hashObjects([entity]);
     return entities[0];
   }
 }

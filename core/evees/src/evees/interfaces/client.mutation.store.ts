@@ -17,8 +17,9 @@ export interface ClientMutationStore {
   getNewPerspectives(): Promise<NewPerspective[]>;
   getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined>;
 
-  storeEntity(entity: Entity): Promise<void>;
-  getNewEntity(hash: string): Promise<Entity | undefined>;
+  /** store entity means this entity is part of the mutation, not necessary to
+   * store also the actual entity object */
+  storeEntity(entityId: string): Promise<void>;
 
   getUpdates(): Promise<Update[]>;
   getUpdatesOf(perspectiveId: string): Promise<Update[]>;

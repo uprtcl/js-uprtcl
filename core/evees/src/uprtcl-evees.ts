@@ -30,7 +30,6 @@ export { EveesContentModule } from './evees/interfaces/evees.content.module';
 export { Evees, EveesEvents } from './evees/evees.service';
 export { ClientRemote } from './evees/interfaces/client.remote';
 export { Client, ClientEvents } from './evees/interfaces/client';
-export { CASStore } from './evees/interfaces/cas-store';
 
 export { Entity, EntityCreate } from './evees/interfaces/entity';
 export { Signed } from './patterns/interfaces/signable';

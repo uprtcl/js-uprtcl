@@ -1,6 +1,5 @@
 import { Diff } from 'diff-match-patch-ts';
-import {isEqual} from 'lodash';
-import { Evees } from '../evees.service';
+import { isEqual } from 'lodash';
 import { EveesMutation } from '../interfaces/types';
 
 import { DiffUtils } from './diff.utils';
@@ -104,14 +103,14 @@ export const combineMutations = (mutations: EveesMutation[]): EveesMutation => {
     newPerspectives: [],
     deletedPerspectives: [],
     updates: [],
-    entities: [],
+    entitiesHashes: [],
   };
 
   mutations.forEach((thisMutation) => {
     mutation.newPerspectives.push(...thisMutation.newPerspectives);
     mutation.deletedPerspectives.push(...thisMutation.deletedPerspectives);
     mutation.updates.push(...thisMutation.updates);
-    mutation.entities.push(...thisMutation.entities);
+    mutation.entitiesHashes.push(...thisMutation.entitiesHashes);
   });
 
   return mutation;

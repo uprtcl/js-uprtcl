@@ -9,7 +9,7 @@ import {
 } from './types';
 import { EventEmitter } from 'events';
 import { Proposals } from '../proposals/proposals';
-import { CASStore } from './cas-store';
+import { Entity, EntityCreate } from './entity';
 
 export enum ClientEvents {
   updated = 'updated',
@@ -17,12 +17,11 @@ export enum ClientEvents {
 }
 
 /** A Client can store mutable references (perspectives) and support basic CRUD operation on them.
- * The content of a perspective is reduced to a single hash of its head commit. The actual commit
- * and the data payload are entities.
+ * The content of a perspective is reduced to a single hash of its head commit..
  *
  * An evees mutation is a batch of Create, Update or Delete operations that also includes
- * the new entities referenced in the mutation. */
-export interface Client extends CASStore {
+ * the ids of the entities referenced in the mutation. */
+export interface Client {
   readonly events?: EventEmitter;
   readonly proposals?: Proposals;
 
@@ -40,10 +39,22 @@ export interface Client extends CASStore {
   newPerspective(newPerspective: NewPerspective): Promise<void>;
   deletePerspective(perspectiveId: string): Promise<void>;
   updatePerspective(update: Update): Promise<void>;
+  storeEntity(entityId: string): Promise<void>;
+
+  /** Entities are probably handled by a single EntityResolver but is
+   * handy to be able to ask the client for them */
+  getEntities(hashes: string[]): Promise<Entity[]>;
+  getEntity<T = any>(hash: string): Promise<Entity<T>>;
 
   /** await for all update transactions received to be processed (visible to read queries) */
   ready?(): Promise<void>;
 
   /** returns true if the user can update the perspective */
   canUpdate(perspectiveId: string, userId?: string): Promise<boolean>;
+
+  /** Because each remote decides its hashing algorithm, hashing
+   * is responsibility of the ClientStack and usually performed at the low
+   * ClientRemote level */
+  hashObjects(entities: EntityCreate[]): Promise<Entity[]>;
+  hashObject<T = any>(entity: EntityCreate): Promise<Entity<T>>;
 }
