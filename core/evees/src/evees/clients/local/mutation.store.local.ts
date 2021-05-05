@@ -2,6 +2,8 @@ import { Logger } from '../../../utils/logger';
 import { NewPerspective, Update, EveesMutation, SearchOptions } from '../../interfaces/types';
 import { ClientMutationStore } from '../../interfaces/client.mutation.store';
 import { MutationStoreDB, NewPerspectiveLocal, UpdateLocal } from './mutation.store.local.db';
+import { getMutationEntitiesHashes } from 'src/evees/utils/mutation.entities';
+import { EntityResolver } from 'src/evees/interfaces/entity.resolver';
 
 /** use local storage as cache of ClientCachedWithBase */
 export class MutationStoreLocal implements ClientMutationStore {
@@ -9,7 +11,7 @@ export class MutationStoreLocal implements ClientMutationStore {
 
   readonly db: MutationStoreDB;
 
-  constructor(name: string) {
+  constructor(name: string, protected entityResolver: EntityResolver) {
     this.db = new MutationStoreDB(name);
   }
 
@@ -98,12 +100,15 @@ export class MutationStoreLocal implements ClientMutationStore {
       of = Array.prototype.concat.apply([], allUnder);
     }
 
-    return {
+    const mutation: EveesMutation = {
       newPerspectives: await this.getNewPerspectives(of),
       updates: await this.getUpdates(of),
       deletedPerspectives: await this.getDeletedPerspective(of),
-      entities: [],
+      entitiesHashes: [],
     };
+
+    mutation.entitiesHashes = await getMutationEntitiesHashes(mutation, this.entityResolver);
+    return mutation;
   }
 
   async clear(): Promise<void> {

@@ -41,20 +41,9 @@ export interface Client {
   updatePerspective(update: Update): Promise<void>;
   storeEntity(entityId: string): Promise<void>;
 
-  /** Entities are probably handled by a single EntityResolver but is
-   * handy to be able to ask the client for them */
-  getEntities(hashes: string[]): Promise<Entity[]>;
-  getEntity<T = any>(hash: string): Promise<Entity<T>>;
-
   /** await for all update transactions received to be processed (visible to read queries) */
   ready?(): Promise<void>;
 
   /** returns true if the user can update the perspective */
   canUpdate(perspectiveId: string, userId?: string): Promise<boolean>;
-
-  /** Because each remote decides its hashing algorithm, hashing
-   * is responsibility of the ClientStack and usually performed at the low
-   * ClientRemote level */
-  hashObjects(entities: EntityCreate[]): Promise<Entity[]>;
-  hashObject<T = any>(entity: EntityCreate): Promise<Entity<T>>;
 }

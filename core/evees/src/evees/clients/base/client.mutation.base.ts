@@ -104,12 +104,6 @@ export class ClientMutationBase implements ClientExplore {
       if (LOGINFO) this.logger.log(`${this.name} createPerspectives() - exec`, newPerspectives);
       return Promise.all(
         newPerspectives.map(async (newPerspective) => {
-          const perspective = await this.base.hashObject({
-            object: newPerspective.perspective.object,
-            remote: newPerspective.perspective.object.payload.remote,
-          });
-          await this.storeEntity(perspective.hash);
-
           await this.mutationStore.newPerspective(newPerspective);
         })
       );
@@ -218,14 +212,6 @@ export class ClientMutationBase implements ClientExplore {
     return this.base.update({ entitiesHashes: hashes });
   }
 
-  async getEntities(hashes: string[]): Promise<Entity<any>[]> {
-    this.entityResolver.getEntities(hashes);
-  }
-
-  async getEntity<T = any>(hash: string): Promise<Entity<T>> {
-    this.entityResolver.getEntity<T>(hashes);
-  }
-
   newPerspective(newPerspective: NewPerspective): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} newPerspective()`, { newPerspective });
     return this.update({ newPerspectives: [newPerspective] });
@@ -285,13 +271,4 @@ export class ClientMutationBase implements ClientExplore {
   }
 
   async refresh(): Promise<void> {}
-
-  hashObjects(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    return this.base.hashObjects(entities);
-  }
-
-  async hashObject<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
-    const entities = await this.hashObjects([entity]);
-    return entities[0];
-  }
 }

@@ -1,7 +1,6 @@
 import EventEmitter from 'events';
 import { Signed } from 'src/patterns/interfaces/signable';
 import { Logger } from 'src/utils/logger';
-import { CASStore } from '../interfaces/cas-store';
 import { Client, ClientEvents } from '../interfaces/client';
 import { ClientRemote } from '../interfaces/client.remote';
 import { EntityCreate, Entity } from '../interfaces/entity';
@@ -15,10 +14,8 @@ import {
   PerspectiveGetResult,
   SearchOptions,
   SearchResult,
-  Perspective,
 } from '../interfaces/types';
 import { Proposals } from '../proposals/proposals';
-import { Secured } from '../utils/cid-hash';
 import { getMutationEntitiesHashes } from '../utils/mutation.entities';
 
 export class RemoteRouter implements Client {
@@ -26,7 +23,6 @@ export class RemoteRouter implements Client {
 
   proposals?: Proposals | undefined;
   events: EventEmitter;
-  storeCache!: CASStore;
 
   remotesMap: Map<string, ClientRemote>;
 
@@ -50,9 +46,8 @@ export class RemoteRouter implements Client {
     });
   }
 
-  /** inject a store to be used to resolve entities (usually a fast store cache from up the stack) */
-  setStore(store: CASStore) {
-    this.storeCache = store;
+  storeEntity(entityId: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async getEntity<T = any>(hash: string): Promise<Entity<T>> {
@@ -237,75 +232,5 @@ export class RemoteRouter implements Client {
     const remote = this.remotes.find((r) => r.id === remoteId);
     if (!remote) throw new Error(`remote ${remoteId} not found`);
     return remote;
-  }
-
-  splitEntities(entities: (EntityCreate | Entity)[]): Map<string, EntityCreate[]> {
-    const entitiesPerRemote = new Map<string, EntityCreate[]>();
-
-    entities.forEach((entity) => {
-      const remote = this.getRemote(entity.remote);
-      let current = entitiesPerRemote.get(remote.id);
-      if (!current) {
-        current = [];
-      }
-      current.push(entity);
-      entitiesPerRemote.set(remote.id, current);
-    });
-
-    return entitiesPerRemote;
-  }
-
-  async hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    const entitiesPerStore = this.splitEntities(entities);
-
-    const entitiesPerRemote = await Promise.all(
-      Array.from(entitiesPerStore.entries()).map(async ([remoteId, entities]) => {
-        const remote = this.getRemote(remoteId);
-        return remote.hashObjects(entities);
-      })
-    );
-
-    return Array.prototype.concat.apply([], entitiesPerRemote);
-  }
-
-  async hashEntity<T = any>(entity: Entity): Promise<Entity<T>> {
-    const entities = await this.hashEntities([entity]);
-    return entities[0];
-  }
-
-  private async tryGetFromSources(hashes: string[]): Promise<Entity[]> {
-    const requestedOn: string[] = [];
-    const allObjects: Map<string, Entity> = new Map();
-
-    return new Promise((resolve) => {
-      Array.from(this.remotesMap.keys()).map(async (remoteId) => {
-        try {
-          const entities = await this.getFromRemote(hashes, remoteId);
-          requestedOn.push(remoteId);
-
-          // append to all found objects (prevent duplicates)
-          entities.map((e) => allObjects.set(e.hash, e));
-
-          // if found as many objects as hashes requested, resove (dont wait for other sources to return)
-          if (entities.length === hashes.length) {
-            resolve(Array.from(allObjects.values()));
-          }
-        } catch (e) {
-          // a failure to get objects from a source is consider as objects not present
-          requestedOn.push(remoteId);
-        }
-
-        // resolve once all sources have been requested
-        if (requestedOn.length === this.remotesMap.size) {
-          resolve(Array.from(allObjects.values()));
-        }
-      });
-    });
-  }
-
-  public async getFromRemote(hashes: string[], remoteId: string): Promise<Entity[]> {
-    const remote = this.getRemote(remoteId);
-    if (!remote) throw new Error(`Remote ${remoteId} not found`);
-    return remote.getEntities(hashes);
   }
 }

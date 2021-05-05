@@ -1,4 +1,5 @@
 import { Client } from '../interfaces/client';
+import { EntityResolver } from '../interfaces/entity.resolver';
 import { Commit } from '../interfaces/types';
 import { Secured } from '../utils/cid-hash';
 
@@ -11,7 +12,7 @@ export class FindMostRecentCommonAncestor {
   allCommits: { [key: string]: Secured<Commit> } = {};
   paths: Path[];
 
-  constructor(protected client: Client, commitsIds: string[]) {
+  constructor(protected entityResolver: EntityResolver, commitsIds: string[]) {
     this.paths = commitsIds.map((commitId) => ({
       visited: {},
       heads: [commitId],
@@ -34,7 +35,7 @@ export class FindMostRecentCommonAncestor {
       let commit: Secured<Commit> | undefined = this.allCommits[commitId];
       if (!commit) {
         try {
-          commit = await this.client.getEntity(commitId);
+          commit = await this.entityResolver.getEntity(commitId);
         } catch (e) {
           console.error(`explorePath() state`, { paths: this.paths, commits: this.allCommits });
           throw new Error(`Could not get ancestor commit ${commitId}`);
@@ -79,7 +80,8 @@ export class FindMostRecentCommonAncestor {
 }
 
 export default function findMostRecentCommonAncestor(
-  client: Client
+  entityResolver: EntityResolver
 ): (commitsIds: string[]) => Promise<string | undefined> {
-  return (commitsIds: string[]) => new FindMostRecentCommonAncestor(client, commitsIds).compute();
+  return (commitsIds: string[]) =>
+    new FindMostRecentCommonAncestor(entityResolver, commitsIds).compute();
 }

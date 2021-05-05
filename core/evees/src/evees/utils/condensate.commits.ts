@@ -16,11 +16,6 @@ export interface CommitDAG {
  * Processes a set of Update elements (representing a DAG) and returns another set with only one equivalent Update per DAG head.
  * It squashes all intermediate commits, combines their indexing operations, and create new head commits connected to the parents of the
  * tail commits in the DAG */
-
-export interface CondenseResult {
-  update: Update;
-  commit: Signed<Commit>;
-}
 export class CondensateCommits {
   allCommits: Map<string, Secured<Commit>> = new Map();
   updatesMap: Map<string, Update> = new Map();
@@ -28,6 +23,7 @@ export class CondensateCommits {
   /** reverse map parentIds */
   childrenMap: Map<string, Set<string>> = new Map();
 
+  remoteId!: string;
   perspectiveId!: string;
   logger = new Logger('CondensateCommits');
 
@@ -44,6 +40,7 @@ export class CondensateCommits {
     const perspective = await this.entityResolver.getEntity<Signed<Perspective>>(
       this.perspectiveId
     );
+    this.remoteId = perspective.object.payload.remote;
 
     if (this.logEnabled) this.logger.log('init()', { updates: this.updatesMap, perspective });
 
@@ -124,12 +121,12 @@ export class CondensateCommits {
     forking?: string,
     currentList: string[] = [],
     indexData?: IndexData
-  ): Promise<CondenseResult[]> {
+  ): Promise<Update[]> {
     const children = this.childrenMap.get(commitId);
     if (this.logEnabled) this.logger.log('condenseUpdate()', { commitId, children });
 
     if (children && children.size > 0) {
-      const allResults = await Promise.all(
+      const childrenHeads = await Promise.all(
         Array.from(children.values()).map(async (childId) => {
           const childUpdate = this.updatesMap.get(childId);
           if (!childUpdate) throw new Error('child Updated not found');
@@ -145,26 +142,23 @@ export class CondensateCommits {
           const newList = [...currentList];
           newList.push(commitId);
 
-          const result = await this.condenseUpdate(
+          const updates = await this.condenseUpdate(
             childId,
             onParents,
             forking,
             newList,
             combinedIndexData
           );
-
-          return result;
+          return updates;
         })
       );
 
-      return Array.prototype.concat.apply([], allResults);
+      return Array.prototype.concat.apply([], childrenHeads);
     }
 
     /** this is a head, so create a new Update object
      * that replaces all the updates in the list */
-    const update = this.updatesMap.get(commitId);
-    if (!update) throw new Error(`Update for commit ${commitId} not found`);
-
+    const update = this.updatesMap.get(commitId) as Update;
     let newUpdate: Update;
 
     if (this.squash) {
@@ -178,9 +172,15 @@ export class CondensateCommits {
         forking: forking,
       });
 
+      const head = await this.entityResolver.hashObject({
+        object: newCommitObject,
+        remote: this.remoteId,
+      });
+
       newUpdate = {
         details: {
-          headId: undefined,
+          ...update.details,
+          headId: head.hash,
         },
         perspectiveId: update.perspectiveId,
         fromPerspectiveId: update.fromPerspectiveId,
@@ -199,7 +199,7 @@ export class CondensateCommits {
         newUpdate: newUpdate,
       });
 
-    return { update, commit: };
+    return [newUpdate];
   }
 
   async condensate(): Promise<Update[]> {

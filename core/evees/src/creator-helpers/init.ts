@@ -9,7 +9,6 @@ import { ClientMutationLocal } from '../evees/clients/local/client.mutation.loca
 import { ClientMutationMemory } from '../evees/clients/memory/mutation.memory';
 import { ClientCacheStoreMemory } from '../evees/clients/memory/client.cache.store.memory';
 import { ClientCache } from '../evees/clients/base/client.cache';
-import { CasCacheStoreMemory } from 'src/evees/clients/memory/cas.cache.store.memory';
 
 /** a top level wrapper that registers everything */
 export const init = (
@@ -20,16 +19,16 @@ export const init = (
 ): Evees => {
   const recognizer = initRecognizer(modules, patterns);
 
-  const globalStoreCache = new CasCacheStoreMemory();
-  const clientRouter = new RemoteRouter(remotes);
+  const entityResolver = new OnMemoryEntityResolver();
+  const clientRouter = new RemoteRouter(remotes, entityResolver);
 
   const memoryCache = new ClientCacheStoreMemory();
-  const clientCache = new ClientCache(clientRouter, memoryCache);
+  const clientCache = new ClientCache(clientRouter, memoryCache, entityResolver);
 
   /** inject back the client cache to the Router */
   clientRouter.setStore(clientCache);
 
-  const cached = new ClientMutationLocal(clientCache);
+  const cached = new ClientMutationLocal(clientCache, entityResolver);
   const onMemory = new ClientMutationMemory(cached);
 
   config = config || {};

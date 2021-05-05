@@ -1,7 +1,11 @@
 import { CondensateCommits } from './condensate.commits';
 import { Update } from '../interfaces/types';
+import { EntityResolver } from '../interfaces/entity.resolver';
 
-export const condensateUpdates = async (updates: Update[], store: CASStore): Promise<Update[]> => {
+export const condensateUpdates = async (
+  updates: Update[],
+  entityResolver: EntityResolver
+): Promise<Update[]> => {
   interface UpdateGroup {
     orgUpdates: Update[];
     eqUpdate?: Update;
@@ -19,7 +23,7 @@ export const condensateUpdates = async (updates: Update[], store: CASStore): Pro
 
   await Promise.all(
     Array.from(updatesPerPerspective.entries()).map(async ([perspectiveId, group]) => {
-      const condensate = new CondensateCommits(store, group.orgUpdates, false);
+      const condensate = new CondensateCommits(entityResolver, group.orgUpdates, false);
       await condensate.init();
       const eqUpdates = await condensate.condensate();
       if (eqUpdates.length !== 1) {

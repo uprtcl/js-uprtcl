@@ -79,7 +79,7 @@ export class AppElements {
     });
 
     /** make sure the perspective is in the store to be resolved */
-    await this.evees.storeEntity({
+    await this.evees.storeObject({
       hash: element.perspective.hash,
       object: element.perspective.object,
       remote: element.perspective.object.payload.remote,
@@ -116,7 +116,7 @@ export class AppElements {
   // make sure a perspective exist, or creates it
   async checkOrCreateHome(perspective: Secured<Perspective>) {
     /** make sure the perspective is in the store to be resolved */
-    await this.evees.storeEntity({
+    await this.evees.storeObject({
       object: perspective.object,
       remote: perspective.object.payload.remote,
     });
