@@ -1,5 +1,5 @@
 import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
-import { EveesContentModule } from '../evees/interfaces/evees.content.module';
+import { EveesContentModule } from '../evees/interfaces/index';
 import { PerspectivePattern } from '../evees/patterns/perspective.pattern';
 import { CommitPattern } from '../evees/patterns/commit.pattern';
 import { Pattern } from 'src/patterns/interfaces/pattern';

@@ -1,9 +1,7 @@
 import { Signed } from '../patterns/interfaces/signable';
 import { Logger } from '../utils/logger';
-import { Secured } from '../evees/utils/cid-hash';
 import { Evees } from '../evees/evees.service';
-import { ClientRemote } from '../evees/interfaces/client.remote';
-import { Perspective } from '../evees/interfaces/types';
+import { ClientRemote, Perspective, Secured } from '../evees/interfaces/index';
 
 /** a services that builds tree of perspectives that is apended to
  * the home space of the logged user. This services creates this
@@ -30,7 +28,7 @@ export class AppElements {
     if (LOGINFO) this.logger.log('check()');
     /** home space perspective is deterministic */
     this.home.perspective = await this.evees.getHome(this.remote.id);
-    await this.checkOrCreateHome(this.home.perspective);
+    await this.checkOrCreateHome(this.home.perspective as Secured<Perspective>);
 
     /** all other objects are obtained relative to the home perspective */
     await this.getOrCreateElementData(this.home);
@@ -77,6 +75,8 @@ export class AppElements {
     element.perspective = await this.remote.snapPerspective({
       timestamp: Date.now() + level * 10000 + biasTime,
     });
+
+    if (!element.perspective) throw new Error('Perspective undefined after snap');
 
     /** make sure the perspective is in the store to be resolved */
     await this.evees.storeObject({

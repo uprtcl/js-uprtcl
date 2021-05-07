@@ -1,6 +1,6 @@
-import { Secured } from '../utils/cid-hash';
 import { Entity } from './entity';
 import { ClientRemote } from './client.remote';
+import { Signed } from '../../patterns';
 
 export declare enum Join {
   inner = 'INNER_JOIN',
@@ -239,3 +239,5 @@ export interface FlushConfig {
   recurse?: boolean;
   condensate?: boolean;
 }
+
+export type Secured<T> = Entity<Signed<T>>;

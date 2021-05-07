@@ -1,7 +1,8 @@
 import { CidConfig } from '../interfaces/cid-config';
-import { Signed } from '../../patterns/interfaces/signable';
+import { Signed } from '../../patterns/index';
 
-import { deriveEntity, Secured } from './cid-hash';
+import { deriveEntity } from './cid-hash';
+import { Secured } from '../interfaces';
 
 export function signObject<T>(object: T): Signed<T> {
   return {

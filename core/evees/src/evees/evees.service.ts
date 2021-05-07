@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 
-import { Secured } from './utils/cid-hash';
 import { EveesContentModule } from './interfaces/evees.content.module';
 import { PerspectiveType } from './patterns/perspective.pattern';
 import { CommitType } from './patterns/commit.pattern';
@@ -23,7 +22,8 @@ import {
   PerspectiveGetResult,
   GetPerspectiveOptions,
   SearchResult,
-} from './interfaces/types';
+  Secured,
+} from './interfaces/index';
 
 import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
 import { Logger } from '../utils/logger';
@@ -200,7 +200,7 @@ export class Evees implements Client {
   }
 
   async hashObject(entity: EntityCreate): Promise<Entity> {
-    return this.client.hashObject(entity);
+    return this.entityResolver.hashObject(entity);
   }
 
   async explore(
@@ -852,7 +852,7 @@ export class Evees implements Client {
   async isAncestorCommit(perspectiveId: string, commitId: string, stopAt?: string) {
     const result = await this.client.getPerspective(perspectiveId);
     if (result.details.headId === undefined) return false;
-    const findAncestor = new FindAncestor(this.client, commitId, stopAt);
+    const findAncestor = new FindAncestor(this.entityResolver, commitId, stopAt);
     return findAncestor.checkIfParent(result.details.headId);
   }
 

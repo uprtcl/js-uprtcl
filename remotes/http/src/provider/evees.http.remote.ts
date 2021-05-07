@@ -52,6 +52,10 @@ export class EveesHttp implements ClientRemote {
     return `http:${evees_api}`;
   }
 
+  get entityRemoteId() {
+    return `http:${evees_api}`;
+  }
+
   get defaultPath() {
     return this.connection.host;
   }
@@ -225,15 +229,31 @@ export class EveesHttp implements ClientRemote {
     return entity;
   }
 
-  async storeEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+  hashObjects(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    return Promise.all(entities.map((entity) => this.hashObject(entity)));
+  }
+
+  hashObject<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
+    return this.hash(entity);
+  }
+
+  storeEntity(entityId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
+  storeEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  async persistEntities(entities: Entity<any>[]): Promise<void> {
     const result: any = await this.connection.post('/data', {
       datas: entities,
     });
     return result.entities;
   }
-  async storeEntity(entity: EntityCreate<any>): Promise<Entity<any>> {
-    const entities = await this.storeEntities([entity]);
-    return entities[0];
+
+  async persistEntity(entity: Entity<any>): Promise<void> {
+    await this.persistEntities([entity]);
   }
 
   removeEntities(hashes: string[]): Promise<void> {
@@ -253,15 +273,6 @@ export class EveesHttp implements ClientRemote {
 
   async getEntity<T = any>(hash: string): Promise<Entity<T>> {
     const entities = await this.getEntities([hash]);
-    return entities[0];
-  }
-
-  async hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    return Promise.all(entities.map((e) => this.hash(e.object)));
-  }
-
-  async hashEntity<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
-    const entities = await this.hashEntities([entity]);
     return entities[0];
   }
 

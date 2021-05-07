@@ -1,16 +1,21 @@
 import { Entity, EntityCreate } from 'src/evees/interfaces/entity';
 import { EntityCache } from 'src/evees/interfaces/entity.cache';
 import { EntityResolver } from '../../interfaces/entity.resolver';
+import { OnMemoryEntityCache } from './entity.cache';
 
 /**
- * The entity router is used to get and cache entities from all EntityRemotes.
- * New entities are persisted from the ClientRemotes and not from here.
+ * The entity resolver is used to get and cache entities.
+ * New entities are persisted in the remotes from the ClientRemotes and not from here.
  *
  * The reason fot this is that the conditions over which and entity should be persisted
  * are given by the ClientMutation logic.
  * */
-export class OnMemoryEntityResolver implements EntityResolver {
-  constructor(protected base: EntityResolver, protected cache: EntityCache) {}
+export class EntityResolverBase implements EntityResolver {
+  cache: EntityCache;
+
+  constructor(protected base: EntityResolver, cache?: EntityCache) {
+    this.cache = cache ? cache : new OnMemoryEntityCache();
+  }
 
   async storeEntity(entity: Entity<any>): Promise<void> {
     this.storeEntities([entity]);

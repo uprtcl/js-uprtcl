@@ -1,17 +1,14 @@
-import { Secured } from '../utils/cid-hash';
-
 import { AccessControl } from './access-control';
-import { PartialPerspective, Perspective } from './types';
+import { PartialPerspective, Perspective, Secured } from './types';
 import { Proposals } from '../proposals/proposals';
 import { Ready } from '../../utils/ready';
 import { ConnectionLogged } from './connection.logged';
 import { ClientExplore } from './client.explore';
-import { Entity } from './entity';
-import { CASRemote } from './entity.remote';
+import { EntityRemote } from './entity.remote';
 
 /** A remote is a Client that connects to backend. It is identified within
  * the app with a unique id. */
-export interface ClientRemote extends ClientExplore, Ready, ConnectionLogged, CASRemote {
+export interface ClientRemote extends ClientExplore, Ready, ConnectionLogged, EntityRemote {
   accessControl: AccessControl;
   proposals?: Proposals;
   /**

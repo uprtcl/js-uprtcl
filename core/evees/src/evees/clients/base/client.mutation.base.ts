@@ -258,7 +258,7 @@ export class ClientMutationBase implements ClientExplore {
     const mutation = await this.mutationStore.diff(options);
 
     if (condensate) {
-      mutation.updates = await condensateUpdates(mutation.updates, this);
+      mutation.updates = await condensateUpdates(mutation.updates, this.entityResolver);
       if (LOGINFO) this.logger.log('condensate diff', { options, mutation });
     }
 

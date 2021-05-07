@@ -15,7 +15,7 @@ export class RouterEntityResolver implements EntityResolver {
   ) {
     this.remotesMap = new Map();
     remotes.forEach((remote) => {
-      this.remotesMap.set(remote.id, remote);
+      this.remotesMap.set(remote.entityRemoteId, remote);
     });
   }
 
@@ -49,17 +49,8 @@ export class RouterEntityResolver implements EntityResolver {
     return entities[0];
   }
 
-  getObjectRemoteId(entity: EntityCreate) {
-    let id = this.clientToEntityRemoteMap.get(entity.remote as string);
-    if (!id) {
-      /** use the first store as the default store */
-      id = Array.from(this.remotesMap.values())[0].id;
-    }
-    return id;
-  }
-
   getObjectRemote(entity: EntityCreate): EntityRemote {
-    return this.getRemote(this.getObjectRemoteId(entity));
+    return this.getRemote(entity.remote);
   }
 
   public async hashOnRemote(entity: EntityCreate) {
@@ -67,10 +58,10 @@ export class RouterEntityResolver implements EntityResolver {
     return store.hashObject(entity);
   }
 
-  public getRemote(id: string): EntityRemote {
-    const source = this.remotesMap.get(id);
-    if (!source) throw new Error(`Source not found for casID ${id}`);
-    return source;
+  public getRemote(id?: string): EntityRemote {
+    const remote = id ? this.remotesMap.get(id) : this.remotes[0];
+    if (!remote) throw new Error(`Source not found for casID ${id}`);
+    return remote;
   }
 
   public async getFromRemote(hashes: string[], id: string): Promise<Entity[]> {

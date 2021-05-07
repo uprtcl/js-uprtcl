@@ -269,7 +269,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     /** snap is async because it performs a hash, should be fast enough for UX flow */
     const perspective = await this.localEvees.getRemote(remoteId).snapPerspective({});
     /** Perspective entity is created and await for it to be ready for immediate reading. */
-    await this.localEvees.storeEntity(perspective);
+    await this.localEvees.storeObject(perspective);
 
     const creteEvee: CreateEvee = {
       object: draft,

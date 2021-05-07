@@ -1,8 +1,7 @@
 import { Logger } from '../../utils/logger';
-import { Secured } from './cid-hash';
 import { createCommit } from '../default.perspectives';
 import { IndexDataHelper } from '../index.data.helper';
-import { Commit, IndexData, Perspective, Update } from '../interfaces/types';
+import { Commit, IndexData, Perspective, Update, Secured } from '../interfaces/index';
 import { Signed } from '../../patterns/interfaces/signable';
 import { EntityResolver } from '../interfaces/entity.resolver';
 

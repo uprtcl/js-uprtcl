@@ -1,7 +1,6 @@
-import { CASResolver } from 'src/evees/interfaces/cas.cache.store';
+import { EntityResolver } from 'src/evees/interfaces/entity.resolver';
 import { ClientCacheStore } from '../../interfaces/client.cache.store';
 import { ClientExplore } from '../../interfaces/client.explore';
-import { EntityCreate, Entity } from '../../interfaces/entity';
 import {
   GetPerspectiveOptions,
   PerspectiveGetResult,
@@ -17,7 +16,7 @@ export class ClientCache implements ClientExplore {
   constructor(
     protected base: ClientExplore,
     protected cache: ClientCacheStore,
-    protected casResolver: CASResolver
+    protected entityResolver: EntityResolver
   ) {}
 
   async getPerspective(
@@ -44,7 +43,7 @@ export class ClientCache implements ClientExplore {
 
     if (result.slice) {
       /** entities are added to the casResolver and are then available everywhere */
-      await this.casResolver.storeEntities(result.slice.entities);
+      await this.entityResolver.storeEntities(result.slice.entities);
 
       await Promise.all(
         result.slice.perspectives.map(async (perspectiveAndDetails) => {
@@ -102,6 +101,10 @@ export class ClientCache implements ClientExplore {
     ]);
   }
 
+  storeEntity(entityId: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   newPerspective(newPerspective: NewPerspective): Promise<void> {
     return this.update({ newPerspectives: [newPerspective] });
   }
@@ -116,15 +119,6 @@ export class ClientCache implements ClientExplore {
 
   canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
     return this.base.canUpdate(perspectiveId, userId);
-  }
-
-  hashEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    return this.base.hashEntities(entities);
-  }
-
-  async hashEntity<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
-    const entities = await this.hashEntities([entity]);
-    return entities[0];
   }
 
   explore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions | undefined) {

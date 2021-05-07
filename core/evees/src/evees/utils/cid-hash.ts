@@ -2,12 +2,9 @@ import multihashing from 'multihashing-async';
 import CBOR from 'cbor-js';
 import CID from 'cids';
 
-import { Signed } from '../../patterns/interfaces/signable';
-import { Entity, EntityCreate } from '../interfaces/entity';
-import { Logger } from 'src/utils/logger';
-import { CidConfig, defaultCidConfig } from '../interfaces/cid-config';
-
-export type Secured<T> = Entity<Signed<T>>;
+import { Entity, EntityCreate, CidConfig } from '../interfaces/index';
+import { Logger } from '../../utils/logger';
+import { defaultCidConfig } from '../interfaces/cid-config';
 
 export function sortObject(object: object): object {
   if (typeof object !== 'object' || object instanceof Array || object === null) {

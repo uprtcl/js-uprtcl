@@ -9,42 +9,47 @@ import { ClientMutationLocal } from '../evees/clients/local/client.mutation.loca
 import { ClientMutationMemory } from '../evees/clients/memory/mutation.memory';
 import { ClientCacheStoreMemory } from '../evees/clients/memory/client.cache.store.memory';
 import { ClientCache } from '../evees/clients/base/client.cache';
+import { RouterEntityResolver } from '../evees/clients/entities/router.entity.resolver';
+import { EntityRemote } from '../evees/interfaces/entity.remote';
+import { EntityResolverBase } from '../evees/clients/entities/entity.resolver.base';
+import { defaultConfig } from './config.merger';
 
 /** a top level wrapper that registers everything */
 export const init = (
-  remotes: ClientRemote[],
+  clientRemotes: ClientRemote[],
+  entityRemotes: EntityRemote[],
   modules: Map<string, EveesContentModule>,
   patterns?: Pattern<any>[],
   config?: EveesConfig
 ): Evees => {
   const recognizer = initRecognizer(modules, patterns);
 
-  const entityResolver = new OnMemoryEntityResolver();
-  const clientRouter = new RemoteRouter(remotes, entityResolver);
+  const clientToEntityRemotesMap = new Map<string, string>();
+  clientRemotes.forEach((remote) => {
+    clientToEntityRemotesMap.set(remote.id, remote.entityRemoteId);
+  });
+
+  const entityRouter = new RouterEntityResolver(entityRemotes, clientToEntityRemotesMap);
+  const entityResolver = new EntityResolverBase(entityRouter);
+
+  const clientRouter = new RemoteRouter(clientRemotes, entityResolver);
 
   const memoryCache = new ClientCacheStoreMemory();
   const clientCache = new ClientCache(clientRouter, memoryCache, entityResolver);
 
-  /** inject back the client cache to the Router */
-  clientRouter.setStore(clientCache);
-
   const cached = new ClientMutationLocal(clientCache, entityResolver);
   const onMemory = new ClientMutationMemory(cached);
 
-  config = config || {};
-  config.defaultRemote = config.defaultRemote ? config.defaultRemote : remotes[0];
+  const mergedConfig = defaultConfig(clientRemotes, config);
 
-  config.officialRemote = config.officialRemote
-    ? config.officialRemote
-    : remotes.length > 1
-    ? remotes[1]
-    : remotes[0];
-
-  config.editableRemotesIds = config.editableRemotesIds
-    ? config.editableRemotesIds
-    : [remotes[0].id];
-
-  const evees = new Evees(onMemory, recognizer, remotes, config, modules);
+  const evees = new Evees(
+    onMemory,
+    entityResolver,
+    recognizer,
+    clientRemotes,
+    mergedConfig,
+    modules
+  );
 
   return evees;
 };

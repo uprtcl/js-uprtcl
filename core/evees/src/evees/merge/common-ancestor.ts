@@ -1,7 +1,5 @@
-import { Client } from '../interfaces/client';
 import { EntityResolver } from '../interfaces/entity.resolver';
-import { Commit } from '../interfaces/types';
-import { Secured } from '../utils/cid-hash';
+import { Commit, Secured } from '../interfaces/index';
 
 interface Path {
   visited: { [commitId: string]: boolean };
