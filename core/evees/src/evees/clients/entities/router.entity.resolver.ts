@@ -15,7 +15,7 @@ export class RouterEntityResolver implements EntityResolver {
   ) {
     this.remotesMap = new Map();
     remotes.forEach((remote) => {
-      this.remotesMap.set(remote.entityRemoteId, remote);
+      this.remotesMap.set(remote.id, remote);
     });
   }
 

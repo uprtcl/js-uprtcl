@@ -20,39 +20,36 @@ import {
   CidConfig,
   EntityCreate,
   ClientRemote,
+  EntityRemote,
 } from '@uprtcl/evees';
 
 import { HttpAuthenticatedConnection } from '@uprtcl/http-provider';
 
 import { EveesAccessControlHttp } from './evees-acl.http';
 import { ProposalsHttp } from './proposals.http';
+import { HttpEntityRemote } from './evees.http.entity.remote';
 
 const evees_api = 'evees-v1';
 const LOGINFO = false;
-
-const httpCidConfig: CidConfig = {
-  base: 'base58btc',
-  version: 1,
-  codec: 'raw',
-  type: 'sha3-256',
-};
 
 export class EveesHttp implements ClientRemote {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   accessControl: EveesAccessControlHttp;
   proposals: ProposalsHttp;
+  entityRemote: EntityRemote;
 
   constructor(public connection: HttpAuthenticatedConnection) {
+    this.entityRemote = new HttpEntityRemote(connection);
     this.accessControl = new EveesAccessControlHttp(this.connection);
     this.proposals = new ProposalsHttp(this.connection);
   }
 
-  get id() {
-    return `http:${evees_api}`;
+  storeEntity(entityId: string): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
-  get entityRemoteId() {
+  get id() {
     return `http:${evees_api}`;
   }
 
@@ -205,75 +202,6 @@ export class EveesHttp implements ClientRemote {
       searchOptions: searchOptions,
       fetchOptions: fetchOptions,
     });
-  }
-
-  async hash(object: object): Promise<Entity> {
-    const cidConfig = httpCidConfig;
-    /** optimistically hash based on the CidConfig without asking the server */
-    const hash = await hashObject(object, cidConfig);
-
-    const entity = {
-      hash,
-      object: { ...object },
-      remote: this.id,
-    };
-
-    if (LOGINFO)
-      this.logger.log('hash', {
-        entity,
-        cidConfig,
-        objectStr: JSON.stringify(entity.object),
-        cidConfigStr: JSON.stringify(cidConfig),
-      });
-
-    return entity;
-  }
-
-  hashObjects(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    return Promise.all(entities.map((entity) => this.hashObject(entity)));
-  }
-
-  hashObject<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
-    return this.hash(entity);
-  }
-
-  storeEntity(entityId: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  storeEntities(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    throw new Error('Method not implemented.');
-  }
-
-  async persistEntities(entities: Entity<any>[]): Promise<void> {
-    const result: any = await this.connection.post('/data', {
-      datas: entities,
-    });
-    return result.entities;
-  }
-
-  async persistEntity(entity: Entity<any>): Promise<void> {
-    await this.persistEntities([entity]);
-  }
-
-  removeEntities(hashes: string[]): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-
-  async getEntities(hashes: string[]): Promise<Entity<any>[]> {
-    const entities = await Promise.all(
-      hashes.map((hash) => {
-        return this.connection.getWithPut<Entity>(`/data`, { hashes });
-      })
-    );
-    // mark the casID from which the entities are coming
-    entities.forEach((e) => (e.remote = this.id));
-    return entities;
-  }
-
-  async getEntity<T = any>(hash: string): Promise<Entity<T>> {
-    const entities = await this.getEntities([hash]);
-    return entities[0];
   }
 
   connect() {

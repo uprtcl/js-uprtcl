@@ -1,7 +1,7 @@
 import { Entity, EntityCreate } from './entity';
 
 export interface EntityRemote {
-  entityRemoteId: string;
+  id: string;
 
   /** Only the ClientRemote is able to store entities, everyone else us
    * the EntityResolver */

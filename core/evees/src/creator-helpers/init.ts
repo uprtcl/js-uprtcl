@@ -17,7 +17,6 @@ import { defaultConfig } from './config.merger';
 /** a top level wrapper that registers everything */
 export const init = (
   clientRemotes: ClientRemote[],
-  entityRemotes: EntityRemote[],
   modules: Map<string, EveesContentModule>,
   patterns?: Pattern<any>[],
   config?: EveesConfig
@@ -26,8 +25,15 @@ export const init = (
 
   const clientToEntityRemotesMap = new Map<string, string>();
   clientRemotes.forEach((remote) => {
-    clientToEntityRemotesMap.set(remote.id, remote.entityRemoteId);
+    clientToEntityRemotesMap.set(remote.id, remote.entityRemote.id);
   });
+
+  /** extract all unique entity remotes */
+  const entitiesRemotesMap = new Map<string, EntityRemote>();
+  clientRemotes.forEach((remote) =>
+    entitiesRemotesMap.set(remote.entityRemote.id, remote.entityRemote)
+  );
+  const entityRemotes = Array.from(entitiesRemotesMap.values());
 
   const entityRouter = new RouterEntityResolver(entityRemotes, clientToEntityRemotesMap);
   const entityResolver = new EntityResolverBase(entityRouter);

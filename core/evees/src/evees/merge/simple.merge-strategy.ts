@@ -94,7 +94,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     const emptyObject = this.evees.behaviorFirst(fromData.object, 'empty');
     const emptyEntity = await this.evees
       .getRemote(remote)
-      .hashObject({ object: emptyObject, remote: remote });
+      .entityRemote.hashObject({ object: emptyObject, remote: remote });
 
     const newDatasDefined = newDatas.map((data) => (data === undefined ? emptyEntity : data));
 

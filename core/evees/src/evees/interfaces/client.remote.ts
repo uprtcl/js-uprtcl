@@ -8,7 +8,7 @@ import { EntityRemote } from './entity.remote';
 
 /** A remote is a Client that connects to backend. It is identified within
  * the app with a unique id. */
-export interface ClientRemote extends ClientExplore, Ready, ConnectionLogged, EntityRemote {
+export interface ClientRemote extends ClientExplore, Ready, ConnectionLogged {
   accessControl: AccessControl;
   proposals?: Proposals;
   /**
@@ -18,6 +18,7 @@ export interface ClientRemote extends ClientExplore, Ready, ConnectionLogged, En
    */
   id: string;
   defaultPath: string;
+  entityRemote: EntityRemote;
 
   snapPerspective(
     perspective: PartialPerspective,
