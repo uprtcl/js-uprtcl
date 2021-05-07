@@ -1,4 +1,4 @@
-import { Update, NewPerspective, EveesMutation } from '../../interfaces/types';
+import { Update, NewPerspective, EveesMutation, PerspectiveDetails } from '../../interfaces/types';
 import { Entity } from '../../interfaces/entity';
 import { ClientMutationStore } from '../../interfaces/client.mutation.store';
 
@@ -10,13 +10,18 @@ export class MutationStoreMemory implements ClientMutationStore {
   private deletedPerspectives = new Set<string>();
   private newEntities = new Set<string>();
 
+  /** keep the latest details cached for fast read */
+  private perspectivesDetails = new Map<string, PerspectiveDetails>();
+
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     this.newPerspectives.set(newPerspective.perspective.hash, newPerspective);
+    this.perspectivesDetails.set(newPerspective.perspective.hash, newPerspective.update.details);
   }
 
   async addUpdate(update: Update): Promise<void> {
     const current = this.updates.get(update.perspectiveId) || [];
     this.updates.set(update.perspectiveId, current.concat([update]));
+    this.perspectivesDetails.set(update.perspectiveId, update.details);
   }
 
   async deletedPerspective(perspectiveId: string) {
@@ -60,7 +65,6 @@ export class MutationStoreMemory implements ClientMutationStore {
       newPerspectives,
       updates,
       deletedPerspectives,
-      entitiesHashes: [],
     };
   }
 
@@ -80,5 +84,9 @@ export class MutationStoreMemory implements ClientMutationStore {
 
   clearPerspective(perspectiveId: string): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  async getPerspective(perspectiveId: string): Promise<PerspectiveDetails | undefined> {
+    return this.perspectivesDetails.get(perspectiveId);
   }
 }

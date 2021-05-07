@@ -4,9 +4,7 @@ import { NewPerspective, PerspectiveDetails, Update } from '../../interfaces/typ
 
 export interface PerspectiveLocal {
   id: string;
-  onEcosystem?: string[];
   details: PerspectiveDetails;
-  levels?: number;
 }
 
 export interface NewPerspectiveLocal {
@@ -23,7 +21,7 @@ export interface UpdateLocal {
 
 // temporary service for documents modile. Should be replaced by a LocalClient with version history.
 export class MutationStoreDB extends Dexie {
-  perspectives: Dexie.Table<PerspectiveLocal, string>;
+  perspectivesDetails: Dexie.Table<PerspectiveLocal, string>;
   newPerspectives: Dexie.Table<NewPerspectiveLocal, string>;
   updates: Dexie.Table<UpdateLocal, string>;
   deletedPerspectives: Dexie.Table<string, string>;
@@ -33,14 +31,14 @@ export class MutationStoreDB extends Dexie {
     super(`${prefix}-evees-store`);
 
     this.version(0.1).stores({
-      perspectives: '&id,context,*onEcosystem,*children,dataId',
-      newPerspectives: '&id,dataId',
-      updates: '&id,perspectiveId,timexstamp,dataId',
+      perspectivesDetails: '&id',
+      newPerspectives: '&id',
+      updates: '&id,perspectiveId',
       deletedPerspectives: '&id',
       entities: '&id',
     });
 
-    this.perspectives = this.table('perspectives');
+    this.perspectivesDetails = this.table('perspectivesDetails');
     this.newPerspectives = this.table('newPerspectives');
     this.updates = this.table('updates');
     this.deletedPerspectives = this.table('deletedPerspectives');

@@ -6,22 +6,18 @@ import {
   GetPerspectiveOptions,
   PerspectiveGetResult,
   EveesMutation,
-  Commit,
   SearchOptions,
   FlushConfig,
   EveesMutationCreate,
-} from '../../interfaces/types';
+} from '../../interfaces/index';
 import { Logger } from '../../../utils/logger';
-import { Signed } from '../../../patterns/interfaces/signable';
 import { AsyncQueue } from '../../../utils/async';
 
 import { ClientEvents } from '../../interfaces/client';
 import { condensateUpdates } from '../../utils/condensate.updates';
-import { Entity, EntityCreate } from '../../interfaces/entity';
 import { ClientFull } from '../../interfaces/client.full';
 import { ClientExplore } from '../../interfaces/client.explore';
-import { ClientMutationStore } from '../../interfaces/client.mutation.store';
-import { EntityResolver } from 'src/evees/interfaces/entity.resolver';
+import { ClientMutationStore, EntityResolver } from '../../interfaces/index';
 
 const LOGINFO = false;
 
@@ -41,7 +37,7 @@ export class ClientMutationBase implements ClientExplore {
   private updateQueue: AsyncQueue;
   private lastQueued: Promise<any> | undefined = undefined;
 
-  private entityResolver!: EntityResolver;
+  protected entityResolver!: EntityResolver;
 
   constructor(
     readonly base: ClientExplore,
@@ -90,10 +86,13 @@ export class ClientMutationBase implements ClientExplore {
     perspectiveId: string,
     options?: GetPerspectiveOptions
   ): Promise<PerspectiveGetResult> {
-    await this.ready();
+    /** if the */
+    const details = await this.mutationStore.getPerspective(perspectiveId);
+    if (details) {
+      return { details };
+    }
 
     const result = await this.base.getPerspective(perspectiveId, options);
-
     return { details: result.details };
   }
 
@@ -187,10 +186,6 @@ export class ClientMutationBase implements ClientExplore {
   async update(mutation: EveesMutationCreate): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} update()`, { mutation });
 
-    if (mutation.entitiesHashes) {
-      await this.storeEntities(mutation.entitiesHashes);
-    }
-
     if (mutation.newPerspectives) {
       await this.createPerspectives(mutation.newPerspectives);
     }
@@ -202,14 +197,6 @@ export class ClientMutationBase implements ClientExplore {
     if (mutation.deletedPerspectives) {
       await this.deletePerspectives(mutation.deletedPerspectives);
     }
-  }
-
-  async storeEntity(hash: string) {
-    return this.base.storeEntity(hash);
-  }
-
-  async storeEntities(hashes: string[]) {
-    return this.base.update({ entitiesHashes: hashes });
   }
 
   newPerspective(newPerspective: NewPerspective): Promise<void> {

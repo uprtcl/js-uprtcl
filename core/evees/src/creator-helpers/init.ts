@@ -5,7 +5,7 @@ import { initRecognizer } from './init.recognizer';
 import { Pattern } from '../patterns/interfaces/pattern';
 import { Evees } from '../evees/evees.service';
 import { RemoteRouter } from '../evees/clients/client.router';
-import { ClientMutationLocal } from '../evees/clients/local/client.mutation.local';
+import { ClientMutationLocal } from '../evees/clients/local/mutation.local';
 import { ClientMutationMemory } from '../evees/clients/memory/mutation.memory';
 import { ClientCacheStoreMemory } from '../evees/clients/memory/client.cache.store.memory';
 import { ClientCache } from '../evees/clients/base/client.cache';

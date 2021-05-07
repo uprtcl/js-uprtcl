@@ -1,4 +1,12 @@
-import { Entity, EntityCreate, EntityRemote, hashObject, CidConfig, Logger } from '@uprtcl/evees';
+import {
+  Entity,
+  EntityCreate,
+  EntityRemote,
+  hashObject,
+  CidConfig,
+  Logger,
+  validateEntities,
+} from '@uprtcl/evees';
 import { HttpAuthenticatedConnection } from '@uprtcl/http-provider';
 
 const LOGINFO = false;
@@ -47,8 +55,12 @@ export class HttpEntityRemote implements EntityRemote {
     return Promise.all(entities.map((entity) => this.hashObject(entity)));
   }
 
-  hashObject<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
-    return this.hash(entity);
+  async hashObject<T = any>(entityCreate: EntityCreate<any>): Promise<Entity<T>> {
+    const entity = await this.hash(entityCreate.object);
+    if (entityCreate.hash) {
+      validateEntities([entity], [entityCreate]);
+    }
+    return entity;
   }
 
   storeEntity(entityId: string): Promise<void> {

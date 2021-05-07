@@ -12,6 +12,7 @@ import { OnMemoryEntityCache } from './entity.cache';
  * */
 export class EntityResolverBase implements EntityResolver {
   cache: EntityCache;
+  createSnapElementRec;
 
   constructor(protected base: EntityResolver, cache?: EntityCache) {
     this.cache = cache ? cache : new OnMemoryEntityCache();
@@ -26,7 +27,7 @@ export class EntityResolverBase implements EntityResolver {
   }
 
   async getEntity<T = any>(hash: string): Promise<Entity<T>> {
-    const entities = await this.getEntity(hash);
+    const entities = await this.getEntities([hash]);
     return entities[0];
   }
 

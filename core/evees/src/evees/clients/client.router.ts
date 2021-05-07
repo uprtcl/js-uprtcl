@@ -78,7 +78,6 @@ export class RemoteRouter implements Client {
                   deletedPerspectives: [],
                   newPerspectives: [],
                   updates: [],
-                  entitiesHashes: [],
                 };
                 mutationsPerRemote.set(remote.id, mutation);
               }
@@ -102,7 +101,6 @@ export class RemoteRouter implements Client {
                   deletedPerspectives: [],
                   newPerspectives: [],
                   updates: [],
-                  entitiesHashes: [],
                 };
                 mutationsPerRemote.set(remote.id, mutation);
               }
@@ -126,7 +124,6 @@ export class RemoteRouter implements Client {
                   deletedPerspectives: [],
                   newPerspectives: [],
                   updates: [],
-                  entitiesHashes: [],
                 };
                 mutationsPerRemote.set(remote.id, mutation);
               }
@@ -140,14 +137,6 @@ export class RemoteRouter implements Client {
       : Promise.resolve([]);
 
     await Promise.all([fillDeleted, fillNew, fillUpdated]);
-
-    /** extract mutation entities and store on the entitiesHashes property */
-    await Promise.all(
-      Array.from(mutationsPerRemote.entries()).map(async ([remoteId, mutation]) => {
-        const mutationEntities = await getMutationEntitiesHashes(mutation, this.entityResolver);
-        mutation.entitiesHashes = mutationEntities;
-      })
-    );
 
     /** at this point each mutation has the updates and entities for each remote */
     return mutationsPerRemote;

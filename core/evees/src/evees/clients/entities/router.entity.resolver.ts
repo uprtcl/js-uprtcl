@@ -50,7 +50,10 @@ export class RouterEntityResolver implements EntityResolver {
   }
 
   getObjectRemote(entity: EntityCreate): EntityRemote {
-    return this.getRemote(entity.remote);
+    if (!entity.remote) throw new Error(`Entity remote not defined ${JSON.stringify(entity)}`);
+    const entityRemoteId = this.clientToEntityRemoteMap.get(entity.remote);
+    if (!entityRemoteId) throw new Error(`Entity remote id not found for remote ${entity.remote}`);
+    return this.getRemote();
   }
 
   public async hashOnRemote(entity: EntityCreate) {
@@ -60,7 +63,7 @@ export class RouterEntityResolver implements EntityResolver {
 
   public getRemote(id?: string): EntityRemote {
     const remote = id ? this.remotesMap.get(id) : this.remotes[0];
-    if (!remote) throw new Error(`Source not found for casID ${id}`);
+    if (!remote) throw new Error(`Source not found for id ${id}`);
     return remote;
   }
 

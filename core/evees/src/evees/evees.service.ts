@@ -180,15 +180,10 @@ export class Evees implements Client {
       entity = entityCreate as Entity;
     }
 
-    /** inform the entity resolver and store in the client as a new entity */
+    /** place in the entity resolver */
     await this.entityResolver.storeEntity(entity);
-    await this.client.storeEntity(entity.hash);
 
     return entity;
-  }
-
-  storeEntity(entityId: string): Promise<void> {
-    return this.client.storeEntity(entityId);
   }
 
   async getEntity<T = any>(hash: string): Promise<Entity<T>> {
@@ -1013,7 +1008,7 @@ export class Evees implements Client {
   async getHome(remoteId?: string, userId?: string): Promise<Secured<Perspective>> {
     const remote = this.getRemote(remoteId);
     const home = await getHome(remote, userId ? userId : remote.userId);
-    await this.storeObject({ object: home.object, remote: remote.id });
+    await this.entityResolver.storeEntity(home);
     return home;
   }
 

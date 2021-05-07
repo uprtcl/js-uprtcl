@@ -103,14 +103,12 @@ export const combineMutations = (mutations: EveesMutation[]): EveesMutation => {
     newPerspectives: [],
     deletedPerspectives: [],
     updates: [],
-    entitiesHashes: [],
   };
 
   mutations.forEach((thisMutation) => {
     mutation.newPerspectives.push(...thisMutation.newPerspectives);
     mutation.deletedPerspectives.push(...thisMutation.deletedPerspectives);
     mutation.updates.push(...thisMutation.updates);
-    mutation.entitiesHashes.push(...thisMutation.entitiesHashes);
   });
 
   return mutation;

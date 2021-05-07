@@ -6,7 +6,7 @@ export { CommitType } from './evees/patterns/commit.pattern';
 
 export { Evees, EveesEvents } from './evees/evees.service';
 
-export { hashObject } from './evees/utils/cid-hash';
+export { hashObject, validateEntities } from './evees/utils/cid-hash';
 
 /** Default Perspectives */
 export {
@@ -53,7 +53,6 @@ export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Clients */
 export { ClientMutationMemory } from './evees/clients/memory/mutation.memory';
-export { ClientMutationLocal } from './evees/clients/local/client.mutation.local';
 export { MutationStoreLocal } from './evees/clients/local/mutation.store.local';
 
 /** Evees Utils */

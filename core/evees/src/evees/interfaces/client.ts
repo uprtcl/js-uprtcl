@@ -39,7 +39,6 @@ export interface Client {
   newPerspective(newPerspective: NewPerspective): Promise<void>;
   deletePerspective(perspectiveId: string): Promise<void>;
   updatePerspective(update: Update): Promise<void>;
-  storeEntity(entityId: string): Promise<void>;
 
   /** await for all update transactions received to be processed (visible to read queries) */
   ready?(): Promise<void>;

@@ -1,9 +1,15 @@
 import { Logger } from '../../../utils/logger';
-import { NewPerspective, Update, EveesMutation, SearchOptions } from '../../interfaces/types';
-import { ClientMutationStore } from '../../interfaces/client.mutation.store';
+import {
+  NewPerspective,
+  Update,
+  EveesMutation,
+  SearchOptions,
+  ClientMutationStore,
+  EntityResolver,
+  PerspectiveDetails,
+} from '../../interfaces/index';
+import { getMutationEntitiesHashes } from '../../utils/mutation.entities';
 import { MutationStoreDB, NewPerspectiveLocal, UpdateLocal } from './mutation.store.local.db';
-import { getMutationEntitiesHashes } from 'src/evees/utils/mutation.entities';
-import { EntityResolver } from 'src/evees/interfaces/entity.resolver';
 
 /** use local storage as cache of ClientCachedWithBase */
 export class MutationStoreLocal implements ClientMutationStore {
@@ -27,10 +33,23 @@ export class MutationStoreLocal implements ClientMutationStore {
     throw new Error('Method not implemented.');
   }
 
+  async getPerspective(perspectiveId: string): Promise<PerspectiveDetails | undefined> {
+    const perspective = await this.db.perspectivesDetails.get({
+      id: perspectiveId,
+    });
+    return perspective ? perspective.details : undefined;
+  }
+
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     await this.db.newPerspectives.put({
       id: newPerspective.perspective.hash,
       newPerspective,
+    });
+
+    /** keep the latest details cached */
+    await this.db.perspectivesDetails.put({
+      id: newPerspective.perspective.hash,
+      details: newPerspective.update.details,
     });
   }
 
@@ -39,6 +58,12 @@ export class MutationStoreLocal implements ClientMutationStore {
       id: update.perspectiveId + update.details.headId,
       perspectiveId: update.perspectiveId,
       update,
+    });
+
+    /** keep the latest details cached */
+    await this.db.perspectivesDetails.put({
+      id: update.perspectiveId,
+      details: update.details,
     });
   }
 
@@ -104,29 +129,13 @@ export class MutationStoreLocal implements ClientMutationStore {
       newPerspectives: await this.getNewPerspectives(of),
       updates: await this.getUpdates(of),
       deletedPerspectives: await this.getDeletedPerspective(of),
-      entitiesHashes: [],
     };
 
-    mutation.entitiesHashes = await getMutationEntitiesHashes(mutation, this.entityResolver);
     return mutation;
   }
 
-  async clear(): Promise<void> {
-    await Promise.all([
-      this.db.newPerspectives.clear(),
-      this.db.updates.clear(),
-      this.db.deletedPerspectives.clear(),
-      this.db.perspectives.clear(),
-    ]);
-  }
-
   async getUnder(uref: string): Promise<string[]> {
-    return this.db.perspectives.where('onEcosystem').equals(uref).primaryKeys();
-  }
-
-  async getOnEcosystems(perspectiveId: string): Promise<string[]> {
-    const perspective = await this.db.perspectives.get(perspectiveId);
-    return perspective && perspective.onEcosystem ? perspective.onEcosystem : [];
+    return this.db.perspectivesDetails.where('onEcosystem').equals(uref).primaryKeys();
   }
 
   async getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined> {
@@ -138,5 +147,14 @@ export class MutationStoreLocal implements ClientMutationStore {
   async getUpdatesOf(perspectiveId: string): Promise<Update[]> {
     const updates = await this.db.updates.where('perspectiveId').equals(perspectiveId).toArray();
     return updates.map((u) => u.update);
+  }
+
+  async clear(): Promise<void> {
+    await Promise.all([
+      this.db.newPerspectives.clear(),
+      this.db.updates.clear(),
+      this.db.deletedPerspectives.clear(),
+      this.db.perspectivesDetails.clear(),
+    ]);
   }
 }

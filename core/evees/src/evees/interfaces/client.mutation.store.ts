@@ -1,5 +1,5 @@
 import { Entity } from './entity';
-import { EveesMutation, NewPerspective, SearchOptions, Update } from './types';
+import { EveesMutation, NewPerspective, PerspectiveDetails, SearchOptions, Update } from './types';
 
 export interface CachedUpdate {
   update: Update;
@@ -17,10 +17,6 @@ export interface ClientMutationStore {
   getNewPerspectives(): Promise<NewPerspective[]>;
   getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined>;
 
-  /** store entity means this entity is part of the mutation, not necessary to
-   * store also the actual entity object */
-  storeEntity(entityId: string): Promise<void>;
-
   getUpdates(): Promise<Update[]>;
   getUpdatesOf(perspectiveId: string): Promise<Update[]>;
 
@@ -30,4 +26,8 @@ export interface ClientMutationStore {
 
   clearPerspective(perspectiveId: string): Promise<void>;
   clear(elements?: EveesMutation): Promise<void>;
+
+  /** if the perspective was created and/or has been update, this shall return
+   * its latest details */
+  getPerspective(perspectiveId: string): Promise<PerspectiveDetails | undefined>;
 }

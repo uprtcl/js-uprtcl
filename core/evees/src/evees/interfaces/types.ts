@@ -133,14 +133,12 @@ export interface EveesMutation {
   newPerspectives: NewPerspective[];
   updates: Update[];
   deletedPerspectives: string[];
-  entitiesHashes: string[];
 }
 
 export interface EveesMutationCreate {
   newPerspectives?: NewPerspective[];
   updates?: Update[];
   deletedPerspectives?: string[];
-  entitiesHashes?: string[];
 }
 
 export interface EveesOptions {

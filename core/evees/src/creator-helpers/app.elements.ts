@@ -79,11 +79,7 @@ export class AppElements {
     if (!element.perspective) throw new Error('Perspective undefined after snap');
 
     /** make sure the perspective is in the store to be resolved */
-    await this.evees.storeObject({
-      hash: element.perspective.hash,
-      object: element.perspective.object,
-      remote: element.perspective.object.payload.remote,
-    });
+    await this.evees.entityResolver.storeEntity(element.perspective);
 
     if (element.children) {
       await Promise.all(
@@ -115,12 +111,6 @@ export class AppElements {
 
   // make sure a perspective exist, or creates it
   async checkOrCreateHome(perspective: Secured<Perspective>) {
-    /** make sure the perspective is in the store to be resolved */
-    await this.evees.storeObject({
-      object: perspective.object,
-      remote: perspective.object.payload.remote,
-    });
-
     /** get the perspective data */
     const levels = getLevels(this.home);
     const { details } = await this.evees.getPerspective(perspective.hash, { levels });
