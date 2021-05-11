@@ -14,7 +14,7 @@ import { Logger } from '../../../utils/logger';
 import { AsyncQueue } from '../../../utils/async';
 
 import { ClientEvents } from '../../interfaces/client';
-import { condensateUpdates } from '../../utils/condensate.updates';
+import { condensateUpdates, mutationAppendOnEcosystem } from '../../utils/updates.utils';
 import { ClientFull } from '../../interfaces/client.full';
 import { ClientExplore } from '../../interfaces/client.explore';
 import { ClientMutationStore, EntityResolver } from '../../interfaces/index';
@@ -209,7 +209,7 @@ export class ClientMutationBase implements ClientExplore {
     await this.update({ deletedPerspectives: [perspectiveId] });
   }
 
-  async flush(options?: SearchOptions, flush?: FlushConfig): Promise<void> {
+  async flush(options?: SearchOptions, flush: FlushConfig = { recurse: true }): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} flush()`, { updateQueue: this.updateQueue });
 
     await this.enqueueTask(async () => {
@@ -243,6 +243,14 @@ export class ClientMutationBase implements ClientExplore {
     if (LOGINFO) this.logger.log(`${this.name} diff()`, {});
 
     const mutation = await this.mutationStore.diff(options);
+
+    /** if I searched under, then the results must be onEcosystem. Append it. */
+    if (options && options.under) {
+      mutationAppendOnEcosystem(
+        mutation,
+        options.under.elements.map((el) => el.id)
+      );
+    }
 
     if (condensate) {
       mutation.updates = await condensateUpdates(mutation.updates, this.entityResolver);

@@ -1,7 +1,7 @@
 import { Signed } from '../patterns/interfaces/signable';
 import { Logger } from '../utils/logger';
 import { Evees } from '../evees/evees.service';
-import { ClientRemote, Perspective, Secured } from '../evees/interfaces/index';
+import { ClientRemote, IndexData, Perspective, Secured } from '../evees/interfaces/index';
 
 /** a services that builds tree of perspectives that is apended to
  * the home space of the logged user. This services creates this
@@ -94,12 +94,26 @@ export class AppElements {
     if (!element.perspective)
       throw new Error(`perspective not found for element ${JSON.stringify(element)}`);
 
+    if (!this.home.perspective)
+      throw new Error(`this.home.perspectiv not found for element ${JSON.stringify(element)}`);
+
     const perspective = element.perspective;
+
+    /** set onEcosystem indexing to then filter these at flush of the mutation stores */
+    const indexData: IndexData = {
+      linkChanges: {
+        onEcosystem: {
+          added: [this.home.perspective.hash],
+          removed: [],
+        },
+      },
+    };
 
     await this.evees.createEvee({
       object: data,
-      partialPerspective: perspective.object.payload,
+      perspectiveId: perspective.hash,
       guardianId,
+      indexData,
     });
 
     if (element.children) {

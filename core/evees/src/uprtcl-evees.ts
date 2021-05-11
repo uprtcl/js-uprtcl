@@ -57,4 +57,4 @@ export { MutationStoreLocal } from './evees/clients/local/mutation.store.local';
 
 /** Evees Utils */
 export { CondensateCommits } from './evees/utils/condensate.commits';
-export { condensateUpdates } from './evees/utils/condensate.updates';
+export { condensateUpdates } from './evees/utils/updates.utils';

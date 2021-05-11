@@ -13,6 +13,7 @@ import { RouterEntityResolver } from '../evees/clients/entities/router.entity.re
 import { EntityRemote } from '../evees/interfaces/entity.remote';
 import { EntityResolverBase } from '../evees/clients/entities/entity.resolver.base';
 import { defaultConfig } from './config.merger';
+import { EntityRemoteLocal } from 'src/evees/clients/local/entity.remote.local';
 
 /** a top level wrapper that registers everything */
 export const init = (
@@ -34,6 +35,9 @@ export const init = (
     entitiesRemotesMap.set(remote.entityRemote.id, remote.entityRemote)
   );
   const entityRemotes = Array.from(entitiesRemotesMap.values());
+  const entityCacheLocal = new EntityRemoteLocal();
+
+  entityRemotes.push(entityCacheLocal);
 
   const entityRouter = new RouterEntityResolver(entityRemotes, clientToEntityRemotesMap);
   const entityResolver = new EntityResolverBase(entityRouter);
@@ -43,7 +47,7 @@ export const init = (
   const memoryCache = new ClientCacheStoreMemory();
   const clientCache = new ClientCache(clientRouter, memoryCache, entityResolver);
 
-  const cached = new ClientMutationLocal(clientCache, entityResolver);
+  const cached = new ClientMutationLocal(clientCache, entityResolver, entityCacheLocal);
   const onMemory = new ClientMutationMemory(cached);
 
   const mergedConfig = defaultConfig(clientRemotes, config);

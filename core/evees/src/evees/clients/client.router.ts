@@ -205,10 +205,16 @@ export class RemoteRouter implements Client {
     const mutationPerRemote = await this.splitMutation(mutation);
     /** at this point the mutation is split per remote and is sent to each remote */
     await Promise.all(
-      Array.from(mutationPerRemote.keys()).map((remoteId) => {
+      Array.from(mutationPerRemote.keys()).map(async (remoteId) => {
         const mutation = mutationPerRemote.get(remoteId) as EveesMutation;
         const remote = this.getRemote(remoteId);
-        return remote.update(mutation);
+
+        /** here is where entities are finally passed to the remote */
+        const entitiesHashes = await getMutationEntitiesHashes(mutation, this.entityResolver);
+        const entities = await this.entityResolver.getEntities(entitiesHashes);
+        await remote.entityRemote.persistEntities(entities);
+
+        await remote.update(mutation);
       })
     );
   }

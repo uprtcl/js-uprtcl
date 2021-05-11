@@ -36,10 +36,12 @@ export class ClientCache implements ClientExplore {
     const result = await this.base.getPerspective(perspectiveId, options);
 
     /** cache result and slice */
-    await this.cache.setCachedPerspective(perspectiveId, {
-      update: { perspectiveId, details: result.details },
-      levels: options ? options.levels : undefined,
-    });
+    if (result.details.headId !== undefined || result.details.canUpdate !== undefined) {
+      await this.cache.setCachedPerspective(perspectiveId, {
+        update: { perspectiveId, details: result.details },
+        levels: options ? options.levels : undefined,
+      });
+    }
 
     if (result.slice) {
       /** entities are added to the casResolver and are then available everywhere */

@@ -1,6 +1,7 @@
 import { CondensateCommits } from './condensate.commits';
-import { Update } from '../interfaces/types';
+import { EveesMutation, LinksType, Update } from '../interfaces/types';
 import { EntityResolver } from '../interfaces/entity.resolver';
+import { IndexDataHelper } from '../index.data.helper';
 
 export const condensateUpdates = async (
   updates: Update[],
@@ -35,4 +36,23 @@ export const condensateUpdates = async (
   );
 
   return Array.from(updatesPerPerspective.values()).map((group) => group.eqUpdate as Update);
+};
+
+/** append onEcosystem elements to indexData of all new perspectives and updates in the mutation */
+export const mutationAppendOnEcosystem = (mutation: EveesMutation, onEcosystem: string[]) => {
+  mutation.newPerspectives.forEach((np) => {
+    np.update.indexData = IndexDataHelper.combineArrayChanges(
+      { added: onEcosystem, removed: [] },
+      LinksType.onEcosystem,
+      np.update.indexData
+    );
+  });
+
+  mutation.updates.forEach((update) => {
+    update.indexData = IndexDataHelper.combineArrayChanges(
+      { added: onEcosystem, removed: [] },
+      LinksType.onEcosystem,
+      update.indexData
+    );
+  });
 };

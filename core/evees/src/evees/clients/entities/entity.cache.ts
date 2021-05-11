@@ -5,15 +5,12 @@ export class OnMemoryEntityCache implements EntityCache {
   private entities = new Map<string, Entity>();
 
   async getEntities(hashes: string[]): Promise<Entity<any>[]> {
-    return Promise.all(hashes.map((hash) => this.getEntity(hash)));
+    const entities = await Promise.all(hashes.map((hash) => this.getEntity(hash)));
+    return entities.filter((e) => !!e) as Entity<any>[];
   }
 
-  async getEntity<T = any>(hash: string): Promise<Entity<T>> {
-    const entity = this.entities.get(hash);
-    if (!entity) {
-      throw new Error(`Entity ${hash} not found`);
-    }
-    return entity;
+  async getEntity<T = any>(hash: string): Promise<Entity<T> | undefined> {
+    return this.entities.get(hash);
   }
 
   async storeEntity(entity: Entity<any>): Promise<void> {

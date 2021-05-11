@@ -7,7 +7,7 @@ import { OnMemoryEntityCache } from './entity.cache';
  * The entity resolver is used to get and cache entities.
  * New entities are persisted in the remotes from the ClientRemotes and not from here.
  *
- * The reason fot this is that the conditions over which and entity should be persisted
+ * The reason fot this is that the conditions over which an entity should be persisted
  * are given by the ClientMutation logic.
  * */
 export class EntityResolverBase implements EntityResolver {

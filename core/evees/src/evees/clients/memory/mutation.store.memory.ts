@@ -1,6 +1,20 @@
-import { Update, NewPerspective, EveesMutation, PerspectiveDetails } from '../../interfaces/types';
-import { Entity } from '../../interfaces/entity';
+import {
+  Update,
+  NewPerspective,
+  EveesMutation,
+  PerspectiveDetails,
+  SearchOptions,
+  LinksType,
+} from '../../interfaces/types';
 import { ClientMutationStore } from '../../interfaces/client.mutation.store';
+import { IndexDataHelper } from 'src/evees/index.data.helper';
+
+/** info stored about the perspectives on the mutation that help fast
+ * reading it's details or filtering the set of perspectives in the mutation */
+interface PerspectiveMemory {
+  details: PerspectiveDetails;
+  onEcosystem: string[];
+}
 
 export class MutationStoreMemory implements ClientMutationStore {
   /** a map with the new perspectives to be created */
@@ -11,17 +25,59 @@ export class MutationStoreMemory implements ClientMutationStore {
   private newEntities = new Set<string>();
 
   /** keep the latest details cached for fast read */
-  private perspectivesDetails = new Map<string, PerspectiveDetails>();
+  private perspectivesDetails = new Map<string, PerspectiveMemory>();
 
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     this.newPerspectives.set(newPerspective.perspective.hash, newPerspective);
-    this.perspectivesDetails.set(newPerspective.perspective.hash, newPerspective.update.details);
+
+    const onEcosystemChanges = IndexDataHelper.getArrayChanges(
+      newPerspective.update.indexData,
+      LinksType.onEcosystem
+    );
+
+    this.perspectivesDetails.set(newPerspective.perspective.hash, {
+      details: newPerspective.update.details,
+      onEcosystem: onEcosystemChanges.added,
+    });
   }
 
   async addUpdate(update: Update): Promise<void> {
-    const current = this.updates.get(update.perspectiveId) || [];
-    this.updates.set(update.perspectiveId, current.concat([update]));
-    this.perspectivesDetails.set(update.perspectiveId, update.details);
+    const currentUpdates = this.updates.get(update.perspectiveId) || [];
+    this.updates.set(update.perspectiveId, currentUpdates.concat([update]));
+
+    /** update the details (append onEcosystem tags) */
+    const currentDetails = this.perspectivesDetails.get(update.perspectiveId);
+    let onEcosystem = currentDetails ? currentDetails.onEcosystem : [];
+
+    if (
+      update.indexData &&
+      update.indexData.linkChanges &&
+      update.indexData.linkChanges.onEcosystem
+    ) {
+      /** use function to remove existing values from ecosystme if in the
+       * removed array of the update indexData */
+      const newChanges = IndexDataHelper.appendArrayChanges(
+        { added: onEcosystem, removed: [] },
+        update.indexData.linkChanges.onEcosystem
+      );
+
+      onEcosystem = newChanges.added;
+    }
+
+    this.perspectivesDetails.set(update.perspectiveId, {
+      details: update.details,
+      onEcosystem,
+    });
+  }
+
+  getUnder(perspectiveId: string): string[] {
+    const matched = Array.from(this.perspectivesDetails.entries())
+      .map(([id, perspective]) => {
+        return perspective.onEcosystem.includes(perspectiveId) ? id : undefined;
+      })
+      .filter((id) => !!id);
+
+    return matched as string[];
   }
 
   async deletedPerspective(perspectiveId: string) {
@@ -56,10 +112,27 @@ export class MutationStoreMemory implements ClientMutationStore {
     return updates.filter((u) => u.perspectiveId === perspectiveId);
   }
 
-  async diff(): Promise<EveesMutation> {
-    const newPerspectives = Array.from(this.newPerspectives.values());
-    const updates = Array.prototype.concat.apply([], Array.from(this.updates.values()));
-    const deletedPerspectives = Array.from(this.deletedPerspectives.values());
+  async diff(options?: SearchOptions): Promise<EveesMutation> {
+    let of: string[] = [];
+
+    /** filter updates only to perspectives under a given element */
+    if (options && options.under) {
+      /**  */
+      const allUnder = options.under.elements.map((under) => {
+        return this.getUnder(under.id);
+      });
+      of = Array.prototype.concat.apply([], allUnder);
+    }
+
+    let newPerspectives = Array.from(this.newPerspectives.values());
+    let updates = Array.prototype.concat.apply([], Array.from(this.updates.values())) as Update[];
+    let deletedPerspectives = Array.from(this.deletedPerspectives.values());
+
+    if (of.length > 0) {
+      newPerspectives = newPerspectives.filter((np) => of.includes(np.perspective.hash));
+      updates = updates.filter((up) => of.includes(up.perspectiveId));
+      deletedPerspectives = deletedPerspectives.filter((id) => of.includes(id));
+    }
 
     return {
       newPerspectives,
@@ -87,6 +160,7 @@ export class MutationStoreMemory implements ClientMutationStore {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails | undefined> {
-    return this.perspectivesDetails.get(perspectiveId);
+    const perspective = this.perspectivesDetails.get(perspectiveId);
+    return perspective ? perspective.details : undefined;
   }
 }

@@ -5,6 +5,7 @@ import { NewPerspective, PerspectiveDetails, Update } from '../../interfaces/typ
 export interface PerspectiveLocal {
   id: string;
   details: PerspectiveDetails;
+  onEcosystem: string[];
 }
 
 export interface NewPerspectiveLocal {
@@ -31,7 +32,7 @@ export class MutationStoreDB extends Dexie {
     super(`${prefix}-evees-store`);
 
     this.version(0.1).stores({
-      perspectivesDetails: '&id',
+      perspectivesDetails: '&id,*onEcosystem',
       newPerspectives: '&id',
       updates: '&id,perspectiveId',
       deletedPerspectives: '&id',

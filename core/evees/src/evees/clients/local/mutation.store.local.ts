@@ -1,3 +1,5 @@
+import { IndexDataHelper } from 'src/evees/index.data.helper';
+import { getUpdateEntitiesHashes } from 'src/evees/utils/mutation.entities';
 import { Logger } from '../../../utils/logger';
 import {
   NewPerspective,
@@ -7,22 +9,26 @@ import {
   ClientMutationStore,
   EntityResolver,
   PerspectiveDetails,
+  LinksType,
+  EntityRemote,
+  Entity,
 } from '../../interfaces/index';
-import { getMutationEntitiesHashes } from '../../utils/mutation.entities';
 import { MutationStoreDB, NewPerspectiveLocal, UpdateLocal } from './mutation.store.local.db';
 
-/** use local storage as cache of ClientCachedWithBase */
+/** use local storage as cache of ClientCachedWithBase.
+ * Persist entities on an EntityRemote (most likely also local)
+ * so that entities are available to the EntityResolver. */
 export class MutationStoreLocal implements ClientMutationStore {
   logger = new Logger('CacheLocal');
 
   readonly db: MutationStoreDB;
 
-  constructor(name: string, protected entityResolver: EntityResolver) {
+  constructor(
+    name: string,
+    protected entityResolver: EntityResolver,
+    protected entityRemote: EntityRemote
+  ) {
     this.db = new MutationStoreDB(name);
-  }
-
-  storeEntity(entityId: string): Promise<void> {
-    throw new Error('Method not implemented.');
   }
 
   getDeletedPerspectives(): Promise<string[]> {
@@ -46,24 +52,40 @@ export class MutationStoreLocal implements ClientMutationStore {
       newPerspective,
     });
 
-    /** keep the latest details cached */
-    await this.db.perspectivesDetails.put({
-      id: newPerspective.perspective.hash,
-      details: newPerspective.update.details,
-    });
+    await this.entityRemote.persistEntity(newPerspective.perspective);
+    await this.persistUpdateEntities(newPerspective.update);
+
+    await this.updateDetails(newPerspective.update);
   }
 
   async addUpdate(update: Update): Promise<void> {
+    await this.persistUpdateEntities(update);
+
     await this.db.updates.put({
       id: update.perspectiveId + update.details.headId,
       perspectiveId: update.perspectiveId,
       update,
     });
 
+    await this.updateDetails(update);
+  }
+
+  async persistUpdateEntities(update: Update): Promise<Entity[]> {
+    const entitiesHashes = await getUpdateEntitiesHashes(update, this.entityResolver);
+    return this.entityResolver.getEntities(entitiesHashes);
+  }
+
+  async updateDetails(update: Update) {
+    const onEcosystemChanges = IndexDataHelper.getArrayChanges(
+      update.indexData,
+      LinksType.onEcosystem
+    );
+
     /** keep the latest details cached */
     await this.db.perspectivesDetails.put({
       id: update.perspectiveId,
       details: update.details,
+      onEcosystem: onEcosystemChanges.added,
     });
   }
 
