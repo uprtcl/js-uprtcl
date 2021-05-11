@@ -70,9 +70,10 @@ export class MutationStoreLocal implements ClientMutationStore {
     await this.updateDetails(update);
   }
 
-  async persistUpdateEntities(update: Update): Promise<Entity[]> {
+  async persistUpdateEntities(update: Update): Promise<void> {
     const entitiesHashes = await getUpdateEntitiesHashes(update, this.entityResolver);
-    return this.entityResolver.getEntities(entitiesHashes);
+    const entities = await this.entityResolver.getEntities(entitiesHashes);
+    await this.entityRemote.persistEntities(entities);
   }
 
   async updateDetails(update: Update) {

@@ -26,7 +26,6 @@ export class MutationStoreDB extends Dexie {
   newPerspectives: Dexie.Table<NewPerspectiveLocal, string>;
   updates: Dexie.Table<UpdateLocal, string>;
   deletedPerspectives: Dexie.Table<string, string>;
-  entities: Dexie.Table<Entity, string>;
 
   constructor(prefix: string = 'client-local') {
     super(`${prefix}-evees-store`);
@@ -36,13 +35,11 @@ export class MutationStoreDB extends Dexie {
       newPerspectives: '&id',
       updates: '&id,perspectiveId',
       deletedPerspectives: '&id',
-      entities: '&id',
     });
 
     this.perspectivesDetails = this.table('perspectivesDetails');
     this.newPerspectives = this.table('newPerspectives');
     this.updates = this.table('updates');
     this.deletedPerspectives = this.table('deletedPerspectives');
-    this.entities = this.table('entities');
   }
 }
