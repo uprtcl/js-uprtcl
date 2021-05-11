@@ -161,6 +161,9 @@ export class MutationStoreMemory implements ClientMutationStore {
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails | undefined> {
     const perspective = this.perspectivesDetails.get(perspectiveId);
-    return perspective ? perspective.details : undefined;
+    if (perspective) {
+      return { canUpdate: true, ...perspective.details };
+    }
+    return undefined;
   }
 }
