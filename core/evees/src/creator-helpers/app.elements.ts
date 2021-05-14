@@ -32,9 +32,6 @@ export class AppElements {
 
     /** all other objects are obtained relative to the home perspective */
     await this.getOrCreateElementData(this.home);
-
-    /** always flush to send pending changes */
-    await this.flush();
   }
 
   /** Returns the appElement from the path */
@@ -148,6 +145,7 @@ export class AppElements {
 
     if (!data) {
       await this.initTree(element);
+      await this.flush();
     } else {
       await this.readTree(element);
     }

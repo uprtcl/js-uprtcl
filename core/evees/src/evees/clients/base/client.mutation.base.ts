@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import lodash from 'lodash';
 
 import {
   Update,
@@ -86,14 +87,16 @@ export class ClientMutationBase implements ClientExplore {
     perspectiveId: string,
     options?: GetPerspectiveOptions
   ): Promise<PerspectiveGetResult> {
-    /** if the */
+    /** Always ask the base layer to get the non-mutated details as base details.
+     * There should be cache layer below so that this does not hit the remote */
+    const baseResult = await this.base.getPerspective(perspectiveId, options);
+
     const details = await this.mutationStore.getPerspective(perspectiveId);
     if (details) {
-      return { details };
+      return { details: lodash.merge(baseResult.details, details), slice: baseResult.slice };
     }
 
-    const result = await this.base.getPerspective(perspectiveId, options);
-    return { details: result.details };
+    return baseResult;
   }
 
   async createPerspectives(newPerspectives: NewPerspective[]): Promise<void> {
@@ -118,8 +121,6 @@ export class ClientMutationBase implements ClientExplore {
 
   async updatePerspectiveEffective(update: Update) {
     if (LOGINFO) this.logger.log(`${this.name} updatePerspectiveEffective()`, { update });
-
-    let timexstamp: number | undefined = undefined;
 
     this.mutationStore.addUpdate(update);
 
