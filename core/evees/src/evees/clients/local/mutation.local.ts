@@ -10,7 +10,7 @@ export class ClientMutationLocal extends ClientMutationBase {
     readonly base: ClientExplore,
     protected entityResolver: EntityResolver,
     entityRemote: EntityRemote,
-    readonly name: string = 'ClientLocal'
+    readonly name: string = 'local-mutation'
   ) {
     super(base, new MutationStoreLocal(name, entityResolver, entityRemote), name);
   }

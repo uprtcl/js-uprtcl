@@ -3,13 +3,13 @@ import { Entity } from '../../interfaces/entity';
 import { NewPerspective, PerspectiveDetails, Update } from '../../interfaces/types';
 
 export interface PerspectiveLocal {
-  id: string;
+  perspectiveId: string;
   details: PerspectiveDetails;
   onEcosystem: string[];
 }
 
 export interface NewPerspectiveLocal {
-  id: string;
+  perspectiveId: string;
   newPerspective: NewPerspective;
 }
 
@@ -31,10 +31,10 @@ export class MutationStoreDB extends Dexie {
     super(`${prefix}-evees-store`);
 
     this.version(0.1).stores({
-      perspectivesDetails: '&id,*onEcosystem',
-      newPerspectives: '&id',
+      perspectivesDetails: '&perspectiveId,*onEcosystem',
+      newPerspectives: '&perspectiveId',
       updates: '&id,perspectiveId',
-      deletedPerspectives: '&id',
+      deletedPerspectives: '&perspectiveId',
     });
 
     this.perspectivesDetails = this.table('perspectivesDetails');

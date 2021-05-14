@@ -41,14 +41,14 @@ export class MutationStoreLocal implements ClientMutationStore {
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails | undefined> {
     const perspective = await this.db.perspectivesDetails.get({
-      id: perspectiveId,
+      perspectiveId,
     });
     return perspective ? perspective.details : undefined;
   }
 
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     await this.db.newPerspectives.put({
-      id: newPerspective.perspective.hash,
+      perspectiveId: newPerspective.perspective.hash,
       newPerspective,
     });
 
@@ -62,12 +62,16 @@ export class MutationStoreLocal implements ClientMutationStore {
     await this.persistUpdateEntities(update);
 
     await this.db.updates.put({
-      id: update.perspectiveId + update.details.headId,
+      id: this.getUpdateId(update),
       perspectiveId: update.perspectiveId,
       update,
     });
 
     await this.updateDetails(update);
+  }
+
+  private getUpdateId(update: Update) {
+    return update.perspectiveId + update.details.headId;
   }
 
   async persistUpdateEntities(update: Update): Promise<void> {
@@ -84,7 +88,7 @@ export class MutationStoreLocal implements ClientMutationStore {
 
     /** keep the latest details cached */
     await this.db.perspectivesDetails.put({
-      id: update.perspectiveId,
+      perspectiveId: update.perspectiveId,
       details: update.details,
       onEcosystem: onEcosystemChanges.added,
     });
@@ -106,7 +110,7 @@ export class MutationStoreLocal implements ClientMutationStore {
     if (under && under.length > 0) {
       const allElements = await Promise.all(
         under.map((underId) => {
-          return table.where('id').equals(underId).toArray();
+          return table.where('perspectiveId').equals(underId).toArray();
         })
       );
       elements = Array.prototype.concat.apply([], allElements);
@@ -172,12 +176,51 @@ export class MutationStoreLocal implements ClientMutationStore {
     return updates.map((u) => u.update);
   }
 
-  async clear(): Promise<void> {
-    await Promise.all([
-      this.db.newPerspectives.clear(),
-      this.db.updates.clear(),
-      this.db.deletedPerspectives.clear(),
-      this.db.perspectivesDetails.clear(),
-    ]);
+  async clear(diff?: EveesMutation): Promise<void> {
+    if (diff) {
+      await this.db.transaction(
+        'rw',
+        this.db.newPerspectives,
+        this.db.updates,
+        this.db.deletedPerspectives,
+        this.db.perspectivesDetails,
+        async () => {
+          await Promise.all(
+            diff.newPerspectives.map(async (np) => {
+              await this.db.newPerspectives
+                .where('perspectiveId')
+                .equals(np.perspective.hash)
+                .delete();
+              await this.db.perspectivesDetails
+                .where('perspectiveId')
+                .equals(np.perspective.hash)
+                .delete();
+            })
+          );
+          await Promise.all(
+            diff.updates.map(async (up) => {
+              await this.db.updates.where('id').equals(this.getUpdateId(up)).delete();
+              await this.db.perspectivesDetails
+                .where('perspectiveId')
+                .equals(up.perspectiveId)
+                .delete();
+            })
+          );
+          await Promise.all(
+            diff.deletedPerspectives.map(async (id) => {
+              await this.db.deletedPerspectives.where('perspectiveId').equals(id).delete();
+              await this.db.perspectivesDetails.where('perspectiveId').equals(id).delete();
+            })
+          );
+        }
+      );
+    } else {
+      await Promise.all([
+        this.db.newPerspectives.clear(),
+        this.db.updates.clear(),
+        this.db.deletedPerspectives.clear(),
+        this.db.perspectivesDetails.clear(),
+      ]);
+    }
   }
 }

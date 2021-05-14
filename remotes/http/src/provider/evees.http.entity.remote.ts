@@ -87,11 +87,7 @@ export class HttpEntityRemote implements EntityRemote {
   }
 
   async getEntities(hashes: string[]): Promise<Entity<any>[]> {
-    const entities = await Promise.all(
-      hashes.map((hash) => {
-        return this.connection.getWithPut<Entity>(`/data`, { hashes });
-      })
-    );
+    const entities = await this.connection.getWithPut<Entity[]>(`/data`, { hashes });
     // mark the casID from which the entities are coming
     entities.forEach((e) => (e.remote = this.id));
     return entities;
