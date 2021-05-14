@@ -113,7 +113,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       reload = true;
     }
 
-    if (changedProperties.has('editable')) {
+    if (changedProperties.has('readOnly')) {
       reload = true;
     }
 
