@@ -57,8 +57,9 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
     await this.load();
     this.loading = false;
 
-    if (this.localEvees.events) {
-      this.localEvees.events.on(ClientEvents.updated, (perspectives) =>
+    const client = this.localEvees.getClient();
+    if (client.events) {
+      client.events.on(ClientEvents.updated, (perspectives) =>
         this.perspectiveUpdated(perspectives)
       );
     }
