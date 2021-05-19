@@ -171,10 +171,7 @@ export interface SearchOptions {
     value: string;
     levels?: number;
   };
-  forks?: {
-    include: boolean;
-    independent: boolean;
-  };
+  forks?: SearchForkOptions
   orderBy?: string;
   pagination?: {
     first: number;
@@ -183,7 +180,9 @@ export interface SearchOptions {
 }
 
 export interface SearchForkOptions {
-  levels?: number;
+  independent?: boolean;
+  independentOf?: string;
+  exclusive?: boolean;
 }
 
 export interface SearchResult {
@@ -199,7 +198,7 @@ export interface ParentAndChild {
 }
 
 export interface ForkOf {
-  forkId: string;
+  forkIds: string[];
   ofPerspectiveId: string;
   atHeadId?: string;
 }
