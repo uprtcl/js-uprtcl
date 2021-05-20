@@ -217,7 +217,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
     return html`<h1>Home</h1>`;
   }
 
-  renderTopBar() {
+  renderLeftBar() {
     return html`<div class="top-bar">
       <div class="proposals-container">
         <evees-proposals-dropdown
@@ -250,7 +250,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
     </div>`;
   }
 
-  render() {
+  renderWikiContent() {
     const updateDialogOptions: MenuConfig = {
       propose: {
         text: 'Propose',
@@ -260,28 +260,27 @@ export class EditableWiki extends servicesConnect(LitElement) {
         skinny: true,
       },
     };
-    return html`
-      ${this.renderTopBar()}
-      <div class="wiki-content-with-nav">
-        <div class="wiki-navbar">
-          <editable-page-list
-            first-uref=${this.uref}
-            ?editable=${this.canPropose}
-          ></editable-page-list>
-        </div>
 
-        <div class="wiki-content">
-          ${this.selectedPageId !== undefined
-            ? html`
-                <div class="page-container">
-                  <editable-document-editor
-                    first-uref=${this.selectedPageId}
-                  ></editable-document-editor>
-                </div>
-              `
-            : html` <div class="home-container">${this.renderHome()}</div> `}
-        </div>
+    return html`<div class="wiki-content-with-nav">
+      <div class="wiki-navbar">
+        <editable-page-list
+          first-uref=${this.uref}
+          ?editable=${this.canPropose}
+        ></editable-page-list>
       </div>
+
+      <div class="wiki-content">
+        ${this.selectedPageId !== undefined
+          ? html`
+              <div class="page-container">
+                <editable-document-editor
+                  first-uref=${this.selectedPageId}
+                ></editable-document-editor>
+              </div>
+            `
+          : html` <div class="home-container">${this.renderHome()}</div> `}
+      </div>
+
       ${this.showChangesDialog
         ? html`<uprtcl-dialog
             id="updates-dialog"
@@ -294,7 +293,11 @@ export class EditableWiki extends servicesConnect(LitElement) {
             ></evees-diff-explorer>
           </uprtcl-dialog>`
         : ''}
-    `;
+    </div>`;
+  }
+
+  render() {
+    return html` ${this.renderLeftBar()} ${this.renderWikiContent()} `;
   }
 
   static get styles() {

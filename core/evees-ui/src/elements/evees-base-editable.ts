@@ -43,7 +43,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.remote = this.evees.remotes[0];
     this.editRemote = this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
 
-    this.checkLoggedOnEdit();
+    await this.checkLoggedOnEdit();
 
     if (this.editRemote.events) {
       this.editRemote.events.on(RemoteLoggedEvents.logged_status_changed, () =>
@@ -55,7 +55,14 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
 
     if (this.remote.events) {
       this.remote.events.on(RemoteLoggedEvents.logged_out, () => this.seeOfficial());
-      this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.load());
+      this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.loadForks());
+    }
+
+    await this.loadForks();
+
+    /** automatically checkout the draft version */
+    if (this.case === EditableCase.IS_DRAFT_HAS_OFFICIAL) {
+      await this.seeDraft();
     }
   }
 
@@ -70,9 +77,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.isLoggedEdit = await this.editRemote.isLogged();
   }
 
-  async load() {
-    await super.load();
-
+  async loadForks() {
     /** it's assumed that there is only one fork per user on the remote  */
     if (!this.editRemote.searchEngine) {
       throw new Error(`search engine not defined for remote ${this.editRemote.id}`);
@@ -89,6 +94,10 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.checkCase();
 
     await this.checkPull();
+  }
+
+  async loadData() {
+    await super.load();
   }
 
   isDraft() {
@@ -178,13 +187,13 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.logger.log('seeDraft -- seeDraft()', this.mineId);
     if (!this.mineId) throw new Error(`mineId not defined`);
     this.uref = this.mineId;
-    return this.load();
+    return this.loadData();
   }
 
   async seeOfficial(): Promise<void> {
     this.logger.log('BaseDraft -- seeOfficial()', this.mineId);
     this.uref = this.firstRef;
-    return this.load();
+    return this.loadData();
   }
 
   renderInfo() {
@@ -210,7 +219,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
         break;
 
       case EditableCase.IS_DRAFT_HAS_OFFICIAL:
-        text = 'see original';
+        text = 'editing';
         textColor = ' blue-color';
         circleColor = ' blue-background';
         break;
