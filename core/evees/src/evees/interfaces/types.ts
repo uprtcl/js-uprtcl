@@ -1,9 +1,6 @@
-import { Behaviour } from '../../patterns/interfaces/behaviour';
-import { Secured } from '../../cas/utils/cid-hash';
-import { Entity, EntityCreate } from '../../cas/interfaces/entity';
-
-import { RemoteEvees } from './remote.evees';
-import { Evees } from '../evees.service';
+import { Entity } from './entity';
+import { ClientRemote } from './client.remote';
+import { Signed } from '../../patterns';
 
 export declare enum Join {
   inner = 'INNER_JOIN',
@@ -47,7 +44,6 @@ export interface Commit {
 export interface Update {
   perspectiveId: string;
   details: PerspectiveDetails;
-  oldDetails?: PerspectiveDetails;
   fromPerspectiveId?: string;
   indexData?: IndexData;
 }
@@ -137,14 +133,12 @@ export interface EveesMutation {
   newPerspectives: NewPerspective[];
   updates: Update[];
   deletedPerspectives: string[];
-  entities: Entity[];
 }
 
 export interface EveesMutationCreate {
   newPerspectives?: NewPerspective[];
   updates?: Update[];
   deletedPerspectives?: string[];
-  entities?: EntityCreate[];
 }
 
 export interface EveesOptions {
@@ -177,10 +171,7 @@ export interface SearchOptions {
     value: string;
     levels?: number;
   };
-  forks?: {
-    include: boolean;
-    independent: boolean;
-  };
+  forks?: SearchForkOptions
   orderBy?: string;
   pagination?: {
     first: number;
@@ -189,7 +180,9 @@ export interface SearchOptions {
 }
 
 export interface SearchForkOptions {
-  levels?: number;
+  independent?: boolean;
+  independentOf?: string;
+  exclusive?: boolean;
 }
 
 export interface SearchResult {
@@ -205,14 +198,14 @@ export interface ParentAndChild {
 }
 
 export interface ForkOf {
-  forkId: string;
+  forkIds: string[];
   ofPerspectiveId: string;
   atHeadId?: string;
 }
 
 export interface EveesConfig {
-  defaultRemote?: RemoteEvees;
-  officialRemote?: RemoteEvees;
+  defaultRemote?: ClientRemote;
+  officialRemote?: ClientRemote;
   editableRemotesIds?: string[];
   emitIf?: {
     remote: string;
@@ -238,6 +231,10 @@ export interface UpdatePerspectiveData {
 }
 
 export interface FlushConfig {
-  debounce: number;
-  autoflush: boolean;
+  debounce?: number;
+  autoflush?: boolean;
+  recurse?: boolean;
+  condensate?: boolean;
 }
+
+export type Secured<T> = Entity<Signed<T>>;

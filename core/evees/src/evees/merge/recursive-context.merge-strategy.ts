@@ -11,7 +11,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   perspectivesByContext: Map<string, FromTo> = new Map();
 
   async isPattern(id: string, type: string): Promise<boolean> {
-    const entity = await this.evees.client.store.getEntity(id);
+    const entity = await this.evees.getEntity(id);
     if (entity === undefined) throw new Error('entity not found');
     const recongnizedType = this.evees.recognizer.recognizeType(entity.object);
     return type === recongnizedType;
@@ -36,7 +36,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const context = await this.evees.getPerspectiveContext(perspectiveId);
     this.setPerspective(perspectiveId, context, to);
 
-    const { details } = await this.evees.client.getPerspective(perspectiveId);
+    const { details } = await this.evees.getPerspective(perspectiveId);
 
     if (details.headId == null) {
       return;

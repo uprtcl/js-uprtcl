@@ -1,31 +1,27 @@
-import { CASStore } from '../../cas/interfaces/cas-store';
-
 import {
   Update,
   NewPerspective,
-  EveesMutation,
   EveesMutationCreate,
   PerspectiveGetResult,
   GetPerspectiveOptions,
   SearchOptions,
+  SearchResult,
 } from './types';
-import { SearchEngine } from './search.engine';
 import { EventEmitter } from 'events';
 import { Proposals } from '../proposals/proposals';
+import { Entity, EntityCreate } from './entity';
 
 export enum ClientEvents {
   updated = 'updated',
   ecosystemUpdated = 'ecosystem-updated',
 }
 
-// All evees clients must call the .on('') method with in the following cases
-// 'updated': When an perspective head is new.
-// 'logged-status-changed': When the logges status has changed.
-// 'canUpdate': When the logged user canUpdate status over a perspective changes.
-
+/** A Client can store mutable references (perspectives) and support basic CRUD operation on them.
+ * The content of a perspective is reduced to a single hash of its head commit..
+ *
+ * An evees mutation is a batch of Create, Update or Delete operations that also includes
+ * the ids of the entities referenced in the mutation. */
 export interface Client {
-  readonly store: CASStore;
-  readonly searchEngine?: SearchEngine;
   readonly events?: EventEmitter;
   readonly proposals?: Proposals;
 
@@ -37,20 +33,15 @@ export interface Client {
   ): Promise<PerspectiveGetResult>;
 
   /** create/update perspectives and entities in batch */
-  update(mutation: EveesMutationCreate);
+  update(mutation: EveesMutationCreate): Promise<void>;
 
-  /** convenient methods to edit a single perspective at a time */
+  /** convenient methods to edit a single perspective or set one entity at a time */
   newPerspective(newPerspective: NewPerspective): Promise<void>;
   deletePerspective(perspectiveId: string): Promise<void>;
   updatePerspective(update: Update): Promise<void>;
 
   /** await for all update transactions received to be processed (visible to read queries) */
   ready?(): Promise<void>;
-
-  /** a custom method that search other perspectives based on the logged user,
-   * its kept aside from the searchEngine.otherPerspectives method because we need
-   * cache and reactivity of the results this is not possible for the searchEngine.  */
-  getUserPerspectives(perspectiveId: string): Promise<string[]>;
 
   /** returns true if the user can update the perspective */
   canUpdate(perspectiveId: string, userId?: string): Promise<boolean>;

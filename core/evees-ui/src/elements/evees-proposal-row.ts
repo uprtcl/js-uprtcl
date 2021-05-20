@@ -65,7 +65,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     this.loading = true;
     this.loadingCreator = true;
 
-    const proposal = await this.evees.client.store.getEntity(this.proposalId);
+    const proposal = await this.evees.getEntity(this.proposalId);
     const remote = this.evees.getRemote(proposal.object.remote);
 
     if (!remote.proposals) {
@@ -75,13 +75,14 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     this.proposal = await remote.proposals.getProposal(this.proposalId);
 
     const fromPerspective = this.proposal.fromPerspectiveId
-      ? await this.evees.client.store.getEntity(this.proposal.fromPerspectiveId)
+      ? await this.evees.getEntity(this.proposal.fromPerspectiveId)
       : undefined;
 
     this.toRemote = await this.evees.getPerspectiveRemote(this.proposal.toPerspectiveId);
 
-    if (!this.toRemote.proposals) throw new Error('ToRemote dont have proposals service');
-    this.proposals = this.toRemote.proposals as ProposalsWithUI;
+    const proposals = this.toRemote.proposals;
+    if (!proposals) throw new Error('ToRemote dont have proposals service');
+    this.proposals = proposals as ProposalsWithUI;
 
     /** the author is the creator of the fromPerspective */
     this.authorId = fromPerspective ? fromPerspective.object.payload.creatorId : undefined;
@@ -90,15 +91,13 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     /** create an Evees service that includes the proposal mutation */
     this.proposalEvees = this.evees.clone(`Proposal-${this.proposalId}`);
-    await this.proposalEvees.client.update(this.proposal.mutation);
+    await this.proposalEvees.update(this.proposal.mutation);
 
     await this.checkCanExecute();
     await this.checkExecuted();
 
     /** the proposal creator is set at proposal creation */
-    this.canRemove = this.evees.client.proposals
-      ? await this.evees.client.proposals.canDelete(this.proposalId)
-      : false;
+    this.canRemove = proposals ? await this.proposals.canDelete(this.proposalId) : false;
 
     this.loading = false;
   }
@@ -114,8 +113,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
             .map((update) => {
               return this.proposalEvees.isAncestorCommit(
                 update.perspectiveId,
-                update.details.headId as string,
-                update.oldDetails ? update.oldDetails.headId : undefined
+                update.details.headId as string
               );
             })
         : [true]
@@ -131,7 +129,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
       this.proposal.mutation.updates
         ? this.proposal.mutation.updates.map(
             async (update): Promise<boolean> => {
-              return this.proposalEvees.client.canUpdate(update.perspectiveId);
+              return this.proposalEvees.canUpdate(update.perspectiveId);
             }
           )
         : [true]
@@ -186,10 +184,10 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
 
     if (value === 'accept') {
       /** run the proposal changes as the logged user */
-      await this.proposalEvees.client.flush();
+      await this.proposalEvees.flush();
 
       /** delete the proposal (WHAT?) */
-      await this.evees.client.update({ deletedPerspectives: [this.proposalId] });
+      await this.evees.update({ deletedPerspectives: [this.proposalId] });
 
       /** reload */
       this.load();
@@ -204,7 +202,7 @@ export class EveesProposalRow extends servicesConnect(LitElement) {
     }
 
     if (value === 'delete') {
-      await this.evees.client.update({ deletedPerspectives: [this.proposalId] });
+      await this.evees.update({ deletedPerspectives: [this.proposalId] });
       this.load();
     }
   }

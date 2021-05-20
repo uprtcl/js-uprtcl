@@ -1,13 +1,13 @@
-import { ArrayChanges, IndexData, LinksType } from './interfaces/types';
+import { ArrayChanges, IndexData, LinkChanges, LinksType } from './interfaces/types';
 
 export class IndexDataHelper {
   /** Create or append ArrayChanges to an IndexData */
   static combineArrayChanges(
-    changes?: ArrayChanges,
+    _changes?: ArrayChanges,
     linksType: LinksType = LinksType.children,
     indexData?: IndexData
   ): IndexData {
-    changes = changes || { added: [], removed: [] };
+    let changes: ArrayChanges = _changes || { added: [], removed: [] };
 
     if (!indexData) {
       return {
@@ -38,28 +38,41 @@ export class IndexDataHelper {
       return indexData;
     }
 
-    /** removes cancel additions and viceversa */
-    const newChanges = indexData.linkChanges[linksType] as ArrayChanges;
+    /** cancel removals and addings */
+    indexData.linkChanges[linksType] = IndexDataHelper.appendArrayChanges(
+      changes,
+      indexData.linkChanges[linksType] as ArrayChanges
+    );
 
+    return indexData;
+  }
+
+  static appendArrayChanges(changes: ArrayChanges, newChanges: ArrayChanges): ArrayChanges {
+    const resultChanges: ArrayChanges = {
+      added: [...changes.added],
+      removed: [...changes.removed],
+    };
+
+    /** removes cancel additions and viceversa */
     changes.added.map((added) => {
       const ixOfRemoved = newChanges.removed.indexOf(added);
       if (ixOfRemoved !== -1) {
-        newChanges.removed.splice(ixOfRemoved, 1);
+        resultChanges.removed.splice(ixOfRemoved, 1);
       } else {
-        newChanges.added.push(added);
+        resultChanges.added.push(added);
       }
     });
 
     changes.removed.map((removed) => {
       const ixOfAdded = newChanges.added.indexOf(removed);
       if (ixOfAdded !== -1) {
-        newChanges.added.splice(ixOfAdded, 1);
+        resultChanges.added.splice(ixOfAdded, 1);
       } else {
-        newChanges.removed.push(removed);
+        resultChanges.removed.push(removed);
       }
     });
 
-    return indexData;
+    return resultChanges;
   }
 
   static getArrayChanges(

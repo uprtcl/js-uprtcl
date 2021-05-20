@@ -4,17 +4,17 @@ import { MenuOptions, UprtclDialog } from '@uprtcl/common-ui';
 import {
   Perspective,
   PerspectiveDetails,
-  Entity,
   Commit,
   Logger,
   Evees,
-  RemoteEvees,
+  ClientRemote,
   PerspectiveType,
-  Signed,
   CommitType,
   MergeConfig,
   RecursiveContextMergeStrategy,
   Proposal,
+  Entity,
+  Signed,
 } from '@uprtcl/evees';
 
 import { ProposalCreatedEvent } from './events';
@@ -98,7 +98,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   perspectiveData!: PerspectiveData;
   eveesPull: Evees | undefined = undefined;
 
-  protected remote!: RemoteEvees;
+  protected remote!: ClientRemote;
 
   async firstUpdated() {}
 
@@ -115,7 +115,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
 
     this.remote = await this.evees.getPerspectiveRemote(this.uref);
 
-    const entity = await this.evees.client.store.getEntity(this.uref);
+    const entity = await this.evees.getEntity(this.uref);
     if (!entity) throw Error(`Entity not found ${this.uref}`);
 
     this.entityType = this.evees.recognizer.recognizeType(entity.object);
@@ -123,16 +123,12 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     this.loading = true;
 
     if (this.entityType === PerspectiveType) {
-      const { details } = await this.evees.client.getPerspective(this.uref);
+      const { details } = await this.evees.getPerspective(this.uref);
 
       const head =
-        details.headId !== undefined
-          ? await this.evees.client.store.getEntity(details.headId)
-          : undefined;
+        details.headId !== undefined ? await this.evees.getEntity(details.headId) : undefined;
       const data =
-        head !== undefined
-          ? await this.evees.client.store.getEntity(head.object.payload.dataId)
-          : undefined;
+        head !== undefined ? await this.evees.getEntity(head.object.payload.dataId) : undefined;
 
       this.perspectiveData = {
         id: this.uref,
@@ -146,11 +142,9 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     }
 
     if (this.entityType === CommitType) {
-      const head = await this.evees.client.store.getEntity(this.uref);
+      const head = await this.evees.getEntity(this.uref);
       const data =
-        head !== undefined
-          ? await this.evees.client.store.getEntity(head.object.payload.dataId)
-          : undefined;
+        head !== undefined ? await this.evees.getEntity(head.object.payload.dataId) : undefined;
 
       this.perspectiveData = {
         head,
@@ -220,8 +214,8 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
       forceOwner: true,
     };
 
-    const { details: toDetails } = await this.evees.client.getPerspective(toPerspectiveId);
-    const { details: fromDetails } = await this.evees.client.getPerspective(fromPerspectiveId);
+    const { details: toDetails } = await this.evees.getPerspective(toPerspectiveId);
+    const { details: fromDetails } = await this.evees.getPerspective(fromPerspectiveId);
 
     const eveesMerge = this.evees.clone('MergeClient');
     const merger = new RecursiveContextMergeStrategy(eveesMerge);
@@ -266,7 +260,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
       fromPerspectiveId,
       toHeadId: toDetails.headId,
       fromHeadId: fromDetails.headId,
-      mutation: await eveesMerge.client.diff(),
+      mutation: await eveesMerge.diff(),
     };
 
     if (!canUpdate && (emitBecauseOfTarget || this.emitProposals)) {
@@ -353,7 +347,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   }
 
   async delete() {
-    this.evees.client.update({ deletedPerspectives: [this.uref] });
+    this.evees.update({ deletedPerspectives: [this.uref] });
     this.checkoutPerspective(this.firstRef);
   }
 

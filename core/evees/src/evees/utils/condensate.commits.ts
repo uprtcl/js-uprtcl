@@ -1,10 +1,9 @@
 import { Logger } from '../../utils/logger';
-import { Secured } from '../../cas/utils/cid-hash';
 import { createCommit } from '../default.perspectives';
 import { IndexDataHelper } from '../index.data.helper';
-import { Commit, IndexData, Perspective, Update } from '../interfaces/types';
-import { CASStore } from '../../cas/interfaces/cas-store';
+import { Commit, IndexData, Perspective, Update, Secured } from '../interfaces/index';
 import { Signed } from '../../patterns/interfaces/signable';
+import { EntityResolver } from '../interfaces/entity.resolver';
 
 export interface CommitDAG {
   commits: Set<Secured<Commit>>;
@@ -28,7 +27,7 @@ export class CondensateCommits {
   logger = new Logger('CondensateCommits');
 
   constructor(
-    protected store: CASStore,
+    protected entityResolver: EntityResolver,
     protected updates: Update[],
     protected squash: boolean = true,
     protected logEnabled = false
@@ -37,7 +36,9 @@ export class CondensateCommits {
   async init() {
     this.perspectiveId = this.updates[0].perspectiveId;
 
-    const perspective = await this.store.getEntity<Signed<Perspective>>(this.perspectiveId);
+    const perspective = await this.entityResolver.getEntity<Signed<Perspective>>(
+      this.perspectiveId
+    );
     this.remoteId = perspective.object.payload.remote;
 
     if (this.logEnabled) this.logger.log('init()', { updates: this.updatesMap, perspective });
@@ -64,8 +65,8 @@ export class CondensateCommits {
       })
       .filter((head) => head !== undefined) as string[];
 
-    const commits = await this.store.getEntities(headIds);
-    commits.entities.map((commit) => this.allCommits.set(commit.id, commit));
+    const commits = await this.entityResolver.getEntities(headIds);
+    commits.map((commit) => this.allCommits.set(commit.hash, commit));
 
     if (this.logEnabled) this.logger.log('readAllCommits()', { allCommits: this.allCommits });
   }
@@ -86,7 +87,7 @@ export class CondensateCommits {
       /** add this commit as child of all its parents */
       parentsIds.forEach((parentId) => {
         const children = this.childrenMap.get(parentId) || new Set();
-        children.add(commit.id);
+        children.add(commit.hash);
         this.childrenMap.set(parentId, children);
       });
     });
@@ -103,7 +104,7 @@ export class CondensateCommits {
         /** internal commit */
       } else {
         /** tail commit */
-        tails.push(commit.id);
+        tails.push(commit.hash);
       }
     });
 
@@ -170,7 +171,7 @@ export class CondensateCommits {
         forking: forking,
       });
 
-      const head = await this.store.storeEntity({
+      const head = await this.entityResolver.hashObject({
         object: newCommitObject,
         remote: this.remoteId,
       });
@@ -178,7 +179,7 @@ export class CondensateCommits {
       newUpdate = {
         details: {
           ...update.details,
-          headId: head.id,
+          headId: head.hash,
         },
         perspectiveId: update.perspectiveId,
         fromPerspectiveId: update.fromPerspectiveId,

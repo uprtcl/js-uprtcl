@@ -1,5 +1,5 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
-import { Evees, Logger, ProposalEvents, RemoteEvees } from '@uprtcl/evees';
+import { Evees, Logger, ProposalEvents, ClientRemote } from '@uprtcl/evees';
 
 import { servicesConnect } from '../container/multi-connect.mixin';
 
@@ -15,16 +15,18 @@ export class ProposalsList extends servicesConnect(LitElement) {
   @internalProperty()
   proposalsIds: string[] = [];
 
-  remote!: RemoteEvees;
+  remote!: ClientRemote;
   evees!: Evees;
 
   async firstUpdated() {
     this.loadingProposals = true;
     this.proposalsIds = [];
 
-    if (this.evees.client.proposals) {
-      if (this.evees.client.proposals.events) {
-        this.evees.client.proposals.events.on(ProposalEvents.created, () => this.load());
+    const proposals = this.evees.getProposals();
+
+    if (proposals) {
+      if (proposals.events) {
+        proposals.events.on(ProposalEvents.created, () => this.load());
       }
     }
 
@@ -33,15 +35,13 @@ export class ProposalsList extends servicesConnect(LitElement) {
 
   async load() {
     if (!this.evees) return;
-    if (!this.evees.client.searchEngine) throw new Error('searchEngine not registered');
 
     /** data on other perspectives (proposals are injected on them) */
     this.remote = await this.evees.getPerspectiveRemote(this.perspectiveId);
 
-    if (this.evees.client.proposals) {
-      this.proposalsIds = await this.evees.client.proposals.getProposalsToPerspective(
-        this.perspectiveId
-      );
+    const proposals = this.evees.getProposals();
+    if (proposals) {
+      this.proposalsIds = await proposals.getProposalsToPerspective(this.perspectiveId);
     }
 
     this.loadingProposals = false;

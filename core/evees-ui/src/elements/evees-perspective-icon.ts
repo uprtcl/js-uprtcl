@@ -28,7 +28,7 @@ export class EveesPerspectiveIcon extends servicesConnect(LitElement) {
 
   async load() {
     this.loading = true;
-    const perspective = await this.evees.client.store.getEntity(this.perspectiveId);
+    const perspective = await this.evees.getEntity(this.perspectiveId);
     if (!perspective) throw new Error('perspective undefined');
 
     const remote = this.evees.remotes.find((r) => r.id === perspective.object.payload.remote);

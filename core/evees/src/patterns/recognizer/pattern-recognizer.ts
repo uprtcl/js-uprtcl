@@ -1,5 +1,3 @@
-import { Entity } from '../../cas/interfaces/entity';
-
 import { Pattern } from '../interfaces/pattern';
 import { Behaviour } from '../interfaces/behaviour';
 
