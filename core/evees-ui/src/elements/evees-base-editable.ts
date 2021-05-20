@@ -69,7 +69,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
 
     const { perspectiveIds: drafts } = await this.editRemote.explore({
       under: { elements: [{ id: this.firstRef }] },
-      forks: { include: true, independent: true },
+      forks: { independent: true },
     });
     this.mineId = drafts.length > 0 ? drafts[0] : undefined;
     this.logger.log('BaseDraft -- load() set mineId', this.mineId);
