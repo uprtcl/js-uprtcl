@@ -1,13 +1,7 @@
 import { css, html, internalProperty, property } from 'lit-element';
 
 import { icons } from '@uprtcl/common-ui';
-import {
-  RemoteEvees,
-  Logger,
-  RemoteLoggedEvents,
-  RecursiveContextMergeStrategy,
-  Evees,
-} from '@uprtcl/evees';
+import { ClientRemote, ConnectionLoggedEvents, Logger } from '@uprtcl/evees';
 
 import { EveesBaseElement } from './evees-base';
 
@@ -35,8 +29,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   protected case: EditableCase = EditableCase.IS_OFFICIAL_DONT_HAVE_DRAFT;
 
   protected mineId: string | undefined = undefined;
-  protected editRemote!: RemoteEvees;
-  protected eveesPull!: Evees;
+  protected editRemote!: ClientRemote;
 
   async firstUpdated() {
     this.uref = this.firstRef;
@@ -46,7 +39,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     await this.checkLoggedOnEdit();
 
     if (this.editRemote.events) {
-      this.editRemote.events.on(RemoteLoggedEvents.logged_status_changed, () =>
+      this.editRemote.events.on(ConnectionLoggedEvents.logged_status_changed, () =>
         this.checkLoggedOnEdit()
       );
     }
@@ -54,15 +47,8 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     await super.firstUpdated();
 
     if (this.remote.events) {
-      this.remote.events.on(RemoteLoggedEvents.logged_out, () => this.seeOfficial());
-      this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.loadForks());
-    }
-
-    await this.loadForks();
-
-    /** automatically checkout the draft version */
-    if (this.case === EditableCase.IS_DRAFT_HAS_OFFICIAL) {
-      await this.seeDraft();
+      this.remote.events.on(ConnectionLoggedEvents.logged_out, () => this.seeOfficial());
+      this.remote.events.on(ConnectionLoggedEvents.logged_status_changed, () => this.load());
     }
   }
 
@@ -77,15 +63,16 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
     this.isLoggedEdit = await this.editRemote.isLogged();
   }
 
-  async loadForks() {
-    /** it's assumed that there is only one fork per user on the remote  */
-    if (!this.editRemote.searchEngine) {
-      throw new Error(`search engine not defined for remote ${this.editRemote.id}`);
+  async load() {
+    await super.load();
+
+    if (!this.editRemote.explore) {
+      throw new Error('explore is undefined');
     }
 
-    const { perspectiveIds: drafts } = await this.editRemote.searchEngine.explore({
+    const { perspectiveIds: drafts } = await this.editRemote.explore({
       under: { elements: [{ id: this.firstRef }] },
-      forks: { include: true, independent: true },
+      forks: { independent: true },
     });
 
     this.mineId = drafts.length > 0 ? drafts[0] : undefined;
@@ -178,7 +165,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
       recurse,
       detach: false,
     });
-    await this.evees.client.flush();
+    await this.evees.flush();
     this.logger.log('BaseDraft -- createDraft()', this.mineId);
     return this.seeDraft();
   }

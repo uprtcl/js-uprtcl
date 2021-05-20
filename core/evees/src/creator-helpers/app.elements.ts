@@ -1,9 +1,7 @@
 import { Signed } from '../patterns/interfaces/signable';
 import { Logger } from '../utils/logger';
-import { Secured } from '../cas/utils/cid-hash';
 import { Evees } from '../evees/evees.service';
-import { RemoteEvees } from '../evees/interfaces/remote.evees';
-import { Perspective } from '../evees/interfaces/types';
+import { ClientRemote, IndexData, Perspective, Secured } from '../evees/interfaces/index';
 
 /** a services that builds tree of perspectives that is apended to
  * the home space of the logged user. This services creates this
@@ -19,7 +17,7 @@ export interface AppElement {
 const LOGINFO = false;
 /** the relative (to home) path of each app element */
 export class AppElements {
-  readonly remote: RemoteEvees;
+  readonly remote: ClientRemote;
   logger = new Logger('AppElements');
 
   constructor(protected evees: Evees, protected home: AppElement, remoteId?: string) {
@@ -30,7 +28,7 @@ export class AppElements {
     if (LOGINFO) this.logger.log('check()');
     /** home space perspective is deterministic */
     this.home.perspective = await this.evees.getHome(this.remote.id);
-    await this.checkOrCreateHome(this.home.perspective);
+    await this.checkOrCreateHome(this.home.perspective as Secured<Perspective>);
 
     /** all other objects are obtained relative to the home perspective */
     await this.getOrCreateElementData(this.home);
@@ -75,12 +73,10 @@ export class AppElements {
       timestamp: Date.now() + level * 10000 + biasTime,
     });
 
+    if (!element.perspective) throw new Error('Perspective undefined after snap');
+
     /** make sure the perspective is in the store to be resolved */
-    await this.evees.client.store.storeEntity({
-      id: element.perspective.id,
-      object: element.perspective.object,
-      remote: element.perspective.object.payload.remote,
-    });
+    await this.evees.entityResolver.storeEntity(element.perspective);
 
     if (element.children) {
       await Promise.all(
@@ -95,35 +91,43 @@ export class AppElements {
     if (!element.perspective)
       throw new Error(`perspective not found for element ${JSON.stringify(element)}`);
 
+    if (!this.home.perspective)
+      throw new Error(`this.home.perspectiv not found for element ${JSON.stringify(element)}`);
+
     const perspective = element.perspective;
+
+    /** set onEcosystem indexing to then filter these at flush of the mutation stores */
+    const indexData: IndexData = {
+      linkChanges: {
+        onEcosystem: {
+          added: [this.home.perspective.hash],
+          removed: [],
+        },
+      },
+    };
 
     await this.evees.createEvee({
       object: data,
-      partialPerspective: perspective.object.payload,
+      perspectiveId: perspective.hash,
       guardianId,
+      indexData,
     });
 
     if (element.children) {
       await Promise.all(
-        element.children.map((child) => this.initPerspectiveDataRec(child, perspective.id))
+        element.children.map((child) => this.initPerspectiveDataRec(child, perspective.hash))
       );
     }
   }
 
   // make sure a perspective exist, or creates it
   async checkOrCreateHome(perspective: Secured<Perspective>) {
-    /** make sure the perspective is in the store to be resolved */
-    await this.evees.client.store.storeEntity({
-      object: perspective.object,
-      remote: perspective.object.payload.remote,
-    });
-
     /** get the perspective data */
     const levels = getLevels(this.home);
-    const { details } = await this.evees.client.getPerspective(perspective.id, { levels });
+    const { details } = await this.evees.getPerspective(perspective.hash, { levels });
 
     /** canUpdate is used as the flag to detect if the home space exists */
-    if (!details.canUpdate) {
+    if (!details.headId) {
       /** create the home perspective as it did not existed */
       if (LOGINFO) this.logger.log('create perspective data()', perspective.object.payload);
       await this.evees.createEvee({
@@ -136,11 +140,12 @@ export class AppElements {
     if (!element.perspective)
       throw new Error(`perspective not found for element ${JSON.stringify(element)}`);
 
-    const data = await this.evees.tryGetPerspectiveData(element.perspective.id);
+    const data = await this.evees.tryGetPerspectiveData(element.perspective.hash);
     if (LOGINFO) this.logger.log('getOrCreateElementData()', { element, data });
 
     if (!data) {
       await this.initTree(element);
+      await this.flush();
     } else {
       await this.readTree(element);
     }
@@ -155,13 +160,22 @@ export class AppElements {
       await Promise.all(element.children.map((child) => this.createSnapElementRec(child)));
 
       if (!element.perspective) throw new Error('Element perspective not defined');
-      const elementId = element.perspective.id;
+      const elementId = element.perspective.hash;
     }
 
     // set perspectives data
     await this.initPerspectiveDataRec(element);
+  }
 
-    await this.evees.client.flush();
+  /** always flush the tree in case it got stuck from previous initTree attempt */
+  async flush() {
+    if (!this.home.perspective) {
+      throw new Error('home perspective must exist at this point');
+    }
+
+    await this.evees.flush({
+      under: { elements: [{ id: this.home.perspective.hash, levels: 3 }] },
+    });
   }
 
   async readTree(element: AppElement) {
@@ -174,7 +188,7 @@ export class AppElements {
     if (!element.perspective)
       throw new Error(`Element ${JSON.stringify(element)} doest not have the perspective set`);
 
-    const data = await this.evees.getPerspectiveData(element.perspective.id);
+    const data = await this.evees.getPerspectiveData(element.perspective.hash);
 
     /** if the scheleton does not have children, then stop reading the tree here */
     if (!element.children) {
@@ -191,14 +205,14 @@ export class AppElements {
           if (child.optional !== true) {
             throw new Error(
               `Child not found for expected element ${
-                element.perspective ? element.perspective.id : ''
+                element.perspective ? element.perspective.hash : ''
               }`
             );
           }
           return;
         }
 
-        const perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(childId);
+        const perspective = await this.evees.getEntity<Signed<Perspective>>(childId);
 
         if (!perspective) {
           /** if perspective does not exist maybe the user removed part of the scheleton */

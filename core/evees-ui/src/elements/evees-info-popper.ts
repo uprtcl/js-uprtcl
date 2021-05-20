@@ -61,7 +61,7 @@ export class EveesInfoPopper extends servicesConnect(LitElement) {
   }
 
   async load() {
-    const current = await this.evees.client.store.getEntity(this.uref);
+    const current = await this.evees.getEntity(this.uref);
     if (!current) throw new Error(`cant find current perspective ${this.uref}`);
 
     this.creatorId = current.object.payload.creatorId;

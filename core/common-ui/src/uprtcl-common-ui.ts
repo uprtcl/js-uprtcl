@@ -1,7 +1,7 @@
 export { registerComponents as registerCommonUI } from './register.components';
 
 export { UprtclDialog } from './elements/dialog';
-export { MenuConfig } from './elements/options-menu';
+export { MenuOption, MenuOptions } from './elements/options-menu';
 export { UprtclButton } from './elements/button';
 export { UprtclLoading } from './elements/loading';
 export { UprtclList } from './elements/list';

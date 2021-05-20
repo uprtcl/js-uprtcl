@@ -1,12 +1,12 @@
 import { Evees } from '../evees.service';
-import { RemoteEvees } from '../interfaces/remote.evees';
+import { ClientRemote } from '../interfaces/client.remote';
 import { Proposals } from './proposals';
 import { Proposal } from './types';
 
 /** A class that implements the Proposals interface and runs on top
  * of Client */
 export class ProposalsWithEvees implements Proposals {
-  remote!: RemoteEvees;
+  remote!: ClientRemote;
 
   constructor(readonly evees: Evees, readonly remoteId?: string) {
     this.remote = this.evees.getRemote(this.remoteId);
@@ -21,7 +21,7 @@ export class ProposalsWithEvees implements Proposals {
       context: 'uprtcl.proposal',
     });
     // append the link
-    (newProposal as any).meta.links = [proposalConcept.id];
+    (newProposal as any).meta.links = [proposalConcept.hash];
 
     // add it as child of the user proposals space
     const proposalsSpaceId = await this.getOrCreateProposalsSpace();
@@ -35,18 +35,18 @@ export class ProposalsWithEvees implements Proposals {
 
   async getOrCreateProposalsSpace(): Promise<string> {
     const home = await this.evees.getHome(this.remoteId);
-    const homeData = await this.evees.getOrCreatePerspectiveData(home.id);
+    const homeData = await this.evees.getOrCreatePerspectiveData(home.hash);
 
     if (!homeData.object.proposals) {
       const proposalsSpaceId = await this.evees.createEvee({
-        guardianId: home.id,
+        guardianId: home.hash,
         object: { proposals: [] },
       });
       const newHomeObject = {
         ...homeData.object,
         proposals: proposalsSpaceId,
       };
-      this.evees.updatePerspectiveData({ perspectiveId: home.id, object: newHomeObject });
+      this.evees.updatePerspectiveData({ perspectiveId: home.hash, object: newHomeObject });
       return proposalsSpaceId;
     } else {
       return homeData.object.proposals;

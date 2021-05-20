@@ -1,14 +1,14 @@
-import { Secured } from '../cas/utils/cid-hash';
-import { CidConfig, defaultCidConfig } from '../cas/interfaces/cid-config';
-import { deriveSecured, signObject } from '../cas/utils/signed';
+import {} from './utils/cid-hash';
 import { Signed } from '../patterns/interfaces/signable';
 
-import { RemoteEvees } from './interfaces/remote.evees';
-import { Commit, PartialPerspective, Perspective } from './interfaces/types';
+import { ClientRemote } from './interfaces/client.remote';
+import { Commit, PartialPerspective, Perspective, Secured, CidConfig } from './interfaces/index';
 import { CreateCommit } from './evees.service';
+import { defaultCidConfig } from './interfaces/cid-config';
+import { deriveSecured, signObject } from './utils/signed';
 
 export const snapDefaultPerspective = async (
-  remote: RemoteEvees,
+  remote: ClientRemote,
   perspective: PartialPerspective
 ): Promise<Secured<Perspective>> => {
   const creatorId = perspective.creatorId
@@ -19,7 +19,7 @@ export const snapDefaultPerspective = async (
   const timestamp = perspective.timestamp !== undefined ? perspective.timestamp : Date.now();
   const path = perspective.path !== undefined ? perspective.path : remote.defaultPath;
 
-  const defaultContext = await remote.store.hashEntity({
+  const defaultContext = await remote.entityRemote.hashObject({
     object: {
       creatorId,
       timestamp,
@@ -27,7 +27,7 @@ export const snapDefaultPerspective = async (
     remote: remote.id,
   });
 
-  const context = perspective.context !== undefined ? perspective.context : defaultContext.id;
+  const context = perspective.context !== undefined ? perspective.context : defaultContext.hash;
 
   const object: Perspective = {
     creatorId: creatorId,
@@ -49,11 +49,11 @@ export const snapDefaultPerspective = async (
     },
   };
 
-  return remote.store.hashEntity({ object: secured, remote: remote.id });
+  return remote.entityRemote.hashObject({ object: secured, remote: remote.id });
 };
 
 export const getHome = async (
-  remote: RemoteEvees,
+  remote: ClientRemote,
   userId?: string
 ): Promise<Secured<Perspective>> => {
   const creatorId = userId === undefined ? (remote.userId ? remote.userId : '') : userId;
@@ -74,7 +74,7 @@ export const getHome = async (
     },
   };
 
-  return remote.store.hashEntity({ object: secured, remote: remote.id });
+  return remote.entityRemote.hashObject({ object: secured, remote: remote.id });
 };
 
 export const getConceptPerspective = async (

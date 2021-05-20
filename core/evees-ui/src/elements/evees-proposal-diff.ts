@@ -39,7 +39,7 @@ export class EveesProposalDiff extends servicesConnect(LitElement) {
 
     const proposal = await this.evees.getPerspectiveData(this.proposalId);
     const localEvees = this.evees.clone('ProposalClient');
-    await localEvees.client.update(proposal.object.mutation);
+    await localEvees.update(proposal.object.mutation);
 
     this.loading = false;
     await this.updateComplete;

@@ -1,6 +1,6 @@
-import { Entity } from '../../cas/interfaces/entity';
 import { Pattern } from '../../patterns/interfaces/pattern';
 import { Signed } from '../../patterns/interfaces/signable';
+import { Entity } from '../interfaces/entity';
 
 import { Commit } from '../interfaces/types';
 
