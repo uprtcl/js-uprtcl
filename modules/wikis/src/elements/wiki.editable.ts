@@ -8,11 +8,11 @@ import {
   Logger,
   Proposal,
   RecursiveContextMergeStrategy,
-  RemoteEvees,
-  RemoteLoggedEvents,
+  ClientRemote,
+  ConnectionLoggedEvents,
 } from '@uprtcl/evees';
 import { EveesDiffExplorer, servicesConnect } from '@uprtcl/evees-ui';
-import { MenuConfig, styles, UprtclPopper } from '@uprtcl/common-ui';
+import { MenuOptions, styles, UprtclPopper } from '@uprtcl/common-ui';
 
 import { REMOVE_PAGE_EVENT_NAME } from './page-list-editable';
 
@@ -52,8 +52,8 @@ export class EditableWiki extends servicesConnect(LitElement) {
   creatingProposal = false;
 
   mergeEvees: Evees | undefined;
-  remote!: RemoteEvees;
-  editRemote!: RemoteEvees;
+  remote!: ClientRemote;
+  editRemote!: ClientRemote;
 
   /** a debounce strategy to check changes only once and not once per update event */
   checkAgain = false;
@@ -68,7 +68,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
     }
 
     if (this.remote.events) {
-      this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.reload());
+      this.remote.events.on(ConnectionLoggedEvents.logged_status_changed, () => this.reload());
     }
   }
 
@@ -107,13 +107,9 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
     this.logger.log('CheckChanges()');
 
-    if (!this.evees.client.searchEngine) {
-      throw new Error('Search engine undefined');
-    }
-
-    const { forksDetails } = await this.evees.client.searchEngine.explore({
+    const { forksDetails } = await this.evees.explore({
       under: { elements: [{ id: this.uref }] },
-      forks: { independent: true, include: true },
+      forks: { independent: true },
     });
 
     if (!forksDetails) throw new Error('forksDetails undefined');
@@ -134,14 +130,15 @@ export class EditableWiki extends servicesConnect(LitElement) {
   async computeChanges(forks: ForkOf[]) {
     const mutations = await Promise.all(
       forks.map(async (fork) => {
-        const mergeEvees = this.evees.clone(`TempMergeClientFor-${fork.forkId}`);
+        const forkId = fork.forkIds[0];
+        const mergeEvees = this.evees.clone(`TempMergeClientFor-${forkId}`);
         const merger = new RecursiveContextMergeStrategy(mergeEvees);
-        await merger.mergePerspectivesExternal(fork.ofPerspectiveId, fork.forkId, {
+        await merger.mergePerspectivesExternal(fork.ofPerspectiveId, forkId, {
           forceOwner: true,
           detach: true,
         });
 
-        return mergeEvees.client.diff();
+        return mergeEvees.diff();
       })
     );
 
@@ -190,20 +187,21 @@ export class EditableWiki extends servicesConnect(LitElement) {
   }
 
   async proposeMerge() {
-    if (!this.evees.client.proposals) throw new Error('Proposals not defined');
+    const proposals = this.evees.getProposals();
+    if (!proposals) throw new Error('Proposals not defined');
     if (!this.mergeEvees) throw new Error('mergeEvees not defined');
 
     this.creatingProposal = true;
 
-    const mutation = await this.mergeEvees.client.diff();
+    const mutation = await this.mergeEvees.diff();
 
     const proposal: Proposal = {
       toPerspectiveId: this.uref,
       mutation,
     };
 
-    await this.evees.client.proposals.createProposal(proposal);
-    await this.evees.client.flush();
+    await proposals.createProposal(proposal);
+    await this.evees.flush();
 
     // TBD if we should wipe local changes after proposal was created
     // const casRemote = this.evees.getCASRemote(this.editRemote.casID);
@@ -217,7 +215,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
     return html`<h1>Home</h1>`;
   }
 
-  renderTopBar() {
+  renderLeftBar() {
     return html`<div class="top-bar">
       <div class="proposals-container">
         <evees-proposals-dropdown
@@ -250,38 +248,37 @@ export class EditableWiki extends servicesConnect(LitElement) {
     </div>`;
   }
 
-  render() {
-    const updateDialogOptions: MenuConfig = {
-      propose: {
-        text: 'Propose',
-      },
-      close: {
-        text: 'Close',
-        skinny: true,
-      },
-    };
-    return html`
-      ${this.renderTopBar()}
-      <div class="wiki-content-with-nav">
-        <div class="wiki-navbar">
-          <editable-page-list
-            first-uref=${this.uref}
-            ?editable=${this.canPropose}
-          ></editable-page-list>
-        </div>
+  renderWikiContent() {
+    const updateDialogOptions: MenuOptions = new Map();
 
-        <div class="wiki-content">
-          ${this.selectedPageId !== undefined
-            ? html`
-                <div class="page-container">
-                  <editable-document-editor
-                    first-uref=${this.selectedPageId}
-                  ></editable-document-editor>
-                </div>
-              `
-            : html` <div class="home-container">${this.renderHome()}</div> `}
-        </div>
+    updateDialogOptions.set('propose', {
+      text: 'Propose',
+    });
+    updateDialogOptions.set('close', {
+      text: 'Close',
+      skinny: true,
+    });
+
+    return html`<div class="wiki-content-with-nav">
+      <div class="wiki-navbar">
+        <editable-page-list
+          first-uref=${this.uref}
+          ?editable=${this.canPropose}
+        ></editable-page-list>
       </div>
+
+      <div class="wiki-content">
+        ${this.selectedPageId !== undefined
+          ? html`
+              <div class="page-container">
+                <editable-document-editor
+                  first-uref=${this.selectedPageId}
+                ></editable-document-editor>
+              </div>
+            `
+          : html` <div class="home-container">${this.renderHome()}</div> `}
+      </div>
+
       ${this.showChangesDialog
         ? html`<uprtcl-dialog
             id="updates-dialog"
@@ -294,7 +291,11 @@ export class EditableWiki extends servicesConnect(LitElement) {
             ></evees-diff-explorer>
           </uprtcl-dialog>`
         : ''}
-    `;
+    </div>`;
+  }
+
+  render() {
+    return html` ${this.renderLeftBar()} ${this.renderWikiContent()} `;
   }
 
   static get styles() {

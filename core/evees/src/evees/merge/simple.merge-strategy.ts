@@ -23,6 +23,10 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromPerspectiveId: string,
     config: MergeConfig
   ): Promise<string> {
+    if (toPerspectiveId === fromPerspectiveId) {
+      return toPerspectiveId;
+    }
+
     const promises = [toPerspectiveId, fromPerspectiveId].map(
       async (id) => (await this.evees.getPerspective(id)).details.headId
     );
@@ -98,13 +102,18 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const newDatasDefined = newDatas.map((data) => (data === undefined ? emptyEntity : data));
 
-    const ancestorId: string | undefined = undefined;
+    let ancestorId: string | undefined = undefined;
     if (toCommitId) {
       try {
         await findMostRecentCommonAncestor(this.evees.entityResolver)(commitsIds);
       } catch (e) {
         console.error(`Error in findMostRecentCommonAncestor`, { commitsIds, e });
       }
+    }
+
+    // If the ancestor is the fromFommit, then no new changes made and no need to merge
+    if (toCommitIdOrg !== undefined && ancestorId === fromCommitId) {
+      return toCommitIdOrg;
     }
 
     const ancestorData = ancestorId ? await this.evees.getCommitData(ancestorId) : emptyEntity;

@@ -1,4 +1,4 @@
-import { LitElement, property, html, css, internalProperty } from 'lit-element';
+import { LitElement, property, html, css, state } from 'lit-element';
 
 import { prettyTimePeriod } from '@uprtcl/common-ui';
 import {
@@ -6,7 +6,7 @@ import {
   Logger,
   Perspective,
   ProposalEvents,
-  RemoteLoggedEvents,
+  ConnectionLoggedEvents,
   Signed,
 } from '@uprtcl/evees';
 import { servicesConnect } from '@uprtcl/evees-ui';
@@ -23,16 +23,16 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'proposal-id' })
   proposalId!: string;
 
-  @internalProperty()
+  @state()
   loading = true;
 
-  @internalProperty()
+  @state()
   showDetails = false;
 
-  @internalProperty()
+  @state()
   voting = false;
 
-  @internalProperty()
+  @state()
   proposalStatusUI!: {
     summary: ProposalSummary;
     council: string[];
@@ -46,7 +46,7 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   async firstUpdated() {
     this.remote = this.evees.findRemote<EveesPolkadotCouncil>('council');
 
-    this.remote.events.on(RemoteLoggedEvents.logged_status_changed, () => this.load());
+    this.remote.events.on(ConnectionLoggedEvents.logged_status_changed, () => this.load());
 
     this.remote.proposals.events.on(ProposalEvents.status_changed, (proposalStatus) => {
       if (proposalStatus.id === this.proposalId) {
@@ -76,15 +76,13 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   }
 
   async loadManifest() {
-    const perspective = await this.evees.client.store.getEntity<Signed<Perspective>>(
-      this.proposalId
-    );
+    const perspective = await this.evees.getEntity<Signed<Perspective>>(this.proposalId);
     if (!perspective) throw new Error('Proposal not found');
     this.proposalManifest = perspective.object.payload.meta.proposal;
 
     // apply the changes in the proposal on a new Evees workspace
     this.eveesWorkspace = await this.evees.clone('CouncilProposalClient');
-    this.eveesWorkspace.client.update(this.proposalManifest.mutation);
+    this.eveesWorkspace.update(this.proposalManifest.mutation);
   }
 
   async vote(value: VoteValue) {

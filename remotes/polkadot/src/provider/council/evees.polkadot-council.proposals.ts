@@ -1,6 +1,13 @@
 import { html } from 'lit-html';
 
-import { CASStore, Logger, Proposal, ProposalEvents } from '@uprtcl/evees';
+import {
+  EntityStore,
+  Logger,
+  Proposal,
+  ProposalEvents,
+  MutationHelper,
+  EntityResolver,
+} from '@uprtcl/evees';
 import { Lens, ProposalsWithUI } from '@uprtcl/evees-ui';
 
 import { PolkadotConnection } from '../../connection.polkadot';
@@ -13,7 +20,7 @@ import EventEmitter from 'events';
 export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
 
-  public store!: CASStore;
+  public store!: EntityStore;
   events: EventEmitter;
 
   private canProposeCache = false;
@@ -21,6 +28,7 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   constructor(
     public connection: PolkadotConnection,
     public councilStore: PolkadotCouncilEveesStorage,
+    public entityStore: EntityStore,
     public remoteId: string,
     public config: ProposalConfig
   ) {
@@ -40,7 +48,7 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
     await this.councilStore.ready();
   }
 
-  setStore(store: CASStore) {
+  setStore(store: EntityStore) {
     this.store = store;
   }
 
@@ -75,9 +83,14 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
     };
 
     /** persist entities associated to this mutation */
-    if (proposal.mutation.entities) {
-      await this.store.storeEntities(proposal.mutation.entities);
-      await this.store.flush();
+    if (proposal.mutation) {
+      const hashes = await MutationHelper.getMutationEntitiesHashes(
+        proposal.mutation,
+        this.entityStore
+      );
+      const entities = await this.entityStore.getEntities(hashes);
+      await this.entityStore.putEntities(entities);
+      await this.entityStore.flush();
     }
 
     const proposalId = await this.councilStore.createProposal(proposalManifest);

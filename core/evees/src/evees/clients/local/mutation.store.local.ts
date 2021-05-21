@@ -1,5 +1,5 @@
-import { IndexDataHelper } from 'src/evees/index.data.helper';
-import { getUpdateEntitiesHashes } from 'src/evees/utils/mutation.entities';
+import { IndexDataHelper } from '../../index.data.helper';
+import { MutationHelper } from '../../utils';
 import { Logger } from '../../../utils/logger';
 import {
   NewPerspective,
@@ -75,7 +75,10 @@ export class MutationStoreLocal implements ClientMutationStore {
   }
 
   async persistUpdateEntities(update: Update): Promise<void> {
-    const entitiesHashes = await getUpdateEntitiesHashes(update, this.entityResolver);
+    const entitiesHashes = await MutationHelper.getUpdateEntitiesHashes(
+      update,
+      this.entityResolver
+    );
     const entities = await this.entityResolver.getEntities(entitiesHashes);
     await this.entityRemote.persistEntities(entities);
   }

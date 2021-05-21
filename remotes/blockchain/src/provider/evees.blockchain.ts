@@ -1,22 +1,25 @@
 import { html, TemplateResult } from 'lit-element';
 
 import {
-  RemoteEvees,
+  ClientRemote,
   Perspective,
   NewPerspective,
   Secured,
   Proposals,
   Logger,
-  CASStore,
-  SearchEngine,
   Update,
   PartialPerspective,
   snapDefaultPerspective,
   PerspectiveGetResult,
   Signed,
   EveesMutationCreate,
-  CASRemote,
   EveesMutation,
+  EntityResolver,
+  EntityRemote,
+  GetPerspectiveOptions,
+  SearchOptions,
+  SearchResult,
+  ClientExplore,
 } from '@uprtcl/evees';
 
 import { EveesAccessControlFixedOwner } from './evees-acl.fixed';
@@ -28,49 +31,61 @@ const evees_if = 'fixed-owner';
 /** An abstraction of a service that stores evees heads on a blockchain under a
  * single evolving object of type UserPerspectivesDetails that contains all the
  * perspectiveIds and their heads */
-export class EveesBlockchain implements RemoteEvees {
+export class EveesBlockchain implements ClientRemote {
   logger: Logger = new Logger('EveesBlockchain');
 
   accessControl: EveesAccessControlFixedOwner;
-  store!: CASStore;
+  entityResolver!: EntityResolver;
   proposals!: Proposals;
 
   constructor(
     public connection: BlockchainConnection,
-    readonly searchEngine: SearchEngine,
-    public casID: string
+    public entityRemote: EntityRemote,
+    public exploreService: ClientExplore
   ) {
     this.accessControl = new EveesAccessControlFixedOwner();
   }
 
-  setStore(store: CASStore) {
-    this.store = store;
-    this.accessControl.setStore(store);
+  async explore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions) {
+    return {
+      perspectiveIds: [],
+    };
+  }
+
+  setEntityResolver(resolver: EntityResolver) {
+    this.entityResolver = resolver;
   }
 
   newPerspective(newPerspective: NewPerspective): Promise<void> {
     return this.update({ newPerspectives: [newPerspective] });
   }
+
   deletePerspective(perspectiveId: string): Promise<void> {
     return this.update({ deletedPerspectives: [perspectiveId] });
   }
+
   async diff(): Promise<EveesMutation> {
-    return { newPerspectives: [], deletedPerspectives: [], updates: [], entities: [] };
+    return { newPerspectives: [], deletedPerspectives: [], updates: [] };
   }
+
   flush(): Promise<void> {
     /** dont have cache */
     return Promise.resolve();
   }
+
   refresh(): Promise<void> {
     return Promise.resolve();
   }
+
   clear(): Promise<void> {
     /** dont have cache */
     return Promise.resolve();
   }
+
   getUserPerspectives(perspectiveId: string): Promise<string[]> {
     throw new Error('Method not implemented.');
   }
+
   ready(): Promise<void> {
     return this.connection.ready();
   }
@@ -112,7 +127,7 @@ export class EveesBlockchain implements RemoteEvees {
 
   async getEveesDataFromHead(head: string | undefined): Promise<UserPerspectivesDetails> {
     if (!head) return {};
-    const eveesData = await this.store.getEntity<UserPerspectivesDetails>(head);
+    const eveesData = await this.entityResolver.getEntity<UserPerspectivesDetails>(head);
     return eveesData ? eveesData.object : {};
   }
 
@@ -122,10 +137,10 @@ export class EveesBlockchain implements RemoteEvees {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveGetResult> {
-    const perspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
+    const perspective = await this.entityResolver.getEntity<Signed<Perspective>>(perspectiveId);
     /** if nothing found on the cache, then read it from the blockchain */
     const userPerspectives = await this.getEveesDataOf(perspective.object.payload.creatorId);
-    const details = userPerspectives[perspective.id] ? userPerspectives[perspective.id] : {};
+    const details = userPerspectives[perspective.hash] ? userPerspectives[perspective.hash] : {};
     return { details };
   }
 
@@ -138,7 +153,7 @@ export class EveesBlockchain implements RemoteEvees {
       await Promise.all(
         mutation.newPerspectives.map(async (newPerspective) => {
           await this.persistPerspectiveEntity(newPerspective.perspective);
-          eveesData[newPerspective.perspective.id] = newPerspective.update.details;
+          eveesData[newPerspective.perspective.hash] = newPerspective.update.details;
         })
       );
     }
@@ -156,14 +171,18 @@ export class EveesBlockchain implements RemoteEvees {
       });
     }
 
-    const eveesEntity = await this.store.storeEntity({ object: eveesData, remote: this.id });
+    const eveesEntity = await this.entityResolver.hashObject(
+      { object: eveesData, remote: this.id },
+      true
+    );
+    await this.entityRemote.persistEntity(eveesEntity);
 
     this.logger.log('new evees data object created', {
       eveesData,
       mutation,
     });
 
-    return eveesEntity.id;
+    return eveesEntity.hash;
   }
 
   async update(mutation: EveesMutationCreate) {
@@ -172,19 +191,21 @@ export class EveesBlockchain implements RemoteEvees {
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspective = await this.store.storeEntity({
+    const perspective = await this.entityResolver.hashObject({
       object: secured.object,
       remote: secured.object.payload.remote,
     });
-    this.logger.log('[ETH] persistPerspectiveEntity - added to IPFS', perspective.id);
+    await this.entityRemote.persistEntity(perspective);
 
-    if (secured.id && secured.id != perspective.id) {
+    this.logger.log('[ETH] persistPerspectiveEntity - added to IPFS', perspective.hash);
+
+    if (secured.hash && secured.hash != perspective.hash) {
       throw new Error(
-        `perspective ID computed by IPFS ${perspective.id} is not the same as the input one ${secured.id}.`
+        `perspective ID computed by IPFS ${perspective.hash} is not the same as the input one ${secured.hash}.`
       );
     }
 
-    return perspective.id;
+    return perspective.hash;
   }
 
   async isLogged() {

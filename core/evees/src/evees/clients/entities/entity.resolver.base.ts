@@ -12,17 +12,16 @@ import { OnMemoryEntityCache } from './entity.cache';
  * */
 export class EntityResolverBase implements EntityResolver {
   cache: EntityCache;
-  createSnapElementRec;
 
   constructor(protected base: EntityResolver, cache?: EntityCache) {
     this.cache = cache ? cache : new OnMemoryEntityCache();
   }
 
-  async storeEntity(entity: Entity<any>): Promise<void> {
-    this.storeEntities([entity]);
+  putEntity(entity: Entity): Promise<void> {
+    return this.putEntities([entity]);
   }
 
-  async storeEntities(entities: Entity<any>[]): Promise<void> {
+  async putEntities(entities: Entity[]): Promise<void> {
     await this.cache.storeEntities(entities);
   }
 
@@ -65,16 +64,23 @@ export class EntityResolverBase implements EntityResolver {
     return allEntities;
   }
 
-  hashObjects(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {
-    return this.base.hashObjects(entities);
+  async hashObjects(
+    entitiesCreate: EntityCreate<any>[],
+    putFlag: boolean = false
+  ): Promise<Entity<any>[]> {
+    const entities = await this.base.hashObjects(entitiesCreate);
+    // cache all hashed objects by default
+    if (putFlag) await this.putEntities(entities);
+    return entities;
+  }
+
+  async hashObject<T = any>(entity: EntityCreate<any>, putFlag?: boolean): Promise<Entity<T>> {
+    const entities = await this.hashObjects([entity], putFlag);
+    return entities[0];
   }
 
   async removeEntity(hash: string): Promise<void> {
     await this.cache.removeEntity(hash);
     this.base.removeEntity(hash);
-  }
-
-  hashObject<T = any>(entity: EntityCreate<any>): Promise<Entity<T>> {
-    return this.base.hashObject(entity);
   }
 }

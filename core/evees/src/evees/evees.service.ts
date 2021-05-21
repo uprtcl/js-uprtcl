@@ -180,9 +180,6 @@ export class Evees implements Client {
       entity = entityCreate as Entity;
     }
 
-    /** place in the entity resolver */
-    await this.entityResolver.storeEntity(entity);
-
     return entity;
   }
 
@@ -1008,7 +1005,6 @@ export class Evees implements Client {
   async getHome(remoteId?: string, userId?: string): Promise<Secured<Perspective>> {
     const remote = this.getRemote(remoteId);
     const home = await getHome(remote, userId ? userId : remote.userId);
-    await this.entityResolver.storeEntity(home);
     return home;
   }
 

@@ -38,6 +38,10 @@ export class PageListEditable extends EveesBaseEditable<Wiki> {
     }
   }
 
+  async checkPull() {
+    await super.checkPull(false);
+  }
+
   async checkoutOfficial() {
     await super.seeOfficial();
   }
@@ -65,7 +69,7 @@ export class PageListEditable extends EveesBaseEditable<Wiki> {
 
     this.dispatchSelect(childId);
 
-    await this.evees.client.flush();
+    await this.evees.flush();
   }
 
   async removePage(uref: string) {
@@ -76,7 +80,7 @@ export class PageListEditable extends EveesBaseEditable<Wiki> {
 
     await this.evees.removeChild(this.uref, ix);
 
-    await this.evees.client.flush();
+    await this.evees.flush();
   }
 
   render() {

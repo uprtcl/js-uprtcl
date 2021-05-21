@@ -10,15 +10,16 @@ import {
   SearchOptions,
   FlushConfig,
   EveesMutationCreate,
-} from '../../interfaces/index';
+  ClientAndExplore,
+  ClientFull,
+  ClientMutationStore,
+  EntityResolver,
+  ClientEvents,
+} from '../../interfaces';
 import { Logger } from '../../../utils/logger';
 import { AsyncQueue } from '../../../utils/async';
 
-import { ClientEvents } from '../../interfaces/client';
 import { condensateUpdates, mutationAppendOnEcosystem } from '../../utils/updates.utils';
-import { ClientFull } from '../../interfaces/client.full';
-import { ClientExplore } from '../../interfaces/client.explore';
-import { ClientMutationStore, EntityResolver } from '../../interfaces/index';
 
 const LOGINFO = false;
 
@@ -28,7 +29,7 @@ export enum ClientCachedEvents {
 
 /** Reusable implementation of a ClientMutation service.
  * Uses a ClientMutationStore to store mutations */
-export class ClientMutationBase implements ClientExplore {
+export class ClientMutationBase implements ClientAndExplore {
   logger = new Logger('ClientCachedWithBase');
 
   /** A service to subsribe to udpate on perspectives */
@@ -41,7 +42,7 @@ export class ClientMutationBase implements ClientExplore {
   protected entityResolver!: EntityResolver;
 
   constructor(
-    readonly base: ClientExplore,
+    readonly base: ClientAndExplore,
     readonly mutationStore: ClientMutationStore,
     readonly name: string = 'client',
     readonly readCacheEnabled: boolean = true

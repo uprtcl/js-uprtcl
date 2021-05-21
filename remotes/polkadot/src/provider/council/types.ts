@@ -1,4 +1,4 @@
-import { EveesMutationCreate, PerspectiveDetails, Update } from '@uprtcl/evees';
+import { EveesMutation, EveesMutationCreate } from '@uprtcl/evees';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
 
 export interface Vote {
@@ -19,7 +19,7 @@ export interface ProposalManifest {
   creatorId?: string;
   toHeadId?: string;
   fromHeadId?: string;
-  mutation: EveesMutationCreate;
+  mutation: EveesMutation;
   block: number;
   config: ProposalConfig;
 }

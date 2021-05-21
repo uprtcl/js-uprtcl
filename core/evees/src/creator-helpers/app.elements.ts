@@ -76,7 +76,7 @@ export class AppElements {
     if (!element.perspective) throw new Error('Perspective undefined after snap');
 
     /** make sure the perspective is in the store to be resolved */
-    await this.evees.entityResolver.storeEntity(element.perspective);
+    await this.evees.entityResolver.putEntity(element.perspective);
 
     if (element.children) {
       await Promise.all(
