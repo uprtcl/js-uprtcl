@@ -11,7 +11,7 @@ export enum EveesOrbitDBEntities {
 export const perspective: CustomStore = {
   customType: EveesOrbitDBEntities.Perspective,
   type: 'eventlog',
-  name: (perspective: Secured<Perspective>) => `perspective-store/${perspective.id}`,
+  name: (perspective: Secured<Perspective>) => `perspective-store/${perspective.hash}`,
   options: (perspective: Secured<Perspective>) => {
     return {
       accessController: { type: 'ipfs', write: [perspective.object.payload.creatorId] },

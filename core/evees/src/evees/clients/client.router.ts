@@ -16,7 +16,7 @@ import {
   SearchResult,
 } from '../interfaces/types';
 import { Proposals } from '../proposals/proposals';
-import { getMutationEntitiesHashes } from '../utils/mutation.entities';
+import { MutationHelper } from '../utils';
 
 export class RemoteRouter implements Client {
   logger = new Logger('RemoteRouter');
@@ -210,7 +210,10 @@ export class RemoteRouter implements Client {
         const remote = this.getRemote(remoteId);
 
         /** here is where entities are finally passed to the remote */
-        const entitiesHashes = await getMutationEntitiesHashes(mutation, this.entityResolver);
+        const entitiesHashes = await MutationHelper.getMutationEntitiesHashes(
+          mutation,
+          this.entityResolver
+        );
         const entities = await this.entityResolver.getEntities(entitiesHashes);
         await remote.entityRemote.persistEntities(entities);
 

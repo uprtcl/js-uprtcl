@@ -19,11 +19,11 @@ export class RouterEntityResolver implements EntityResolver {
     });
   }
 
-  storeEntity(entity: Entity<any>): Promise<void> {
+  putEntities(entities: Entity[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
 
-  storeEntities(entities: Entity<any>[]): Promise<void> {
+  putEntity(entity: Entity<any>): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

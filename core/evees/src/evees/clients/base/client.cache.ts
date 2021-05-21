@@ -1,20 +1,20 @@
-import { EntityResolver } from 'src/evees/interfaces/entity.resolver';
-import { ClientCacheStore } from '../../interfaces/client.cache.store';
-import { ClientExplore } from '../../interfaces/client.explore';
 import {
+  ClientCacheStore,
+  ClientAndExplore,
+  EntityResolver,
   GetPerspectiveOptions,
   PerspectiveGetResult,
   EveesMutationCreate,
   NewPerspective,
   Update,
   SearchOptions,
-} from '../../interfaces/types';
+} from '../../interfaces/';
 
 /** read-only cache that keeps read perspecties and entities onmemory or hit the base
  *  layer if they are not found */
-export class ClientCache implements ClientExplore {
+export class ClientCache implements ClientAndExplore {
   constructor(
-    protected base: ClientExplore,
+    protected base: ClientAndExplore,
     protected cache: ClientCacheStore,
     protected entityResolver: EntityResolver
   ) {}
@@ -44,8 +44,8 @@ export class ClientCache implements ClientExplore {
     }
 
     if (result.slice) {
-      /** entities are added to the casResolver and are then available everywhere */
-      await this.entityResolver.storeEntities(result.slice.entities);
+      /** entities are added to the entityResolver and are, thus, made available everywhere */
+      await this.entityResolver.putEntities(result.slice.entities);
 
       await Promise.all(
         result.slice.perspectives.map(async (perspectiveAndDetails) => {

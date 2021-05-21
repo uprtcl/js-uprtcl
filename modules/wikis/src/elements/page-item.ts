@@ -1,6 +1,6 @@
-import { html, css, internalProperty, property } from 'lit-element';
+import { html, css, state, property } from 'lit-element';
 
-import { MenuConfig, styles } from '@uprtcl/common-ui';
+import { MenuOption, MenuOptions, styles } from '@uprtcl/common-ui';
 import { EveesBaseElement } from '@uprtcl/evees-ui';
 import { TextNode } from '@uprtcl/documents';
 import { SELECT_PAGE_EVENT_NAME } from './wiki.editable';
@@ -10,7 +10,7 @@ export class PageItemElement extends EveesBaseElement<TextNode> {
   @property({ type: Boolean })
   selected: boolean = false;
 
-  @internalProperty()
+  @state()
   title: string = '';
 
   async dataUpdated() {
@@ -42,13 +42,13 @@ export class PageItemElement extends EveesBaseElement<TextNode> {
   }
 
   render() {
-    const menuConfig: MenuConfig = {
-      remove: {
-        disabled: false,
-        text: 'remove',
-        icon: 'delete',
-      },
-    };
+    const menuConfig: MenuOptions = new Map();
+
+    menuConfig.set('remove', {
+      disabled: false,
+      text: 'remove',
+      icon: 'delete',
+    });
 
     let classes: string[] = [];
 

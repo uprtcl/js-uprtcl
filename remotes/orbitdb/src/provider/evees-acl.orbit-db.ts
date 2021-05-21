@@ -1,18 +1,20 @@
-import { AccessControl, CASStore, Perspective, Signed } from '@uprtcl/evees';
-import { Lens } from '@uprtcl/evees-ui';
 import { html } from 'lit-element';
+import { AccessControl, EntityResolver, Perspective, Signed } from '@uprtcl/evees';
+import { Lens } from '@uprtcl/evees-ui';
 
 export class EveesAccessControlOrbitDB implements AccessControl {
-  store!: CASStore;
+  entityResolver!: EntityResolver;
 
   constructor() {}
 
-  setStore(store) {
-    this.store = store;
+  setEntityResolver(resolver: EntityResolver) {
+    this.entityResolver = resolver;
   }
 
   async getOwner(perspectiveId: string): Promise<any | undefined> {
-    const singedPerspective = await this.store.getEntity<Signed<Perspective>>(perspectiveId);
+    const singedPerspective = await this.entityResolver.getEntity<Signed<Perspective>>(
+      perspectiveId
+    );
     return singedPerspective.object.payload.creatorId;
   }
 

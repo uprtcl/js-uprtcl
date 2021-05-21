@@ -1,9 +1,9 @@
-import { LitElement, property, html, css, internalProperty } from 'lit-element';
+import { LitElement, property, html, css, state } from 'lit-element';
 
 import { servicesConnect } from '@uprtcl/evees-ui';
 
 import { EveesBlockchain } from './evees.blockchain';
-import { MenuConfig } from '@uprtcl/common-ui';
+import { MenuOptions } from '@uprtcl/common-ui';
 import { ChainConnectionDetails, RemoteUI } from '../types';
 
 export class EveesBlockchainCachedRemoteLense extends servicesConnect(LitElement) {
@@ -22,19 +22,23 @@ export class EveesBlockchainCachedRemoteLense extends servicesConnect(LitElement
   @property({ attribute: false })
   newHash!: string;
 
-  @internalProperty()
+  @state()
   settingCustom = false;
 
   remote!: EveesBlockchain;
-  dialogOptions: MenuConfig = {
-    close: {
+  dialogOptions: MenuOptions = new Map();
+
+  currentConnection!: ChainConnectionDetails;
+  connections!: ChainConnectionDetails[];
+
+  constructor() {
+    super();
+    this.dialogOptions.set('close', {
       text: 'close',
       icon: 'clear',
       skinny: false,
-    },
-  };
-  currentConnection!: ChainConnectionDetails;
-  connections!: ChainConnectionDetails[];
+    });
+  }
 
   async firstUpdated() {
     this.remote = this.evees.getRemote<EveesBlockchain>(this.remoteId);

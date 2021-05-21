@@ -1,16 +1,18 @@
 import { Entity, EntityCreate } from './entity';
 
-/** An entity resolver is able to store hashed objects, and
- * return objects from out of their hashes */
+/** An entity resolver is focused on resolving hashed objects
+ * from their hashes. While you can still force entities to
+ * be stored by the resolver, entities persistance is handled
+ * by another service called EntityRemote */
 export interface EntityResolver {
-  storeEntity(entity: Entity): Promise<void>;
-  storeEntities(entities: Entity[]): Promise<void>;
+  putEntity(entity: Entity): Promise<void>;
+  putEntities(entities: Entity[]): Promise<void>;
+
+  removeEntity(hash: string): Promise<void>;
 
   getEntity<T = any>(entityId: string): Promise<Entity<T>>;
   getEntities(entitiesIds: string[]): Promise<Entity<any>[]>;
 
-  removeEntity(entityId: string): Promise<void>;
-
-  hashObjects(entities: EntityCreate[]): Promise<Entity[]>;
-  hashObject<T = any>(entity: EntityCreate): Promise<Entity<T>>;
+  hashObjects(entities: EntityCreate[], putFlag?: boolean): Promise<Entity[]>;
+  hashObject<T = any>(entity: EntityCreate, putFlag?: boolean): Promise<Entity<T>>;
 }

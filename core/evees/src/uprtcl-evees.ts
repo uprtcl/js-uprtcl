@@ -1,5 +1,7 @@
-export * from './evees/interfaces/index';
-export * from './patterns/index';
+export * from './evees/interfaces';
+export * from './evees/clients';
+export * from './evees/utils';
+export * from './patterns';
 
 export { PerspectiveType } from './evees/patterns/perspective.pattern';
 export { CommitType } from './evees/patterns/commit.pattern';
@@ -50,10 +52,6 @@ export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
 export { init } from './creator-helpers/init';
 
 export { AppElement, AppElements } from './creator-helpers/app.elements';
-
-/** Clients */
-export { ClientMutationMemory } from './evees/clients/memory/mutation.memory';
-export { MutationStoreLocal } from './evees/clients/local/mutation.store.local';
 
 /** Evees Utils */
 export { CondensateCommits } from './evees/utils/condensate.commits';

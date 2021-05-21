@@ -1,5 +1,4 @@
 import {
-  CASStore,
   EveesMutation,
   Logger,
   NewPerspective,
@@ -8,12 +7,14 @@ import {
   PerspectiveDetails,
   PerspectiveGetResult,
   Proposals,
-  RemoteEvees,
-  SearchEngine,
+  ClientRemote,
   Secured,
   Signed,
   snapDefaultPerspective,
   Update,
+  EntityStore,
+  SearchOptions,
+  EntityRemote,
 } from '@uprtcl/evees';
 import { OrbitDBCustom } from '@uprtcl/orbitdb-provider';
 
@@ -30,16 +31,15 @@ const notLogged = () => new Error('must be logged in to use this method');
 
 const ENABLE_LOG = false;
 
-export class EveesOrbitDB implements RemoteEvees {
+export class EveesOrbitDB implements ClientRemote {
   logger: Logger = new Logger('EveesOrbitDB');
   accessControl: any;
   proposals!: Proposals;
-  store!: CASStore;
+  store!: EntityStore;
 
   constructor(
     public orbitdbcustom: OrbitDBCustom,
-    public searchEngine: SearchEngine,
-    public casID: string,
+    public entityRemote: EntityRemote,
     private postFix?: string
   ) {
     if (orbitdbcustom.getManifest(EveesOrbitDBEntities.Perspective) === undefined) {
@@ -50,7 +50,7 @@ export class EveesOrbitDB implements RemoteEvees {
     this.accessControl = new EveesAccessControlOrbitDB();
   }
 
-  setStore(store) {
+  setEntityStore(store: EntityStore) {
     this.store = store;
     this.accessControl.setStore(store);
   }
@@ -77,17 +77,20 @@ export class EveesOrbitDB implements RemoteEvees {
   }
 
   async persistPerspectiveEntity(secured: Secured<Perspective>) {
-    const perspective = await this.store.storeEntity({
-      object: secured.object,
-      casID: this.casID,
-    });
+    const perspective = await this.store.hashObject(
+      {
+        object: secured.object,
+        casID: this.entityRemote.id,
+      },
+      true
+    );
     if (ENABLE_LOG) {
       this.logger.log(`[OrbitDB] persistPerspectiveEntity - added to IPFS`, perspective.id);
     }
 
-    if (secured.id && secured.id !== perspective.id) {
+    if (secured.hash && secured.hash !== perspective.id) {
       throw new Error(
-        `perspective ID computed by IPFS ${perspective.id} is not the same as the input one ${secured.id}.`
+        `perspective ID computed by IPFS ${perspective.id} is not the same as the input one ${secured.hash}.`
       );
     }
 
@@ -192,6 +195,7 @@ export class EveesOrbitDB implements RemoteEvees {
   }
 
   async flush() {}
+
   async diff(): Promise<EveesMutation> {
     throw new Error('Method not implemented');
   }
@@ -204,6 +208,19 @@ export class EveesOrbitDB implements RemoteEvees {
     await Promise.all(
       mutation.deletedPerspectives?.map((deleted) => this.deletePerspective(deleted))
     );
+  }
+
+  async explore(options: SearchOptions) {
+    if (!options.under) throw Error('explore must have under');
+    const perspective = await this.store.getEntity<Signed<Perspective>>(
+      options.under.elements[0].id
+    );
+    const context = perspective.object.payload.context;
+    const contextStore = await this.orbitdbcustom.getStore(EveesOrbitDBEntities.Context, {
+      context,
+    });
+    const perspectiveIds = [...contextStore.values()];
+    return { perspectiveIds };
   }
 
   refresh(): Promise<void> {

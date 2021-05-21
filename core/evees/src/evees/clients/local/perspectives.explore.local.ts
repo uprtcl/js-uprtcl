@@ -1,6 +1,5 @@
 import { filterAsync } from '../../../utils/async';
-import { Signed } from '../../../patterns/interfaces/signable';
-
+import { Signed } from '../../../patterns';
 import { Evees } from '../../evees.service';
 import {
   SearchOptions,
@@ -9,15 +8,16 @@ import {
   SearchResult,
   ForkOf,
   GetPerspectiveOptions,
-} from '../../interfaces/types';
+  ClientExplore,
+} from '../../interfaces';
 
-import { MutationStoreDB, PerspectiveLocal } from './mutation.store.local.db';
+import { PerspectiveLocal, PerspectivesStoreDB } from './perspectives.store.db';
 
-export class LocalExplore {
+export class LocalExplore implements ClientExplore {
   /** The evees service is needed to navigate a tree of perspectives stored on other remotes */
   private evees!: Evees;
 
-  constructor(readonly db: MutationStoreDB) {}
+  constructor(readonly db: PerspectivesStoreDB) {}
 
   public setEvees(evees: Evees) {
     this.evees = evees;
@@ -35,35 +35,22 @@ export class LocalExplore {
         options.under.levels
       );
 
-      return { perspectiveIds: forks.map((fork) => fork.forkId), forksDetails: forks };
+      return { perspectiveIds: forks.map((fork) => fork.forkIds[0]), forksDetails: forks };
     }
 
     const underId = options.under ? options.under.elements[0].id : undefined;
     if (!underId) {
       throw new Error(`UnderId not defined`);
     }
-    const perspectiveIds = await this.db.perspectives
+    const perspectiveIds = await this.db.perspectivesDetails
       .where('onEcosystem')
       .equals(underId)
       .primaryKeys();
     return { perspectiveIds };
   }
 
-  async locate(perspectiveId: string, forks: boolean): Promise<ParentAndChild[]> {
-    const perspective = await this.db.perspectives.get(perspectiveId);
-    if (perspective && perspective.onEcosystem) {
-      return perspective.onEcosystem.map((e) => {
-        return {
-          parentId: e,
-          childId: perspectiveId,
-        };
-      });
-    }
-    return [];
-  }
-
   async getPerspectiveLocal(perspectiveId): Promise<PerspectiveLocal> {
-    const perspectiveLocal = await this.db.perspectives.get(perspectiveId);
+    const perspectiveLocal = await this.db.perspectivesDetails.get(perspectiveId);
     if (!perspectiveLocal) throw Error(`Perpsective ${perspectiveId} not found in local DB`);
     return perspectiveLocal;
   }
@@ -78,12 +65,15 @@ export class LocalExplore {
   async otherPerspectives(perspectiveId: string, independentOfParent?: string): Promise<ForkOf[]> {
     const context = await this.getContext(perspectiveId);
 
-    const allOthers = await this.db.perspectives.where('context').equals(context).primaryKeys();
+    const allOthers = await this.db.perspectivesDetails
+      .where('context')
+      .equals(context)
+      .primaryKeys();
 
     if (!independentOfParent) {
       return allOthers.map((otherId) => {
         return {
-          forkId: otherId,
+          forkIds: [otherId],
           ofPerspectiveId: perspectiveId,
         };
       });
@@ -93,7 +83,10 @@ export class LocalExplore {
 
     const independent = await filterAsync<string>(allOthers, async (other) => {
       // get all parents of this other perspective
-      const elParentsIds = await this.db.perspectives.where('children').equals(other).primaryKeys();
+      const elParentsIds = await this.db.perspectivesDetails
+        .where('children')
+        .equals(other)
+        .primaryKeys();
 
       const parentSameContext = await filterAsync<string>(elParentsIds, async (elParentId) => {
         const elParentContext = await this.getContext(elParentId);
@@ -105,7 +98,7 @@ export class LocalExplore {
 
     return independent.map((otherId) => {
       return {
-        forkId: otherId,
+        forkIds: [otherId],
         ofPerspectiveId: perspectiveId,
       };
     });

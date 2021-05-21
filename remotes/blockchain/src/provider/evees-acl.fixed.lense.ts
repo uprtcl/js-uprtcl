@@ -38,9 +38,7 @@ export class PermissionsFixedLense extends servicesConnect(LitElement) {
   }
 
   async getOwner(perspectiveId: string): Promise<string> {
-    const singedPerspective = await this.evees.client.store.getEntity<Signed<Perspective>>(
-      perspectiveId
-    );
+    const singedPerspective = await this.evees.getEntity<Signed<Perspective>>(perspectiveId);
     return singedPerspective.object.payload.creatorId;
   }
 

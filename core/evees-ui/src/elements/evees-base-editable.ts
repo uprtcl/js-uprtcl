@@ -1,7 +1,13 @@
-import { css, html, internalProperty, property } from 'lit-element';
+import { css, html, property, state } from 'lit-element';
 
 import { icons } from '@uprtcl/common-ui';
-import { ClientRemote, ConnectionLoggedEvents, Logger } from '@uprtcl/evees';
+import {
+  ClientRemote,
+  ConnectionLoggedEvents,
+  Evees,
+  Logger,
+  RecursiveContextMergeStrategy,
+} from '@uprtcl/evees';
 
 import { EveesBaseElement } from './evees-base';
 
@@ -19,17 +25,18 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   @property({ type: String, attribute: 'first-uref' })
   firstRef!: string;
 
-  @internalProperty()
+  @state()
   isLoggedEdit = false;
 
-  @internalProperty()
+  @state()
   hasPull: boolean = false;
 
-  @internalProperty()
+  @state()
   protected case: EditableCase = EditableCase.IS_OFFICIAL_DONT_HAVE_DRAFT;
 
   protected mineId: string | undefined = undefined;
   protected editRemote!: ClientRemote;
+  protected eveesPull!: Evees;
 
   async firstUpdated() {
     this.uref = this.firstRef;
@@ -134,7 +141,7 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
       const merger = new RecursiveContextMergeStrategy(this.eveesPull);
       await merger.mergePerspectivesExternal(this.mineId as string, this.firstRef, config);
 
-      const diff = await this.eveesPull.client.diff();
+      const diff = await this.eveesPull.diff();
       this.hasPull = diff.updates.length > 0;
     }
   }
