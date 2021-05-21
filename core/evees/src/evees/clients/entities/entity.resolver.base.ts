@@ -1,6 +1,4 @@
-import { Entity, EntityCreate } from 'src/evees/interfaces/entity';
-import { EntityCache } from 'src/evees/interfaces/entity.cache';
-import { EntityResolver } from '../../interfaces/entity.resolver';
+import { Entity, EntityCreate, EntityCache, EntityResolver } from '../../interfaces';
 import { OnMemoryEntityCache } from './entity.cache';
 
 /**
