@@ -191,8 +191,8 @@ export class Evees implements Client {
     return this.entityResolver.getEntities(hashes);
   }
 
-  async hashObject(entity: EntityCreate): Promise<Entity> {
-    return this.entityResolver.hashObject(entity);
+  async hashObject(entity: EntityCreate, putFlag: boolean = true): Promise<Entity> {
+    return this.entityResolver.hashObject(entity, putFlag);
   }
 
   async explore(

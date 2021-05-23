@@ -22,7 +22,7 @@ export class EveesBlockchainCachedRemoteLense extends servicesConnect(LitElement
   @property({ attribute: false })
   newHash!: string;
 
-  @state()
+  @internalProperty()
   settingCustom = false;
 
   remote!: EveesBlockchain;

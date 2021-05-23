@@ -64,7 +64,7 @@ export class EntityResolverBase implements EntityResolver {
 
   async hashObjects(
     entitiesCreate: EntityCreate<any>[],
-    putFlag: boolean = false
+    putFlag: boolean = true
   ): Promise<Entity<any>[]> {
     const entities = await this.base.hashObjects(entitiesCreate);
     // cache all hashed objects by default

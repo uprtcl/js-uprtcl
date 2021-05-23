@@ -28,6 +28,7 @@ export class AppElements {
     if (LOGINFO) this.logger.log('check()');
     /** home space perspective is deterministic */
     this.home.perspective = await this.evees.getHome(this.remote.id);
+
     await this.checkOrCreateHome(this.home.perspective as Secured<Perspective>);
 
     /** all other objects are obtained relative to the home perspective */
@@ -122,6 +123,8 @@ export class AppElements {
 
   // make sure a perspective exist, or creates it
   async checkOrCreateHome(perspective: Secured<Perspective>) {
+    await this.evees.entityResolver.putEntity(perspective);
+
     /** get the perspective data */
     const levels = getLevels(this.home);
     const { details } = await this.evees.getPerspective(perspective.hash, { levels });
@@ -131,7 +134,7 @@ export class AppElements {
       /** create the home perspective as it did not existed */
       if (LOGINFO) this.logger.log('create perspective data()', perspective.object.payload);
       await this.evees.createEvee({
-        partialPerspective: perspective.object.payload,
+        perspectiveId: perspective.hash,
       });
     }
   }
