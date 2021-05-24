@@ -73,6 +73,13 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     [key: string]: { firstUref: string; newUref: string };
   } = {};
 
+  @internalProperty()
+  showDropSnackbar: boolean = false
+
+  dropParentNode: DocNode | undefined
+
+  dropUref: string = ''
+
   doc: DocNode | undefined = undefined;
 
   protected editableRemotesIds!: string[];
@@ -340,9 +347,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       flush:
         this.debounce !== undefined || this.autoflush !== undefined
           ? {
-              debounce: this.debounce,
-              autoflush: this.autoflush,
-            }
+            debounce: this.debounce,
+            autoflush: this.autoflush,
+          }
           : undefined,
     };
 
@@ -831,6 +838,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   draggingOver(e, node: DocNode) {
+
     const wasDragging = node.draggingOver;
     node.draggingOver = true;
 
@@ -850,6 +858,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   }
 
   async handleDrop(e, node: DocNode) {
+
     const dragged = JSON.parse(e.dataTransfer.getData('text/plain'));
     if (!dragged.uref) return;
     if (dragged.parentId === this.uref) return;
@@ -857,15 +866,33 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (node.draft.type === TextType.Title) {
-      await this.createChild(node, dragged.uref, 0);
-    } else {
-      await this.createSibling(node, dragged.uref);
-    }
-
-    this.requestUpdate();
+    this.dropUref = dragged.uref;
+    this.dropParentNode = node;
+    this.showDropSnackbar = true
   }
+  async handleDropAttach(uref: string) {
+    if (!this.dropParentNode)
+      return;
 
+    if (this.dropParentNode.draft.type === TextType.Title) {
+      await this.createChild(this.dropParentNode, uref, 0);
+    } else {
+      await this.createSibling(this.dropParentNode, uref);
+    }
+    this.showDropSnackbar = false
+    this.requestUpdate();
+
+
+  }
+  async handleFork() {
+    const forkId = await this.localEvees.forkPerspective(this.dropUref)
+    this.handleDropAttach(forkId)
+
+  }
+  async handleEmbed() {
+    this.handleDropAttach(this.dropUref)
+
+  }
   getColor() {
     return this.color ? this.color : eveeColor(this.uref);
   }
@@ -913,25 +940,25 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         @drop=${(e) => this.handleDrop(e, node)}
       >
         ${this.showInfo
-          ? html` <div class="evee-info" style=${`padding-top:${paddingTop}`}>
+        ? html` <div class="evee-info" style=${`padding-top:${paddingTop}`}>
               ${this.getEveeInfo ? this.getEveeInfo(uref) : ''}
             </div>`
-          : html`<div class="empty-evees-info"></div>`}
+        : html`<div class="empty-evees-info"></div>`}
         <div class="node-content">
           ${nodeLense.render(node, {
-            focus: () => this.focused(node),
-            blur: () => this.blured(node),
-            contentChanged: (content: any, lift: boolean) =>
-              this.contentChanged(node, content, lift),
-            focusBackward: () => this.focusBackward(node),
-            focusDownward: () => this.focusDownward(node),
-            joinBackward: (tail: string) => this.joinBackward(node, tail),
-            pullDownward: () => this.pullDownward(node),
-            lift: () => this.lift(node),
-            split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
-            appended: () => this.appended(node),
-            convertedTo: (type) => this.convertedTo(node, type),
-          })}
+          focus: () => this.focused(node),
+          blur: () => this.blured(node),
+          contentChanged: (content: any, lift: boolean) =>
+            this.contentChanged(node, content, lift),
+          focusBackward: () => this.focusBackward(node),
+          focusDownward: () => this.focusDownward(node),
+          joinBackward: (tail: string) => this.joinBackward(node, tail),
+          pullDownward: () => this.pullDownward(node),
+          lift: () => this.lift(node),
+          split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
+          appended: () => this.appended(node),
+          convertedTo: (type) => this.convertedTo(node, type),
+        })}
         </div>
         ${node.draggingOver ? html`<div class="row-dragging-over"></div>` : ''}
       </div>
@@ -943,8 +970,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       ${this.renderTopRow(node)}
       ${node.childrenNodes
         ? node.childrenNodes.map((child) => {
-            return this.renderDocNode(child);
-          })
+          return this.renderDocNode(child);
+        })
         : ''}
     `;
   }
@@ -972,8 +999,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     return html`
       <div
         style=${styleMap({
-          backgroundColor: node.focused ? SELECTED_BACKGROUND : 'transparent',
-        })}
+      backgroundColor: node.focused ? SELECTED_BACKGROUND : 'transparent',
+    })}
         class="doc-node-container"
       >
         ${renderHere ? this.renderHere(node) : this.renderWithCortex(node)}
@@ -1001,7 +1028,15 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     return html`
       <div class=${editorClasses.join(' ')}>
         ${this.renderDocNode(this.doc)} ${this.renderDocumentEnd()}
+
+
       </div>
+     ${this.showDropSnackbar ? html`  <uprtcl-snackbar autoCloseDelay=${1000000}>
+       <p slot="description">Preferred way of attaching</p>
+       <p slot="action-1"  @click=${this.handleFork}>Fork</p>
+       <p slot="action-2" @click=${this.handleEmbed}>Embed</p>
+     </uprtcl-snackbar>`: null
+      }
       <!-- <div @click=${this.clickAreaClicked} class="click-area"></div> -->
     `;
   }

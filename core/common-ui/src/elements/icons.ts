@@ -53,6 +53,11 @@ export const icons = {
       />
     </svg>
   `,
+  close_white:html`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 4L4 12" stroke="white" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M4 4L12 12" stroke="white" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  `,
   close_purple:html`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <g filter="url(#filter0_i)">
   <rect width="32" height="32" rx="16" fill="#EFEFFD"/>
