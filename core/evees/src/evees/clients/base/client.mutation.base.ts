@@ -211,7 +211,7 @@ export class ClientMutationBase implements ClientAndExplore {
     await this.update({ deletedPerspectives: [perspectiveId] });
   }
 
-  async flush(options?: SearchOptions, flush: FlushConfig = { recurse: true }): Promise<void> {
+  async flush(options?: SearchOptions, levels: number = -1): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} flush()`, { updateQueue: this.updateQueue });
 
     await this.enqueueTask(async () => {
@@ -225,9 +225,9 @@ export class ClientMutationBase implements ClientAndExplore {
 
       await this.base.update(diff);
 
-      if (flush && flush.recurse) {
+      if (levels !== 0) {
         if ((this.base as ClientFull).flush) {
-          await (this.base as ClientFull).flush(options);
+          await (this.base as ClientFull).flush(options, levels - 1);
         }
       }
 

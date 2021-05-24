@@ -17,9 +17,10 @@ export interface ClientMutation extends Client {
   /** get all the changes relative to the underlying client */
   diff(options?: SearchOptions): Promise<EveesMutation>;
 
-  /** sync all the temporary changes made on this client with the base layer, if recurse
-   * then flush the base layer too recursively */
-  flush(options?: SearchOptions, flush?: FlushConfig): Promise<void>;
+  /** sync all the temporary changes made on this client with the base layer,
+   * if levels = -1 (or undefined), then recursively flush the base layer,
+   * otherwise flush only a number of layers equal to levels */
+  flush(options?: SearchOptions, levels?: number): Promise<void>;
 
   /** delete all changes done and cached in this client. */
   clear?(mutation?: EveesMutation): Promise<void>;

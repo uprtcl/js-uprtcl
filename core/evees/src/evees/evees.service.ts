@@ -171,18 +171,6 @@ export class Evees implements Client {
     return perspective.object.payload.context;
   }
 
-  async storeObject(entityCreate: EntityCreate): Promise<Entity> {
-    let entity: Entity;
-
-    if (!entityCreate.hash) {
-      entity = await this.hashObject(entityCreate);
-    } else {
-      entity = entityCreate as Entity;
-    }
-
-    return entity;
-  }
-
   async getEntity<T = any>(hash: string): Promise<Entity<T>> {
     return this.entityResolver.getEntity<T>(hash);
   }
@@ -193,6 +181,10 @@ export class Evees implements Client {
 
   async hashObject(entity: EntityCreate, putFlag: boolean = true): Promise<Entity> {
     return this.entityResolver.hashObject(entity, putFlag);
+  }
+
+  async putEntity(entity: Entity) {
+    return this.entityResolver.putEntity(entity);
   }
 
   async explore(
@@ -433,9 +425,9 @@ export class Evees implements Client {
     await this.indexUpdate(update);
     await this.client.updatePerspective(update);
 
-    flush = flush || this.config.flush;
-    if (flush) {
-      this.client.flush(undefined, flush);
+    flush = flush ? flush : this.config.flush;
+    if (flush && flush.autoflush) {
+      this.client.flush(undefined, flush.levels);
     }
   }
 
@@ -486,7 +478,7 @@ export class Evees implements Client {
     let headId;
 
     if (object) {
-      const dataId = await this.storeObject({
+      const dataId = await this.hashObject({
         object,
         remote: remoteId,
       });
@@ -575,7 +567,7 @@ export class Evees implements Client {
         pendingUpdates: Array.from(this.pendingUpdates.entries()),
       });
 
-    await Promise.all([this.storeObject(pending.commit), this.storeObject(pending.data)]);
+    await Promise.all([this.putEntity(pending.commit), this.putEntity(pending.data)]);
 
     await this.updatePerspective(pending.update, pending.flush);
 
@@ -598,16 +590,16 @@ export class Evees implements Client {
       clearTimeout(pending.timeout);
     }
 
-    updateDetails.timeout = setTimeout(
-      () => this.executeUpdate(perspectiveId),
-      updateDetails.flush.debounce
-    );
-
     if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, true);
     this.events.emit(EveesEvents.pending, true);
 
     /** create a timeout to execute (queue) this update */
     this.pendingUpdates.set(perspectiveId, updateDetails);
+
+    updateDetails.timeout = setTimeout(
+      () => this.executeUpdate(perspectiveId),
+      updateDetails.flush.debounce
+    );
   }
 
   /** Computes and update made on top of the current head in the client. If debounce is true,
@@ -650,7 +642,7 @@ export class Evees implements Client {
       indexData: options.indexData,
     };
 
-    const flush = this.config.flush || options.flush;
+    const flush = options.flush ? options.flush : this.config.flush;
 
     const pendingUpdate: PendingUpdateDetails = {
       commit: head,
@@ -662,11 +654,7 @@ export class Evees implements Client {
     if (pendingUpdate.flush && pendingUpdate.flush.debounce) {
       return this.updatePerspectiveDebounce(options.perspectiveId, pendingUpdate);
     } else {
-      await Promise.all([
-        this.storeObject(pendingUpdate.commit),
-        this.storeObject(pendingUpdate.data),
-      ]);
-
+      await Promise.all([this.putEntity(pendingUpdate.commit), this.putEntity(pendingUpdate.data)]);
       await this.updatePerspective(pendingUpdate.update, pendingUpdate.flush);
     }
   }
@@ -838,7 +826,7 @@ export class Evees implements Client {
 
   async createCommit(commit: CreateCommit, remote: string): Promise<Secured<Commit>> {
     const commitObject = createCommit(commit);
-    return this.storeObject({ object: commitObject, remote });
+    return this.hashObject({ object: commitObject, remote });
   }
 
   async isAncestorCommit(perspectiveId: string, commitId: string, stopAt?: string) {
@@ -919,8 +907,7 @@ export class Evees implements Client {
     }
 
     const perspective = await remote.snapPerspective(perspectivePartial, guardianId);
-
-    await this.storeObject({ object: perspective.object, remote: remote.id });
+    await this.putEntity(perspective);
 
     let forkCommitId: string | undefined = undefined;
 
@@ -972,7 +959,7 @@ export class Evees implements Client {
 
     const signedCommit = signObject(newCommit);
 
-    const entity = await this.storeObject({ object: signedCommit, remote: remoteId });
+    const entity = await this.hashObject({ object: signedCommit, remote: remoteId });
 
     return entity.hash;
   }
@@ -995,7 +982,7 @@ export class Evees implements Client {
       // TODO how can replace children when matching multiple patterns?
       const newObject = this.behaviorFirst(data.object, 'replaceChildren')(newLinks);
 
-      const entity = await this.storeObject({ object: newObject, remote: remoteId });
+      const entity = await this.hashObject({ object: newObject, remote: remoteId });
       return entity.hash;
     } else {
       return entityId;
