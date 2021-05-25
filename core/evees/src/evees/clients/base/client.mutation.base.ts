@@ -123,7 +123,7 @@ export class ClientMutationBase implements ClientAndExplore {
   async updatePerspectiveEffective(update: Update) {
     if (LOGINFO) this.logger.log(`${this.name} updatePerspectiveEffective()`, { update });
 
-    this.mutationStore.addUpdate(update);
+    await this.mutationStore.addUpdate(update);
 
     /** emit update */
     const under: SearchOptions = {
@@ -214,6 +214,11 @@ export class ClientMutationBase implements ClientAndExplore {
   async flush(options?: SearchOptions, levels: number = -1): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} flush()`, { updateQueue: this.updateQueue });
 
+    /** levels === 0 will stope recursive flushing,
+     * - if greater than zero flush is called with levels = levels - 1
+     * - if -1 it will call resursively all client layers */
+    if (levels === 0) return;
+
     await this.enqueueTask(async () => {
       if (!this.base) {
         throw new Error('base not defined');
@@ -223,9 +228,11 @@ export class ClientMutationBase implements ClientAndExplore {
 
       if (LOGINFO) this.logger.log(`${this.name} flush -diff`, diff);
 
+      // if levels !== 0, apply the mutatio to the base client
       await this.base.update(diff);
 
-      if (levels !== 0) {
+      // if also levels - 1 !== 0 , continue flushing the base of the base layer
+      if (levels - 1 !== 0) {
         if ((this.base as ClientFull).flush) {
           await (this.base as ClientFull).flush(options, levels - 1);
         }

@@ -43,4 +43,14 @@ export class MutationHelper {
 
     return Array.from(entitiesIds.values());
   }
+
+  static getUpdatesPerPerspective(mutation: EveesMutation): Map<string, Update[]> {
+    const updatesPerPerspective = new Map<string, Update[]>();
+    mutation.updates.forEach((up) => {
+      const updates = updatesPerPerspective.get(up.perspectiveId) || [];
+      updates.push(up);
+      updatesPerPerspective.set(up.perspectiveId, updates);
+    });
+    return updatesPerPerspective;
+  }
 }
