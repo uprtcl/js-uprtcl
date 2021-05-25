@@ -546,9 +546,9 @@ export class Evees implements Client {
     );
   }
 
-  async flush(options?: SearchOptions) {
+  async flush(options?: SearchOptions, levels: number = -1) {
     await this.awaitPending();
-    return this.client.flush(options);
+    return this.client.flush(options, levels);
   }
 
   async diff(options?: SearchOptions) {
