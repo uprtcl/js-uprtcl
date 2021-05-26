@@ -1,3 +1,4 @@
+import lodash from 'lodash';
 import { EventEmitter } from 'events';
 
 import { EveesContentModule } from './interfaces/evees.content.module';
@@ -673,8 +674,10 @@ export class Evees implements Client {
     newElements: any[],
     index: number,
     count: number,
-    remoteId?: string
+    remoteId?: string,
+    clone: boolean = true
   ) {
+    const objectEf = clone ? lodash.cloneDeep(object) : object;
     const getNewChildren = newElements.map((page) => {
       if (typeof page !== 'string') {
         remoteId = remoteId || this.remotes[0].id;
@@ -688,21 +691,22 @@ export class Evees implements Client {
 
     /** get children pattern */
     const childrentPattern: HasChildren = this.recognizer
-      .recognizeBehaviours(object)
+      .recognizeBehaviours(objectEf)
       .find((b) => (b as HasChildren).children);
 
     /** get array with current children */
-    const children = childrentPattern.children(object);
+    const children = childrentPattern.children(objectEf);
 
     /** updated array with new elements */
     const removed = children.splice(index, count, ...newChildren);
-    const newObject = childrentPattern.replaceChildren(object)(children);
+    const newObject = childrentPattern.replaceChildren(objectEf)(children);
 
     return {
       object: newObject,
       removed,
     };
   }
+
   /**
    * Add an existing perspective as a child of another and, optionally, set the new parent
    * as the guardian
