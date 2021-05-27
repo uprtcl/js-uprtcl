@@ -10,7 +10,7 @@ export class PageItemElement extends EveesBaseElement<TextNode> {
   @property({ type: Boolean })
   selected: boolean = false;
 
-  @state()
+  @internalProperty()
   title: string = '';
 
   async dataUpdated() {

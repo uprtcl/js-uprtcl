@@ -1,4 +1,4 @@
-import { css, html, property, state } from 'lit-element';
+import { css, html, property, internalProperty } from 'lit-element';
 
 import { icons } from '@uprtcl/common-ui';
 import {
@@ -25,13 +25,13 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   @property({ type: String, attribute: 'first-uref' })
   firstRef!: string;
 
-  @state()
+  @internalProperty()
   isLoggedEdit = false;
 
-  @state()
+  @internalProperty()
   hasPull: boolean = false;
 
-  @state()
+  @internalProperty()
   protected case: EditableCase = EditableCase.IS_OFFICIAL_DONT_HAVE_DRAFT;
 
   protected mineId: string | undefined = undefined;

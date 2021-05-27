@@ -171,7 +171,7 @@ export interface SearchOptions {
     value: string;
     levels?: number;
   };
-  forks?: SearchForkOptions
+  forks?: SearchForkOptions;
   orderBy?: string;
   pagination?: {
     first: number;
@@ -233,7 +233,7 @@ export interface UpdatePerspectiveData {
 export interface FlushConfig {
   debounce?: number;
   autoflush?: boolean;
-  recurse?: boolean;
+  levels?: number;
   condensate?: boolean;
 }
 

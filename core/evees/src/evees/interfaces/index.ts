@@ -4,6 +4,7 @@ export * from './evees.content.module';
 export * from './entity';
 export * from './entity.remote';
 export * from './entity.resolver';
+export * from './entity.cache';
 
 export * from './client.remote';
 export * from './client.mutation';

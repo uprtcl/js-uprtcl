@@ -23,16 +23,16 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'proposal-id' })
   proposalId!: string;
 
-  @state()
+  @internalProperty()
   loading = true;
 
-  @state()
+  @internalProperty()
   showDetails = false;
 
-  @state()
+  @internalProperty()
   voting = false;
 
-  @state()
+  @internalProperty()
   proposalStatusUI!: {
     summary: ProposalSummary;
     council: string[];

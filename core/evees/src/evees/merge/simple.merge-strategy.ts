@@ -129,7 +129,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       return toCommitIdOrg;
     }
 
-    await this.evees.storeObject({ object: mergedObject, remote });
+    await this.evees.hashObject({ object: mergedObject, remote });
 
     /** some commits might be undefined */
     const parentsIds = config.detach
@@ -145,7 +145,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
     };
 
     const securedCommit = await this.evees.createCommit(newCommit, remote);
-    await this.evees.storeObject({ object: securedCommit, remote });
+    await this.evees.hashObject({ object: securedCommit, remote });
 
     return securedCommit.hash;
   }

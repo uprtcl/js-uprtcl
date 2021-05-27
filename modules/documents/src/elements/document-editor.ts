@@ -14,6 +14,7 @@ import {
   Evees,
   UpdatePerspectiveData,
   CreateEvee,
+  FlushConfig,
 } from '@uprtcl/evees';
 import { servicesConnect, eveeColor } from '@uprtcl/evees-ui';
 
@@ -53,11 +54,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: String })
   color!: string;
 
-  @property({ type: Number })
-  debounce!: number;
-
-  @property({ type: Boolean })
-  autoflush: boolean = false;
+  @property({ type: Object })
+  flushConfig!: FlushConfig;
 
   @internalProperty()
   getEveeInfo!: Function;
@@ -269,7 +267,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     /** snap is async because it performs a hash, should be fast enough for UX flow */
     const perspective = await this.localEvees.getRemote(remoteId).snapPerspective({});
     /** Perspective entity is created and await for it to be ready for immediate reading. */
-    await this.localEvees.storeObject(perspective);
+    await this.localEvees.putEntity(perspective);
 
     const creteEvee: CreateEvee = {
       object: draft,
@@ -337,13 +335,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
           },
         },
       },
-      flush:
-        this.debounce !== undefined || this.autoflush !== undefined
-          ? {
-              debounce: this.debounce,
-              autoflush: this.autoflush,
-            }
-          : undefined,
+      flush: this.flushConfig,
     };
 
     if (LOGINFO) this.logger.log('updatePerspectiveData()', { update });

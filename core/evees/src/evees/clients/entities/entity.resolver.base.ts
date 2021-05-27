@@ -1,6 +1,4 @@
-import { Entity, EntityCreate } from 'src/evees/interfaces/entity';
-import { EntityCache } from 'src/evees/interfaces/entity.cache';
-import { EntityResolver } from '../../interfaces/entity.resolver';
+import { Entity, EntityCreate, EntityCache, EntityResolver } from '../../interfaces';
 import { OnMemoryEntityCache } from './entity.cache';
 
 /**
@@ -66,7 +64,7 @@ export class EntityResolverBase implements EntityResolver {
 
   async hashObjects(
     entitiesCreate: EntityCreate<any>[],
-    putFlag: boolean = false
+    putFlag: boolean = true
   ): Promise<Entity<any>[]> {
     const entities = await this.base.hashObjects(entitiesCreate);
     // cache all hashed objects by default

@@ -5,9 +5,10 @@ import {
   PerspectiveDetails,
   SearchOptions,
   LinksType,
-} from '../../interfaces/types';
-import { ClientMutationStore } from '../../interfaces/client.mutation.store';
-import { IndexDataHelper } from 'src/evees/index.data.helper';
+  ClientMutationStore,
+} from '../../interfaces';
+import { IndexDataHelper } from '../../index.data.helper';
+import { MutationHelper } from '../../utils';
 
 /** info stored about the perspectives on the mutation that help fast
  * reading it's details or filtering the set of perspectives in the mutation */
@@ -140,10 +141,26 @@ export class MutationStoreMemory implements ClientMutationStore {
     };
   }
 
-  async clear(): Promise<void> {
-    this.newPerspectives.clear();
-    this.updates.clear();
-    this.deletedPerspectives.clear();
+  async clear(elements?: EveesMutation): Promise<void> {
+    if (elements) {
+      elements.newPerspectives.forEach((np) => this.newPerspectives.delete(np.perspective.hash));
+
+      /** remove all the updates in the elements mutation from the updates in memory */
+      const updatesPerPersective = MutationHelper.getUpdatesPerPerspective(elements);
+      Array.from(updatesPerPersective.entries()).forEach(([perspectiveId, clearUpdates]) => {
+        const currentUpdates = this.updates.get(perspectiveId);
+        if (currentUpdates) {
+          const newUpdates = currentUpdates.filter((current) => !clearUpdates.includes(current));
+          this.updates.set(perspectiveId, newUpdates);
+        }
+      });
+
+      elements.deletedPerspectives.forEach((id) => this.deletedPerspectives.delete(id));
+    } else {
+      this.newPerspectives.clear();
+      this.updates.clear();
+      this.deletedPerspectives.clear();
+    }
   }
 
   async getDeletedPerspectives(): Promise<string[]> {
