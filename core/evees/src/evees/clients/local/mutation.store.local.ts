@@ -143,11 +143,12 @@ export class MutationStoreLocal implements ClientMutationStore {
     let of: string[] = [];
 
     /** filter updates only to perspectives under a given element */
-    if (options && options.under) {
+    if (options && options.start) {
       /**  */
       const allUnder = await Promise.all(
-        options.under.elements.map(
+        options.start.elements.map(
           async (under): Promise<string[]> => {
+            if (under.direction === 'above') throw new Error('Cant filter above');
             return this.getUnder(under.id);
           }
         )

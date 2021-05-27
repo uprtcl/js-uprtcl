@@ -3,7 +3,6 @@ import { Signed } from '../../../patterns';
 import { Evees } from '../../evees.service';
 import {
   SearchOptions,
-  ParentAndChild,
   Perspective,
   SearchResult,
   ForkOf,
@@ -27,18 +26,9 @@ export class LocalExplore implements ClientExplore {
     options: SearchOptions,
     fetchOptions?: GetPerspectiveOptions
   ): Promise<SearchResult> {
-    if (options.forks) {
-      if (!options.under) throw new Error('forks must be found under some perspective');
-      const forks = await this.independentSubPerspectivesRec(
-        options.under.elements[0].id,
-        undefined,
-        options.under.levels
-      );
+    // TODO: search forks for web3 gov
 
-      return { perspectiveIds: forks.map((fork) => fork.forkIds[0]), forksDetails: forks };
-    }
-
-    const underId = options.under ? options.under.elements[0].id : undefined;
+    const underId = options.start ? options.start.elements[0].id : '';
     if (!underId) {
       throw new Error(`UnderId not defined`);
     }
