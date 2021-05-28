@@ -3,12 +3,12 @@ import { Signed } from '../../../patterns';
 import { Evees } from '../../evees.service';
 import {
   SearchOptions,
-  ParentAndChild,
   Perspective,
   SearchResult,
   ForkOf,
   GetPerspectiveOptions,
   ClientExplore,
+  Update,
 } from '../../interfaces';
 
 import { PerspectiveLocal, PerspectivesStoreDB } from './perspectives.store.db';
@@ -16,8 +16,11 @@ import { PerspectiveLocal, PerspectivesStoreDB } from './perspectives.store.db';
 export class LocalExplore implements ClientExplore {
   /** The evees service is needed to navigate a tree of perspectives stored on other remotes */
   private evees!: Evees;
+  readonly db: PerspectivesStoreDB;
 
-  constructor(readonly db: PerspectivesStoreDB) {}
+  constructor(db?: PerspectivesStoreDB) {
+    this.db = db || new PerspectivesStoreDB();
+  }
 
   public setEvees(evees: Evees) {
     this.evees = evees;
@@ -126,4 +129,7 @@ export class LocalExplore implements ClientExplore {
 
     return thisLevel.concat(...independent);
   }
+
+  /** a single endpoint to add perspectives to the DB and index them correctly. */
+  upsertPerspective(update: Update) {}
 }

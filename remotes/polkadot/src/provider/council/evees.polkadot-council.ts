@@ -12,8 +12,14 @@ import {
   PerspectiveGetResult,
   Update,
   ClientEvents,
-  EntityResolver,
   ConnectionLoggedEvents,
+  EntityStore,
+  EveesMutationCreate,
+  GetPerspectiveOptions,
+  SearchOptions,
+  SearchResult,
+  ClientExplore,
+  EntityRemote,
 } from '@uprtcl/evees';
 import { EveesAccessControlFixedOwner } from '@uprtcl/evees-blockchain';
 
@@ -34,12 +40,20 @@ export class EveesPolkadotCouncil implements ClientRemote {
 
   constructor(
     readonly connection: PolkadotConnection,
-    readonly casID: string,
-    readonly config: ProposalConfig
+    readonly entityStore: EntityStore,
+    readonly explorer: ClientExplore,
+    readonly config: ProposalConfig,
+    readonly casID?: string
   ) {
     this.accessControl = new EveesAccessControlFixedOwner();
-    this.councilStorage = new PolkadotCouncilEveesStorage(connection, entityStore, config);
-    this.proposals = new ProposalsPolkadotCouncil(connection, this.councilStorage, this.id, config);
+    this.councilStorage = new PolkadotCouncilEveesStorage(connection, entityStore, config, casID);
+    this.proposals = new ProposalsPolkadotCouncil(
+      connection,
+      this.councilStorage,
+      entityStore,
+      this.id,
+      config
+    );
 
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
@@ -51,10 +65,8 @@ export class EveesPolkadotCouncil implements ClientRemote {
     }
   }
 
-  setEntityResolver(entityResolver: EntityResolver) {
-    this.accessControl.setEntityResolver(entityResolver);
-    this.councilStorage.setEntityResolver(entityResolver);
-    this.proposals.setEntityResolver(entityResolver);
+  get entityRemote(): EntityRemote {
+    return this.entityStore.remotes[0];
   }
 
   get id() {
@@ -87,6 +99,7 @@ export class EveesPolkadotCouncil implements ClientRemote {
     const details = await this.councilStorage.getPerspective(perspectiveId);
     return { details: { ...details } };
   }
+
   newPerspective(newPerspective: NewPerspective): Promise<void> {
     throw new Error('Method not implemented.');
   }
@@ -96,6 +109,10 @@ export class EveesPolkadotCouncil implements ClientRemote {
   updatePerspective(update: Update): Promise<void> {
     throw new Error('Method not implemented.');
   }
+  update(mutation: EveesMutationCreate): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   diff(): Promise<EveesMutation> {
     throw new Error('Method not implemented.');
   }
@@ -108,8 +125,16 @@ export class EveesPolkadotCouncil implements ClientRemote {
   clear(): Promise<void> {
     throw new Error('Method not implemented.');
   }
+
   getUserPerspectives(perspectiveId: string): Promise<string[]> {
     throw new Error('Method not implemented.');
+  }
+
+  explore(
+    searchOptions: SearchOptions,
+    fetchOptions?: GetPerspectiveOptions | undefined
+  ): Promise<SearchResult> {
+    return this.explorer.explore(searchOptions, fetchOptions);
   }
 
   async isLogged() {

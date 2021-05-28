@@ -8,7 +8,7 @@ export class EntityStore extends EntityResolverBase implements EntityResolver {
   id: string = '';
   newEntitiesIds: string[] = [];
 
-  constructor(protected remotes: EntityRemote[], clientToEntityRemoteMap: Map<string, string>) {
+  constructor(public remotes: EntityRemote[], clientToEntityRemoteMap?: Map<string, string>) {
     super(new RouterEntityResolver(remotes, clientToEntityRemoteMap));
   }
 

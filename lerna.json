@@ -2,11 +2,17 @@
   "packages": [
     "connections/http",
     "connections/ethereum",
+    "connections/ipfs",
+    "connections/orbitdb",
     "core/evees",
     "core/evees-ui",
     "core/common-ui",
     "modules/documents",
-    "remotes/http"
+    "modules/wikis",
+    "remotes/http",
+    "remotes/blockchain",
+    "remotes/orbitdb",
+    "remotes/polkadot"
   ],
   "version": "independent"
 }

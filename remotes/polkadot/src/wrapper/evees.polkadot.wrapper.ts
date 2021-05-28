@@ -1,6 +1,6 @@
 import { IpfsStore, PinnerCached } from '@uprtcl/ipfs-provider';
 import { EveesBlockchain } from '@uprtcl/evees-blockchain';
-import { CidConfig, ClientRemote, LocalExplore } from '@uprtcl/evees';
+import { CidConfig, ClientRemote, EntityStore, LocalExplore } from '@uprtcl/evees';
 
 import { PolkadotConnection } from '../connection.polkadot';
 import { EveesPolkadotConnection } from '../provider/identity-based/evees.polkadot-connection';
@@ -11,6 +11,7 @@ import { getConnectionDetails } from './connections';
 export class EveesPolkadotWrapper {
   public remotes!: ClientRemote[];
   public ipfsStore!: IpfsStore;
+  public entityStore!: EntityStore;
   public pkdEveesConnection!: EveesPolkadotConnection;
 
   constructor(
@@ -35,8 +36,9 @@ export class EveesPolkadotWrapper {
     this.pkdEveesConnection = new EveesPolkadotConnection(pkdConnection);
     await this.pkdEveesConnection.ready();
 
-    const exploreService = new LocalExplore();
+    this.entityStore = new EntityStore([this.ipfsStore]);
 
+    const exploreService = new LocalExplore();
     const pkdEvees = new EveesBlockchain(this.pkdEveesConnection, this.ipfsStore, exploreService);
 
     const councilConfig = {
@@ -45,9 +47,11 @@ export class EveesPolkadotWrapper {
       quorum: 1.0 / 3.0,
       thresehold: 0.5,
     };
+
     const pkdCouncilEvees = new EveesPolkadotCouncil(
       pkdConnection,
-      this.ipfsStore.casID,
+      this.entityStore,
+      exploreService,
       councilConfig
     );
     await pkdEvees.connect();

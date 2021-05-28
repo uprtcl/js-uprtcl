@@ -11,7 +11,7 @@ export class RouterEntityResolver implements EntityResolver {
 
   constructor(
     protected remotes: EntityRemote[],
-    protected clientToEntityRemoteMap: Map<string, string>
+    protected clientToEntityRemoteMap?: Map<string, string>
   ) {
     this.remotesMap = new Map();
     remotes.forEach((remote) => {
@@ -51,9 +51,10 @@ export class RouterEntityResolver implements EntityResolver {
 
   getObjectRemote(entity: EntityCreate): EntityRemote {
     if (!entity.remote) throw new Error(`Entity remote not defined ${JSON.stringify(entity)}`);
-    const entityRemoteId = this.clientToEntityRemoteMap.get(entity.remote);
-    if (!entityRemoteId) throw new Error(`Entity remote id not found for remote ${entity.remote}`);
-    return this.getRemote();
+    const entityRemoteId = this.clientToEntityRemoteMap
+      ? this.clientToEntityRemoteMap.get(entity.remote)
+      : undefined;
+    return this.getRemote(entityRemoteId);
   }
 
   public async hashOnRemote(entity: EntityCreate) {
