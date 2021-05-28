@@ -4,10 +4,10 @@ import { GetPerspectiveOptions, SearchOptions, SearchResult } from './types';
 /** A ClientExplore is a Client that also indexes its content and can solve search queries
  * using UglyQL (the query structure that is used by _Prtcl). */
 export interface ClientExplore {
-  readonly explore: (
+  explore(
     searchOptions: SearchOptions,
     fetchOptions?: GetPerspectiveOptions
-  ) => Promise<SearchResult>;
+  ): Promise<SearchResult>;
 }
 
 export interface ClientAndExplore extends Client, ClientExplore {}
