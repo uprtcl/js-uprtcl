@@ -1,4 +1,4 @@
-import { html, css, state, property } from 'lit-element';
+import { html, css, internalProperty, property } from 'lit-element';
 
 import { MenuOption, MenuOptions, styles } from '@uprtcl/common-ui';
 import { EveesBaseElement } from '@uprtcl/evees-ui';
