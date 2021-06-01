@@ -18,7 +18,7 @@ export class PerspectivesStoreDB extends Dexie {
     super(`${prefix}-evees-store`);
 
     this.version(0.1).stores({
-      perspectivesDetails: '&perspectiveId,*onEcosystem',
+      perspectivesDetails: '&perspectiveId,context,*children,*onEcosystem',
     });
 
     this.perspectivesDetails = this.table('perspectivesDetails');

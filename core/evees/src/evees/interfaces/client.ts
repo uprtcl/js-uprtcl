@@ -40,9 +40,6 @@ export interface Client {
   deletePerspective(perspectiveId: string): Promise<void>;
   updatePerspective(update: Update): Promise<void>;
 
-  /** await for all update transactions received to be processed (visible to read queries) */
-  ready?(): Promise<void>;
-
   /** returns true if the user can update the perspective */
   canUpdate(perspectiveId: string, userId?: string): Promise<boolean>;
 }

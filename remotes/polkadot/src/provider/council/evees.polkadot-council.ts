@@ -82,7 +82,7 @@ export class EveesPolkadotCouncil implements ClientRemote {
   }
 
   async ready(): Promise<void> {
-    await Promise.all([this.councilStorage.ready()]);
+    await Promise.all([this.councilStorage.init()]);
   }
 
   async canUpdate(uref: string) {

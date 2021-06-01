@@ -80,17 +80,17 @@ export class EveesOrbitDB implements ClientRemote {
     const perspective = await this.store.hashObject(
       {
         object: secured.object,
-        casID: this.entityRemote.id,
+        remote: this.entityRemote.id,
       },
       true
     );
     if (ENABLE_LOG) {
-      this.logger.log(`[OrbitDB] persistPerspectiveEntity - added to IPFS`, perspective.id);
+      this.logger.log(`[OrbitDB] persistPerspectiveEntity - added to IPFS`, perspective.hash);
     }
 
-    if (secured.hash && secured.hash !== perspective.id) {
+    if (secured.hash && secured.hash !== perspective.hash) {
       throw new Error(
-        `perspective ID computed by IPFS ${perspective.id} is not the same as the input one ${secured.hash}.`
+        `perspective ID computed by IPFS ${perspective.hash} is not the same as the input one ${secured.hash}.`
       );
     }
 
@@ -98,7 +98,7 @@ export class EveesOrbitDB implements ClientRemote {
       this.logger.log('persisting', secured);
     }
 
-    return perspective.id;
+    return perspective.hash;
   }
 
   async getPerspectiveStore(perspectiveId: string, pin = false) {

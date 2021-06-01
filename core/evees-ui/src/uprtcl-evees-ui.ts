@@ -34,3 +34,5 @@ export { init } from './init';
 export { MultiContainer } from './container/multi.container';
 
 export { ProposalsWithUI } from './interfaces/proposals.with-ui';
+
+export { registerComponents } from './register.components';

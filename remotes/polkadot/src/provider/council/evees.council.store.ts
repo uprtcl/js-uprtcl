@@ -64,14 +64,15 @@ export class PolkadotCouncilEveesStorage {
     if (this.connection.events) {
       this.connection.events.on(ConnectionEvents.newBlock, (block) => {
         if (LOG_ENABLED) this.logger.log('Block received', block);
-        if (this.fetchRealTime) {
+        if (this.fetchRealTime && this.db) {
           this.fetchCouncilDatas(block.number.toNumber());
         }
       });
     }
   }
 
-  async ready(): Promise<void> {
+  /** call after connection is initialized */
+  async init(): Promise<void> {
     const localStoreName = `${this.connection.getNetworkId()}-evees-council`;
     if (!localStoreName) {
       throw new Error('networkId undefined');
@@ -91,8 +92,6 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async gossipProposals(head?: string): Promise<string> {
-    await this.ready();
-
     if (!this.connection.account) throw new Error('cant update data if not logged in');
 
     // gossip consist on adding all new proposals from other council members to my own councilData object.
@@ -377,7 +376,6 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getPerspective(perspectiveId: string): Promise<PerspectiveDetails> {
-    await this.ready();
     /** at this point cache data is up to date */
     if (LOG_ENABLED) this.logger.log(`getting perspective ${perspectiveId}`);
     const perspective = await this.db.perspectives.get(perspectiveId);
@@ -391,7 +389,6 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getContextPerspectives(context: string) {
-    await this.ready();
     const perspectiveIds = await this.db.perspectives
       .where('context')
       .equals(context)

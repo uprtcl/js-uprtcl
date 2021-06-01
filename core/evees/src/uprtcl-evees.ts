@@ -3,6 +3,7 @@ export * from './evees/clients';
 export * from './evees/utils';
 export * from './patterns';
 export * from './utils';
+export * from './creator-helpers';
 
 export { PerspectiveType } from './evees/patterns/perspective.pattern';
 export { CommitType } from './evees/patterns/commit.pattern';
@@ -41,11 +42,6 @@ export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 
 /* merge */
 export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
-
-/** container */
-export { init } from './creator-helpers/init';
-
-export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Evees Utils */
 export { CondensateCommits } from './evees/utils/condensate.commits';

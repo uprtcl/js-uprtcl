@@ -1,13 +1,6 @@
 import { html } from 'lit-html';
 
-import {
-  EntityStore,
-  Logger,
-  Proposal,
-  ProposalEvents,
-  MutationHelper,
-  EntityResolver,
-} from '@uprtcl/evees';
+import { EntityStore, Logger, Proposal, ProposalEvents, MutationHelper } from '@uprtcl/evees';
 import { Lens, ProposalsWithUI } from '@uprtcl/evees-ui';
 
 import { PolkadotConnection } from '../../connection.polkadot';
@@ -43,19 +36,16 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
     }
   }
 
-  async ready(): Promise<void> {
-    await this.init();
-    await this.councilStore.ready();
+  async init(): Promise<void> {
+    if (!this.connection.account) throw new Error('Polkadot connection not ready');
+
+    const council = await this.connection.getCouncil();
+    this.canProposeCache = council.includes(this.connection.account);
+    await this.councilStore.init();
   }
 
   setStore(store: EntityStore) {
     this.store = store;
-  }
-
-  async init() {
-    if (!this.connection.account) return false;
-    const council = await this.connection.getCouncil();
-    this.canProposeCache = council.includes(this.connection.account);
   }
 
   async canPropose() {
@@ -67,7 +57,6 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   }
 
   async createProposal(proposal: Proposal): Promise<string> {
-    await this.ready();
     this.logger.info('createProposal()', { proposal });
 
     const proposalManifest: ProposalManifest = {
@@ -106,8 +95,6 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   }
 
   async getProposal(proposalId: string): Promise<Proposal> {
-    await this.ready();
-
     this.logger.info('getProposal() - pre', { proposalId });
 
     const proposalManifest = await this.councilStore.getProposalManifest(proposalId);
@@ -129,7 +116,6 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   }
 
   async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
-    await this.ready();
     return this.councilStore.getProposalsToPerspective(perspectiveId);
   }
 

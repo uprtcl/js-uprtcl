@@ -45,13 +45,16 @@ export class ClientRemoteLocal implements ClientRemote {
   constructor(
     readonly entityResolver: EntityResolver,
     db?: PerspectivesStoreDB,
-    entityRemote?: EntityRemote
+    entityRemote?: EntityRemote,
+    exploreService?: LocalExplore
   ) {
     this.entityRemote = entityRemote || new EntityRemoteLocal();
     this.db = db || new PerspectivesStoreDB();
-    this.exploreService = new LocalExplore(db);
+    this.exploreService = exploreService || new LocalExplore(db);
     this.accessControl = new LocalAccessControl(this.entityResolver);
   }
+
+  async ready() {}
 
   snapPerspective(
     perspective: PartialPerspective,
@@ -154,22 +157,14 @@ export class ClientRemoteLocal implements ClientRemote {
 
   userId?: string | undefined;
 
-  connect(): Promise<void> {
-    throw new Error('Method not implemented.');
+  async connect(): Promise<void> {}
+  async isConnected() {
+    return true;
   }
-  isConnected(): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async disconnect() {}
+  async isLogged(): Promise<boolean> {
+    return true;
   }
-  disconnect(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  isLogged(): Promise<boolean> {
-    throw new Error('Method not implemented.');
-  }
-  login(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  logout(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
+  async login() {}
+  async logout() {}
 }
