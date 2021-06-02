@@ -41,14 +41,26 @@ export class LocalExplore implements ClientExplore {
       return { perspectiveIds: forks.map((fork) => fork.forkIds[0]), forksDetails: forks };
     }
 
-    const underId = options.under ? options.under.elements[0].id : undefined;
-    if (!underId) {
-      throw new Error(`UnderId not defined`);
+    let perspectiveIds: string[] = [];
+
+    if (options.under) {
+      const underId = options.under.elements[0].id;
+
+      perspectiveIds = await this.db.perspectivesDetails
+        .where('onEcosystem')
+        .equals(underId)
+        .primaryKeys();
     }
-    const perspectiveIds = await this.db.perspectivesDetails
-      .where('onEcosystem')
-      .equals(underId)
-      .primaryKeys();
+
+    if (options.above) {
+      const aboveId = options.above.elements[0].id;
+
+      const perspective = await this.db.perspectivesDetails.get(aboveId);
+      if (perspective) {
+        perspectiveIds = perspective.onEcosystem;
+      }
+    }
+
     return { perspectiveIds };
   }
 
