@@ -1,5 +1,5 @@
 export { EveesPerspectivesList } from './elements/evees-perspectives-list';
-export { EveesBaseElement } from './elements/evees-base';
+export { EveesBaseElement } from './elements/evees-base-element';
 export { EveesBaseEditable, EditableCase } from './elements/evees-base-editable';
 export { EveesInfoPopper, EveesInfoConfig } from './elements/evees-info-popper';
 export { EveesInfoBase } from './elements/evees-info-base';
