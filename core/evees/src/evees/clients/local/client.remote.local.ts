@@ -68,7 +68,8 @@ export class ClientRemoteLocal implements ClientRemote {
     options?: GetPerspectiveOptions
   ): Promise<PerspectiveGetResult> {
     const perspectiveLocal = await this.db.perspectivesDetails.get(perspectiveId);
-    return { details: perspectiveLocal ? perspectiveLocal.details : {} };
+    const details = perspectiveLocal ? perspectiveLocal.details : {};
+    return { details: { ...details, canUpdate: true } };
   }
 
   async update(mutation: EveesMutationCreate): Promise<void> {

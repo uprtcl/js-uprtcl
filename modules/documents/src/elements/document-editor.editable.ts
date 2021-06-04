@@ -2,14 +2,20 @@ import { css, html } from 'lit-element';
 import { EveesBaseEditable } from '@uprtcl/evees-ui';
 
 import { TextNode } from '../types';
+import { FlushConfig } from '@uprtcl/evees';
 
 /** a document editor that has one official version and one draft for the logged user */
 export class EditableDocumentEditor extends EveesBaseEditable<TextNode> {
+  flushConfig: FlushConfig = {
+    autoflush: true,
+    debounce: 2000,
+  };
+
   render() {
     if (this.loading) return html`<uprtcl-loading></uprtcl-loading>`;
 
     return html`<div class="info-container">${this.renderInfo()}</div>
-      <documents-editor uref=${this.uref} debounce="2000" autoflush></documents-editor>`;
+      <documents-editor uref=${this.uref} .flushConfig=${this.flushConfig}></documents-editor>`;
   }
 
   static get styles() {
