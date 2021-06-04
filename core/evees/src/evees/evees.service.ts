@@ -411,6 +411,7 @@ export class Evees implements Client {
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async newPerspective(newPerspective: NewPerspective) {
+    await this.entityResolver.putEntity(newPerspective.perspective);
     newPerspective.update = await this.appendIndexing(newPerspective.update);
     return this.client.newPerspective(newPerspective);
   }

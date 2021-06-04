@@ -30,7 +30,6 @@ export { HasDiffLenses, DiffLens } from './behaviours/has-diff-lenses';
 export { RenderEntityInput } from './elements/uprtcl-entity';
 
 export { servicesConnect } from './container/multi-connect.mixin';
-export { init } from './init';
 export { MultiContainer } from './container/multi.container';
 
 export { ProposalsWithUI } from './interfaces/proposals.with-ui';

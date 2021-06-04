@@ -64,6 +64,10 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
       this.uref = this.firstRef;
       this.load();
     }
+
+    if (changedProperties.has('uref')) {
+      this.load();
+    }
   }
 
   async checkLoggedOnEdit() {
