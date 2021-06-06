@@ -13,13 +13,14 @@ import {
   Update,
   ClientEvents,
   ConnectionLoggedEvents,
-  EntityStore,
   EveesMutationCreate,
   GetPerspectiveOptions,
   SearchOptions,
   SearchResult,
   ClientExplore,
   EntityRemote,
+  EntityRemoteBuffered,
+  EntityResolver,
 } from '@uprtcl/evees';
 import { EveesAccessControlFixedOwner } from '@uprtcl/evees-blockchain';
 
@@ -40,17 +41,24 @@ export class EveesPolkadotCouncil implements ClientRemote {
 
   constructor(
     readonly connection: PolkadotConnection,
-    readonly entityStore: EntityStore,
+    readonly entityResolver: EntityResolver,
+    readonly entityRemote: EntityRemoteBuffered,
     readonly explorer: ClientExplore,
     readonly config: ProposalConfig,
     readonly casID?: string
   ) {
     this.accessControl = new EveesAccessControlFixedOwner();
-    this.councilStorage = new PolkadotCouncilEveesStorage(connection, entityStore, config, casID);
+    this.councilStorage = new PolkadotCouncilEveesStorage(
+      connection,
+      entityResolver,
+      entityRemote,
+      config
+    );
     this.proposals = new ProposalsPolkadotCouncil(
       connection,
       this.councilStorage,
-      entityStore,
+      entityResolver,
+      entityRemote,
       this.id,
       config
     );
@@ -63,10 +71,6 @@ export class EveesPolkadotCouncil implements ClientRemote {
         this.events.emit(ClientEvents.updated, perpectiveIds);
       });
     }
-  }
-
-  get entityRemote(): EntityRemote {
-    return this.entityStore.remotes[0];
   }
 
   get id() {

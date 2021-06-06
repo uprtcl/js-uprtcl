@@ -21,13 +21,13 @@ import { getStatus } from './proposal.logic.quorum';
 import { ProposalConfig, ProposalStatus, VoteValue } from './proposal.config.types';
 import {
   Entity,
-  EntityStore,
   EntityResolver,
   Logger,
   Perspective,
   PerspectiveDetails,
   Signed,
   Update,
+  EntityRemoteBuffered,
 } from '@uprtcl/evees';
 
 export const COUNCIL_KEYS = ['evees-council-cid1', 'evees-council-cid0'];
@@ -37,7 +37,7 @@ export enum CouncilStoreEvents {
   perspectivesUpdated = 'perspectives-updated',
 }
 
-const LOG_ENABLED = false;
+const LOG_ENABLED = true;
 
 /* a store that keeps track of the council common state regarding the council proposals */
 export class PolkadotCouncilEveesStorage {
@@ -45,21 +45,18 @@ export class PolkadotCouncilEveesStorage {
 
   protected db!: EveesCouncilDB;
   readonly events?: EventEmitter;
-  protected casID: string;
 
   private fetchPromises: Map<number, Promise<void>> = new Map();
 
   constructor(
     protected connection: PolkadotConnection,
-    protected entityStore: EntityStore,
+    protected entityResolver: EntityResolver,
+    protected entityRemote: EntityRemoteBuffered,
     public config: ProposalConfig,
-    casID?: string,
     readonly fetchRealTime: boolean = true
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
-
-    this.casID = casID || this.entityStore.remotes[0].id;
 
     if (this.connection.events) {
       this.connection.events.on(ConnectionEvents.newBlock, (block) => {
@@ -87,11 +84,11 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async updateCouncilData(hash: string): Promise<TransactionReceipt> {
-    const newHash = await this.gossipProposals(hash);
-    return this.connection.updateMutableHead(newHash, COUNCIL_KEYS);
+    const newData = await this.gossipProposals(hash);
+    return this.connection.updateMutableHead(newData.hash, COUNCIL_KEYS);
   }
 
-  async gossipProposals(head?: string): Promise<string> {
+  async gossipProposals(head?: string): Promise<Entity> {
     if (!this.connection.account) throw new Error('cant update data if not logged in');
 
     // gossip consist on adding all new proposals from other council members to my own councilData object.
@@ -99,7 +96,7 @@ export class PolkadotCouncilEveesStorage {
     let myCouncilData: CouncilData = {};
     if (head) {
       try {
-        const data = await this.entityStore.getEntity<CouncilData>(head);
+        const data = await this.entityResolver.getEntity<CouncilData>(head);
         myCouncilData = data.object;
       } catch (e) {
         // its ok
@@ -122,12 +119,14 @@ export class PolkadotCouncilEveesStorage {
     myCouncilData.proposals = [...councilProposals];
     if (LOG_ENABLED) this.logger.log('CouncilData Updated to', myCouncilData);
 
-    const data = await this.entityStore.hashObject({
+    const data = await this.entityRemote.hashObject({
       object: myCouncilData,
-      remote: this.casID,
     });
 
-    return data.hash;
+    await this.entityRemote.persistEntity(data);
+    await this.entityRemote.flush();
+
+    return data;
   }
 
   async getCouncilDataOf(member: string, block?: number): Promise<CouncilData> {
@@ -141,7 +140,7 @@ export class PolkadotCouncilEveesStorage {
     let councilData: Entity<CouncilData> | undefined = undefined;
 
     try {
-      councilData = await this.entityStore.getEntity(head);
+      councilData = await this.entityResolver.getEntity(head);
     } catch (e) {
       this.logger.error(`Error getting head entity from store ${head}`);
     }
@@ -287,7 +286,7 @@ export class PolkadotCouncilEveesStorage {
 
       await Promise.all(
         allUpdates.map(async (update: Update) => {
-          const perspective = await this.entityStore.getEntity<Signed<Perspective>>(
+          const perspective = await this.entityResolver.getEntity<Signed<Perspective>>(
             update.perspectiveId
           );
           const localPerspective = await this.db.perspectives.get(update.perspectiveId);
@@ -359,7 +358,9 @@ export class PolkadotCouncilEveesStorage {
   }
 
   async getProposalManifest(proposalId: string): Promise<ProposalManifest> {
-    const proposalPerspective = await this.entityStore.getEntity<Signed<Perspective>>(proposalId);
+    const proposalPerspective = await this.entityResolver.getEntity<Signed<Perspective>>(
+      proposalId
+    );
     if (!proposalPerspective) throw new Error(`Proposal ${proposalId} not found`);
     return proposalPerspective.object.payload.meta.proposal;
   }
@@ -452,6 +453,9 @@ export class PolkadotCouncilEveesStorage {
     if (this.connection.account === undefined) throw new Error('user not logged in');
     if (!(await this.connection.canSign())) throw new Error('user cant sign');
 
+    const council = await this.connection.getCouncil(proposalManifest.block);
+    if (!council.includes(this.connection.account)) throw new Error('user not a council member');
+
     /** a proposal is a perspective like object (includes the remote) but we make it inmutable by adding the
      * proposal details (mutation or list of changes) part of the perspective object. */
     const proposalObject: Signed<Perspective> = {
@@ -471,31 +475,24 @@ export class PolkadotCouncilEveesStorage {
       },
     };
 
-    const proposal = await this.entityStore.hashObject(
-      {
-        object: proposalObject,
-        remote: this.casID,
-      },
-      true
-    );
-    const council = await this.connection.getCouncil(proposalManifest.block);
-    if (!council.includes(this.connection.account)) throw new Error('user not a council member');
+    const proposal = await this.entityRemote.hashObject({
+      object: proposalObject,
+    });
+    await this.entityRemote.persistEntity(proposal);
 
     const councilProposal: CouncilProposal = {
       id: proposal.hash,
     };
 
     const newCouncilData = await this.addProposalToCouncilData(councilProposal);
-    const newCouncilDataEntity = await this.entityStore.hashObject(
-      {
-        object: newCouncilData,
-        remote: this.casID,
-      },
-      true
-    );
+    const newCouncilDataEntity = await this.entityRemote.hashObject({
+      object: newCouncilData,
+    });
+    await this.entityRemote.persistEntity(newCouncilDataEntity);
+
     if (LOG_ENABLED) this.logger.log('createProposal', { newCouncilDataEntity });
     await Promise.all([
-      this.entityStore.flush(),
+      this.entityRemote.flush(),
       this.updateCouncilData(newCouncilDataEntity.hash),
     ]);
 
@@ -550,17 +547,13 @@ export class PolkadotCouncilEveesStorage {
       value,
     };
     const newCouncilData = await this.addVoteToCouncilData(vote);
-    const newCouncilDataEntity = await this.entityStore.hashObject(
-      {
-        object: newCouncilData,
-        remote: this.casID,
-      },
-      true
-    );
+    const newCouncilDataEntity = await this.entityRemote.hashObject({
+      object: newCouncilData,
+    });
 
     if (LOG_ENABLED) this.logger.log('vote', { vote, newCouncilDataEntity, newCouncilData });
     await Promise.all([
-      this.entityStore.flush(),
+      this.entityRemote.flush(),
       this.updateCouncilData(newCouncilDataEntity.hash),
     ]);
 

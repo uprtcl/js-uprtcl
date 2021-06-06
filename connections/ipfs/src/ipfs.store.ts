@@ -167,8 +167,7 @@ export class IpfsStore extends Connection implements EntityRemote {
   }
 
   async persistEntity(entity: Entity<any>): Promise<void> {
-    const entities = await this.persistEntities([entity]);
-    return entities[0];
+    return this.persistEntities([entity]);
   }
 
   hashObjects(entities: EntityCreate[]): Promise<Entity[]> {

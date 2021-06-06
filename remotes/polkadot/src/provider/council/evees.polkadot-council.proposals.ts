@@ -1,6 +1,13 @@
 import { html } from 'lit-html';
 
-import { EntityStore, Logger, Proposal, ProposalEvents, MutationHelper } from '@uprtcl/evees';
+import {
+  Logger,
+  Proposal,
+  ProposalEvents,
+  MutationHelper,
+  EntityResolver,
+  EntityRemoteBuffered,
+} from '@uprtcl/evees';
 import { Lens, ProposalsWithUI } from '@uprtcl/evees-ui';
 
 import { PolkadotConnection } from '../../connection.polkadot';
@@ -13,7 +20,6 @@ import EventEmitter from 'events';
 export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   logger = new Logger('PROPOSALS-POLKADOT-COUNCIL');
 
-  public store!: EntityStore;
   events: EventEmitter;
 
   private canProposeCache = false;
@@ -21,7 +27,8 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
   constructor(
     public connection: PolkadotConnection,
     public councilStore: PolkadotCouncilEveesStorage,
-    public entityStore: EntityStore,
+    public entityResolver: EntityResolver,
+    public entityRemote: EntityRemoteBuffered,
     public remoteId: string,
     public config: ProposalConfig
   ) {
@@ -42,10 +49,6 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
     const council = await this.connection.getCouncil();
     this.canProposeCache = council.includes(this.connection.account);
     await this.councilStore.init();
-  }
-
-  setStore(store: EntityStore) {
-    this.store = store;
   }
 
   async canPropose() {
@@ -75,11 +78,11 @@ export class ProposalsPolkadotCouncil implements ProposalsWithUI {
     if (proposal.mutation) {
       const hashes = await MutationHelper.getMutationEntitiesHashes(
         proposal.mutation,
-        this.entityStore
+        this.entityResolver
       );
-      const entities = await this.entityStore.getEntities(hashes);
-      await this.entityStore.putEntities(entities);
-      await this.entityStore.flush();
+      const entities = await this.entityResolver.getEntities(hashes);
+      await this.entityRemote.putEntities(entities);
+      await this.entityRemote.flush();
     }
 
     const proposalId = await this.councilStore.createProposal(proposalManifest);

@@ -1,7 +1,7 @@
 export * from './client.router';
 export * from './base/client.cache';
 
-export * from './entities/entity.store';
+export * from './entities/entity.remote.buffered';
 export * from './entities/router.entity.resolver';
 export * from './entities/entity.resolver.base';
 
