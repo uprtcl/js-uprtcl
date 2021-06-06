@@ -550,8 +550,10 @@ export class PolkadotCouncilEveesStorage {
     const newCouncilDataEntity = await this.entityRemote.hashObject({
       object: newCouncilData,
     });
+    await this.entityRemote.putEntity(newCouncilDataEntity);
 
     if (LOG_ENABLED) this.logger.log('vote', { vote, newCouncilDataEntity, newCouncilData });
+
     await Promise.all([
       this.entityRemote.flush(),
       this.updateCouncilData(newCouncilDataEntity.hash),
