@@ -187,7 +187,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
   }
 
   async proposeMerge() {
-    const proposals = this.evees.getProposals();
+    const proposals = this.remote.proposals;
     if (!proposals) throw new Error('Proposals not defined');
     if (!this.mergeEvees) throw new Error('mergeEvees not defined');
 

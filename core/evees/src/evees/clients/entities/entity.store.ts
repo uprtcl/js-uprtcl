@@ -6,14 +6,14 @@ import { RouterEntityResolver } from './router.entity.resolver';
  * them at once when flush is called */
 export class EntityStore extends EntityResolverBase implements EntityResolver {
   id: string = '';
-  newEntitiesIds: string[] = [];
+  newEntitiesIds: Set<string> = new Set();
 
   constructor(public remotes: EntityRemote[], clientToEntityRemoteMap?: Map<string, string>) {
     super(new RouterEntityResolver(remotes, clientToEntityRemoteMap));
   }
 
   async putEntity(entity: Entity<any>): Promise<void> {
-    this.newEntitiesIds.push(entity.hash);
+    this.newEntitiesIds.add(entity.hash);
     return this.cache.storeEntity(entity);
   }
 
@@ -22,7 +22,7 @@ export class EntityStore extends EntityResolverBase implements EntityResolver {
 
     // Group entities per target remote
     await Promise.all(
-      this.newEntitiesIds.map(async (entityId: string) => {
+      Array.from(this.newEntitiesIds.values()).map(async (entityId: string) => {
         const entity = await this.cache.getEntity(entityId);
         if (!entity) throw new Error('Entity');
 
@@ -33,7 +33,7 @@ export class EntityStore extends EntityResolverBase implements EntityResolver {
       })
     );
 
-    // persiset on each remote
+    // persist on each remote
     await Promise.all(
       Array.from(entitiesPerRemote.entries()).map(([remoteId, entities]) => {
         const remote = this.remotes.find((r) => r.id === remoteId);
