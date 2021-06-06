@@ -1,6 +1,6 @@
 import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
-import { prettyTimePeriod } from '@uprtcl/common-ui';
+import { MenuOptions, prettyTimePeriod } from '@uprtcl/common-ui';
 import {
   Evees,
   Logger,
@@ -218,11 +218,11 @@ export class EveesPolkadotCouncilProposal extends servicesConnect(LitElement) {
   }
 
   renderDetails() {
+    const options: MenuOptions = new Map();
+    options.set('close', { text: 'close', icon: 'clear' });
+
     return html`
-      <uprtcl-dialog
-        .options=${{ close: { text: 'close', icon: 'clear' } }}
-        @option-selected=${() => (this.showDetails = false)}
-      >
+      <uprtcl-dialog .options=${options} @option-selected=${() => (this.showDetails = false)}>
         <div class="dialog-element">
           <div class="row">
             by

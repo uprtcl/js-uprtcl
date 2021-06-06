@@ -1055,7 +1055,7 @@ export class Evees implements Client {
   }
 
   canUpdate(perspectiveId: string, userId?: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
+    return this.client.canUpdate(perspectiveId, userId);
   }
 
   hashObjects(entities: EntityCreate<any>[]): Promise<Entity<any>[]> {

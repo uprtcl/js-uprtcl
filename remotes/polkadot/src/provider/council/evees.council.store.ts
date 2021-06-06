@@ -37,7 +37,7 @@ export enum CouncilStoreEvents {
   perspectivesUpdated = 'perspectives-updated',
 }
 
-const LOG_ENABLED = true;
+const LOG_ENABLED = false;
 
 /* a store that keeps track of the council common state regarding the council proposals */
 export class PolkadotCouncilEveesStorage {
