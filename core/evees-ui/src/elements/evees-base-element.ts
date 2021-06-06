@@ -82,12 +82,17 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
   }
 
   updated(changedProperties) {
-    if (changedProperties.has('uref') && !changedProperties.uref) {
+    if (
+      (changedProperties.has('uref') && !changedProperties.uref) ||
+      changedProperties.has('localEvees')
+    ) {
       this.load();
     }
   }
 
   async load() {
+    if (!this.localEvees) return;
+
     this.data = undefined;
     this.head = undefined;
     this.guardianId = undefined;

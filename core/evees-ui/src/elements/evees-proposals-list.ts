@@ -22,14 +22,6 @@ export class ProposalsList extends servicesConnect(LitElement) {
     this.loadingProposals = true;
     this.proposalsIds = [];
 
-    const proposals = this.evees.getProposals();
-
-    if (proposals) {
-      if (proposals.events) {
-        proposals.events.on(ProposalEvents.created, () => this.load());
-      }
-    }
-
     this.load();
   }
 
@@ -39,9 +31,13 @@ export class ProposalsList extends servicesConnect(LitElement) {
     /** data on other perspectives (proposals are injected on them) */
     this.remote = await this.evees.getPerspectiveRemote(this.perspectiveId);
 
-    const proposals = this.evees.getProposals();
+    const proposals = this.remote.proposals;
+
     if (proposals) {
       this.proposalsIds = await proposals.getProposalsToPerspective(this.perspectiveId);
+      if (proposals.events) {
+        proposals.events.on(ProposalEvents.created, () => this.load());
+      }
     }
 
     this.loadingProposals = false;

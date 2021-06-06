@@ -1,5 +1,5 @@
 export { EveesPerspectivesList } from './elements/evees-perspectives-list';
-export { EveesBaseElement } from './elements/evees-base';
+export { EveesBaseElement } from './elements/evees-base-element';
 export { EveesBaseEditable, EditableCase } from './elements/evees-base-editable';
 export { EveesInfoPopper, EveesInfoConfig } from './elements/evees-info-popper';
 export { EveesInfoBase } from './elements/evees-info-base';
@@ -30,7 +30,8 @@ export { HasDiffLenses, DiffLens } from './behaviours/has-diff-lenses';
 export { RenderEntityInput } from './elements/uprtcl-entity';
 
 export { servicesConnect } from './container/multi-connect.mixin';
-export { init } from './init';
 export { MultiContainer } from './container/multi.container';
 
 export { ProposalsWithUI } from './interfaces/proposals.with-ui';
+
+export { registerComponents } from './register.components';

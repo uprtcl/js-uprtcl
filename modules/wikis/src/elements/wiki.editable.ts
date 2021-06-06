@@ -53,22 +53,20 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
   mergeEvees: Evees | undefined;
   remote!: ClientRemote;
-  editRemote!: ClientRemote;
 
   /** a debounce strategy to check changes only once and not once per update event */
   checkAgain = false;
 
   async firstUpdated() {
     this.remote = this.evees.remotes[0];
-    this.editRemote = this.evees.remotes.length > 1 ? this.evees.remotes[1] : this.evees.remotes[0];
-
-    /** check changes every time the default remote is updated */
-    if (this.editRemote.events) {
-      this.editRemote.events.on(ClientEvents.ecosystemUpdated, () => this.checkChanges());
-    }
-
     if (this.remote.events) {
       this.remote.events.on(ConnectionLoggedEvents.logged_status_changed, () => this.reload());
+    }
+
+    const events = this.evees.getClient().events;
+    /** check changes every time the default remote is updated */
+    if (events) {
+      events.on(ClientEvents.ecosystemUpdated, () => this.checkChanges());
     }
   }
 
@@ -187,7 +185,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
   }
 
   async proposeMerge() {
-    const proposals = this.evees.getProposals();
+    const proposals = this.remote.proposals;
     if (!proposals) throw new Error('Proposals not defined');
     if (!this.mergeEvees) throw new Error('mergeEvees not defined');
 
@@ -202,11 +200,6 @@ export class EditableWiki extends servicesConnect(LitElement) {
 
     await proposals.createProposal(proposal);
     await this.evees.flush();
-
-    // TBD if we should wipe local changes after proposal was created
-    // const casRemote = this.evees.getCASRemote(this.editRemote.casID);
-    // if (casRemote.clear) await casRemote.clear();
-    // if (this.editRemote.clear) await this.editRemote.clear();
 
     this.creatingProposal = false;
   }

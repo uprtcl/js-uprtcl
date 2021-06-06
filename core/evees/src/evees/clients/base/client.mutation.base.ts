@@ -126,11 +126,11 @@ export class ClientMutationBase implements ClientAndExplore {
     await this.mutationStore.addUpdate(update);
 
     /** emit update */
-    const under: SearchOptions = {
+    const options: SearchOptions = {
       above: { elements: [{ id: update.perspectiveId }] },
     };
 
-    const { perspectiveIds: parentsIds } = await this.explore(under);
+    const { perspectiveIds: parentsIds } = await this.explore(options);
 
     if (LOGINFO)
       this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, parentsIds);

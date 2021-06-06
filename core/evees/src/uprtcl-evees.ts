@@ -2,6 +2,8 @@ export * from './evees/interfaces';
 export * from './evees/clients';
 export * from './evees/utils';
 export * from './patterns';
+export * from './utils';
+export * from './creator-helpers';
 
 export { PerspectiveType } from './evees/patterns/perspective.pattern';
 export { CommitType } from './evees/patterns/commit.pattern';
@@ -32,26 +34,14 @@ export {
 
 /** Utils */
 export { isAncestorOf } from './evees/merge/ancestor';
-export { Connection, ConnectionOptions } from './utils/connection';
-export { Ready } from './utils/ready';
-export { filterAsync, mapAsync, AsyncQueue } from './utils/async';
 
 /** Proposals */
 export { Proposal } from './evees/proposals/types';
 export { Proposals, ProposalEvents } from './evees/proposals/proposals';
 export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 
-/** Aceess Control */
-
-export { Logger } from './utils/logger';
-
 /* merge */
 export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';
-
-/** container */
-export { init } from './creator-helpers/init';
-
-export { AppElement, AppElements } from './creator-helpers/app.elements';
 
 /** Evees Utils */
 export { CondensateCommits } from './evees/utils/condensate.commits';

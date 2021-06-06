@@ -9,7 +9,7 @@ import {
   RecursiveContextMergeStrategy,
 } from '@uprtcl/evees';
 
-import { EveesBaseElement } from './evees-base';
+import { EveesBaseElement } from './evees-base-element';
 
 export enum EditableCase {
   IS_OFFICIAL_DONT_HAVE_DRAFT = 'IS_OFFICIAL_DONT_HAVE_DRAFT',
@@ -60,6 +60,8 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   }
 
   updated(changedProperties) {
+    super.updated(changedProperties);
+
     if (changedProperties.has('firstRef') && changedProperties.get('firstRef')) {
       this.uref = this.firstRef;
       this.load();
@@ -71,6 +73,8 @@ export class EveesBaseEditable<T extends object> extends EveesBaseElement<T> {
   }
 
   async load() {
+    if (!this.localEvees) return;
+
     await super.load();
 
     if (!this.editRemote.explore) {

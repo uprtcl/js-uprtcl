@@ -51,7 +51,7 @@ export class UprtclDialog extends LitElement {
   }
 
   render() {
-    const options = Object.getOwnPropertyNames(this.options).reverse();
+    const options = Array.from(this.options.entries()).reverse();
     const sizeClass = `${this.size}-modal`;
     return html`
       <div class="modal">
@@ -69,8 +69,7 @@ export class UprtclDialog extends LitElement {
               : ''}
           </div>
           <div class="buttons-container">
-            ${options.map((option) => {
-              const details = this.options[option];
+            ${options.map(([option, details]) => {
               return html`
                 <uprtcl-button
                   @click=${(e) => (details.disabled ? undefined : this.optionClicked(e, option))}
@@ -79,7 +78,7 @@ export class UprtclDialog extends LitElement {
                   ?skinny=${details.skinny !== undefined ? details.skinny : false}
                   style=${details.background ? `--background-color: ${details.background}` : ''}
                 >
-                  ${this.options[option].text}
+                  ${details.text}
                 </uprtcl-button>
               `;
             })}

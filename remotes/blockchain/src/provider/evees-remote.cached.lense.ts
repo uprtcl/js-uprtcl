@@ -1,4 +1,4 @@
-import { LitElement, property, html, css, state } from 'lit-element';
+import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
 import { servicesConnect } from '@uprtcl/evees-ui';
 
