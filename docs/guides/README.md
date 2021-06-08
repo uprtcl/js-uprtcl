@@ -1,10 +1,10 @@
 # Introduction
 
-The Underscore Protocol (**\_Prtcl**) provides a simple set of rules for building interoperable content-management applications compatible with Web2-APIs and emerging Web3 platforms.
+The Underscore Protocol (**\_Prtcl**) is a framework for building interoperable content-management applications compatible with Web2-APIs and emerging Web3 platforms.
 
-It combines some of the concepts of The Web, promoting the use of global identifiers with the data structure of GIT, where each objects evolves as a sequence of chained hashed commit versions.
+It combines some of the concepts of The Web, such as global identifiers and links, with the data structure of GIT, where each object evolves as a sequence of chained hashed commit versions.
 
-Content from \_prtcl-compatible applications is suitable to be:
+Content from \_Prtcl-compatible applications is suitable to be:
 
 - _referenced_ from any other application. This uses URL-like global identifiers for mutable references that include emerging web3 platforms.
 
@@ -14,13 +14,46 @@ Content from \_prtcl-compatible applications is suitable to be:
 
 - _interacted with_ from other applications. This is done by defining a limited set of basic primitives common to all content-management applications: namely _update_, _link_, _nest_ and _fork_.
 
-## Storage Providers (Remotes)
+- _explored_ from any application. This is done by including a limited query interface that all \_Prtcl storage providers must include.
 
-\_Prtcl also provides ready-to-use solutions for storing content on different platforms.
+## Global identifiers and basic R-CUD operations
 
-For Web2 applications we offer a NodeJS + DGraph headless CMS that can be deployed inhouse, or consumed directly from the cloud.
+\_Prtcl applications decouple data (JSON objects) from the app's user interface (JS) and expose unique global identifiers to all objects handled by the application.
 
-For Web3 applications we offer connectors with Ethereum, Polkadot, Holochain and OrbitDB networks. These services can be paired with our web-server CMS to offer, indexing, discovery and performant data fetching.
+These identifiers are referred to as perspective's ids. A perspective id is very similar in concept to a web URL, except it is expected to always resolve into a JSON object that is the latest version/commit object of that perspective.
+
+In a way, it's like if applications would always include the URL of the API endpoint that serves that object.
+
+However, and unlique an API URL, a perspective id is not directly resolved by the browser fetch method, but is handled by a custom javascript connector that talks to the perspective's remote, which can be custom.
+
+Perspective ids are currently object hashes. This, instead of enforcing a string format to encode their properties like URLs, a JSON object is built with the properties and it's hash is used as the perspective id.
+
+The reason for this is that perspective ids are expected to include growing metadata and this approach makes it easy to do so, without parsing and building structured strings.
+
+Also, this also helps letting applications build perspective ids optimistically, and without communication to the remote. However, since perspective ids are expected to be globally unique, to prevent collisions these ids include the remote, the creator and the timestamp at the perspective creation.
+
+For example: A perspective that is stored on the Ethereum Blockchain could look like this
+
+```
+perspective = {
+    remote: 'ethereum-mainnet',
+    path: '0xUprtclSmartContract',
+    creator: '0xPerspectiveOwnerAddress',
+    timestamp: 750000,
+}
+
+perspectiveId = hash(perspective) = QmABC.
+```
+
+A \_Prtcl application uses the `remote` property of the `Perspective` object to load a JS connector to that remote platform and sends the perspective id to that connector `getPerspective()` function to resolve the latest perspective head.
+
+\_Prtcl perspectives are stored on "remotes", and these remotes must support basic CRUD operations, or better R-CUD operations, in the sense that the read operation is separated from the update operation, and the update operation is deisgned to handle Mutation objects, which group together a set of changes to more than one perspective including creating new ones or updating/deleting existing ones.
+
+So, the first pattern that \_Prtc-applications support is the creation and update of data objects, each with a unique global identifier, and living on a given remote.
+
+For Web2 applications it offers a NodeJS + DGraph service that can be deployed inhouse, or consumed directly from the cloud.
+
+For Web3 applications it offers connectors with Ethereum, Polkadot, Holochain and OrbitDB networks. These services can be paired with the web-server for, indexing, discovery and performant data fetching operations.
 
 ## Modules and UI Components
 
@@ -28,8 +61,4 @@ For Web3 applications we offer connectors with Ethereum, Polkadot, Holochain and
 
 # Where to start
 
-Now that you have a broad view of \_Prtcl, what do you want to do?
-
-### [Use our tools to build your content-management application](https://www.google.com)
-
-### [Build a storage provider connector to use our tools on your preferred platform](https:www.cool.com)
+What do you want to do now?
