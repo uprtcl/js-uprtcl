@@ -148,30 +148,14 @@ export interface EveesOptions {
   updatedBefore?: number;
   updatedAfter?: number;
 }
-export interface JoinElement {
-  id: string;
-  levels?: number;
-  negation?: boolean;
-}
-
-export interface SearchOptionsJoin {
-  type?: Join.inner | Join.full;
-  elements: JoinElement[];
-}
-
-export interface SearchOptionsEcoJoin extends SearchOptionsJoin {
-  levels?: number;
-}
 
 export interface SearchOptions {
-  under?: SearchOptionsEcoJoin;
-  above?: SearchOptionsEcoJoin;
-  linksTo?: SearchOptionsJoin;
+  start?: SearchOptionsTree;
+  linksTo?: SearchOptionsLink;
   text?: {
     value: string;
-    levels?: number;
+    textLevels?: number;
   };
-  forks?: SearchForkOptions;
   orderBy?: string;
   pagination?: {
     first: number;
@@ -179,10 +163,27 @@ export interface SearchOptions {
   };
 }
 
+export interface SearchOptionsTree {
+  joinType?: Join.inner | Join.full;
+  elements: JoinTree[];
+}
+
+export interface SearchOptionsLink {
+  joinType?: Join.inner | Join.full;
+  elements: string[];
+}
+
+export interface JoinTree {
+  id: string;
+  direction?: 'under' | 'above';
+  levels?: number;
+  forks?: SearchForkOptions;
+}
+
 export interface SearchForkOptions {
+  exclusive?: boolean;
   independent?: boolean;
   independentOf?: string;
-  exclusive?: boolean;
 }
 
 export interface SearchResult {

@@ -127,7 +127,7 @@ export class ClientMutationBase implements ClientAndExplore {
 
     /** emit update */
     const options: SearchOptions = {
-      above: { elements: [{ id: update.perspectiveId }] },
+      start: { elements: [{ id: update.perspectiveId, direction: 'above' }] },
     };
 
     const { perspectiveIds: parentsIds } = await this.explore(options);
@@ -254,10 +254,10 @@ export class ClientMutationBase implements ClientAndExplore {
     const mutation = await this.mutationStore.diff(options);
 
     /** if I searched under, then the results must be onEcosystem. Append it. */
-    if (options && options.under) {
+    if (options && options.start) {
       mutationAppendOnEcosystem(
         mutation,
-        options.under.elements.map((el) => el.id)
+        options.start.elements.map((el) => el.id)
       );
     }
 
