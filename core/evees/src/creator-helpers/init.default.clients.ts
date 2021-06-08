@@ -14,7 +14,14 @@ import {
   ClientMutationMemory,
   ClientCache,
 } from '../evees/clients';
-import { Client, ClientAndExplore, ClientRemote, EntityResolver, EveesConfig, EveesContentModule } from '../evees/interfaces';
+import {
+  Client,
+  ClientAndExplore,
+  ClientRemote,
+  EntityResolver,
+  EveesConfig,
+  EveesContentModule,
+} from '../evees/interfaces';
 
 /** a top level wrapper that registers everything */
 export const initDefaultClientStack = (
@@ -30,13 +37,18 @@ export const initDefaultClientStack = (
 
   if (clientRemotes.length > 1) {
     // add router
-    lastClient = new RemoteRouter(clientRemotes, entityResolver, true) : clientRemotes[0];
+    lastClient = new RemoteRouter(clientRemotes, entityResolver, true);
   } else {
     lastClient = clientRemotes[0];
   }
 
   const memoryCache = new ClientCacheStoreMemory();
-  const clientCache = new ClientCache(lastClient, memoryCache, entityResolver, clientRemotes.length > 1 ? false : true);
+  const clientCache = new ClientCache(
+    lastClient,
+    memoryCache,
+    entityResolver,
+    clientRemotes.length > 1 ? false : true
+  );
 
   const entityCacheLocal = new EntityRemoteLocal();
   const cached = new ClientMutationLocal(clientCache, entityResolver, entityCacheLocal);
