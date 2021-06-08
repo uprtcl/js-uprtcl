@@ -21,6 +21,7 @@ import {
   EntityCreate,
   ClientRemote,
   EntityRemote,
+  MutationHelper,
 } from '@uprtcl/evees';
 
 import { HttpAuthenticatedConnection } from '@uprtcl/http-provider';
@@ -80,6 +81,10 @@ export class EveesHttp implements ClientRemote {
 
   async update(mutation: EveesMutationCreate) {
     if (LOGINFO) this.logger.log('update()', mutation);
+
+    if (mutation.entities) {
+      await this.entityRemote.persistEntities(mutation.entities);
+    }
 
     if (mutation.newPerspectives) {
       await this.newPerspectives(mutation.newPerspectives);

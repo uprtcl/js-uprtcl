@@ -1,11 +1,11 @@
 import EventEmitter from 'events';
-import { Signed } from 'src/patterns/interfaces/signable';
-import { Logger } from 'src/utils/logger';
-import { Client, ClientEvents } from '../interfaces/client';
-import { ClientRemote } from '../interfaces/client.remote';
-import { EntityCreate, Entity } from '../interfaces/entity';
-import { EntityResolver } from '../interfaces/entity.resolver';
+import { Signed } from '../../patterns';
+import { Logger } from '../../utils';
 import {
+  Client,
+  ClientEvents,
+  ClientRemote,
+  EntityResolver,
   GetPerspectiveOptions,
   NewPerspective,
   Update,
@@ -14,7 +14,8 @@ import {
   PerspectiveGetResult,
   SearchOptions,
   SearchResult,
-} from '../interfaces/types';
+  Entity,
+} from '../interfaces';
 import { Proposals } from '../proposals/proposals';
 import { MutationHelper } from '../utils';
 
@@ -26,7 +27,11 @@ export class RemoteRouter implements Client {
 
   remotesMap: Map<string, ClientRemote>;
 
-  constructor(protected remotes: ClientRemote[], protected entityResolver: EntityResolver) {
+  constructor(
+    protected remotes: ClientRemote[],
+    protected entityResolver: EntityResolver,
+    private injectEntities: boolean = false
+  ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
 
@@ -206,16 +211,20 @@ export class RemoteRouter implements Client {
     /** at this point the mutation is split per remote and is sent to each remote */
     await Promise.all(
       Array.from(mutationPerRemote.keys()).map(async (remoteId) => {
-        const mutation = mutationPerRemote.get(remoteId) as EveesMutation;
+        const mutation = mutationPerRemote.get(remoteId);
+        if (!mutation) throw new Error(`Mutation not found`);
+
         const remote = this.getRemote(remoteId);
 
-        /** here is where entities are finally passed to the remote */
-        const entitiesHashes = await MutationHelper.getMutationEntitiesHashes(
-          mutation,
-          this.entityResolver
-        );
-        const entities = await this.entityResolver.getEntities(entitiesHashes);
-        await remote.entityRemote.persistEntities(entities);
+        if (this.injectEntities) {
+          /** here is where entities are finally passed to the remote */
+          const entitiesHashes = await MutationHelper.getMutationEntitiesHashes(
+            mutation,
+            this.entityResolver
+          );
+          const entities = await this.entityResolver.getEntities(entitiesHashes);
+          mutation.entities = entities;
+        }
 
         await remote.update(mutation);
       })

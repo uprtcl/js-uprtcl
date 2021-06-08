@@ -139,6 +139,7 @@ export interface EveesMutationCreate {
   newPerspectives?: NewPerspective[];
   updates?: Update[];
   deletedPerspectives?: string[];
+  entities?: Entity[];
 }
 
 export interface EveesOptions {

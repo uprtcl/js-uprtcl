@@ -1,6 +1,6 @@
 import { Signed } from '../../patterns/interfaces/signable';
 import { EntityResolver } from '../interfaces/entity.resolver';
-import { Commit, EveesMutation, Update } from '../interfaces/types';
+import { Commit, EveesMutation, EveesMutationCreate, Update } from '../interfaces/types';
 
 /** wrapper of statif functions useful to handle EveesMutation */
 export class MutationHelper {
@@ -22,24 +22,28 @@ export class MutationHelper {
 
   /** get all the entities that are referenced inside an EveesMutation */
   static async getMutationEntitiesHashes(
-    mutation: EveesMutation,
+    mutation: EveesMutation | EveesMutationCreate,
     entityResolver: EntityResolver
   ): Promise<string[]> {
     const entitiesIds: Set<string> = new Set();
 
-    await Promise.all(
-      mutation.newPerspectives.map(async (newPerspective) => {
-        const ids = await this.getUpdateEntitiesHashes(newPerspective.update, entityResolver);
-        ids.forEach((id) => entitiesIds.add(id));
-      })
-    );
+    if (mutation.newPerspectives) {
+      await Promise.all(
+        mutation.newPerspectives.map(async (newPerspective) => {
+          const ids = await this.getUpdateEntitiesHashes(newPerspective.update, entityResolver);
+          ids.forEach((id) => entitiesIds.add(id));
+        })
+      );
+    }
 
-    await Promise.all(
-      mutation.updates.map(async (update) => {
-        const ids = await this.getUpdateEntitiesHashes(update, entityResolver);
-        ids.forEach((id) => entitiesIds.add(id));
-      })
-    );
+    if (mutation.updates) {
+      await Promise.all(
+        mutation.updates.map(async (update) => {
+          const ids = await this.getUpdateEntitiesHashes(update, entityResolver);
+          ids.forEach((id) => entitiesIds.add(id));
+        })
+      );
+    }
 
     return Array.from(entitiesIds.values());
   }

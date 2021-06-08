@@ -1,3 +1,4 @@
+import { MutationHelper } from 'src/evees/utils';
 import {
   ClientCacheStore,
   ClientAndExplore,
@@ -16,7 +17,8 @@ export class ClientCache implements ClientAndExplore {
   constructor(
     protected base: ClientAndExplore,
     protected cache: ClientCacheStore,
-    protected entityResolver: EntityResolver
+    protected entityResolver: EntityResolver,
+    private injectEntities: boolean = false
   ) {}
 
   async getPerspective(
@@ -93,6 +95,15 @@ export class ClientCache implements ClientAndExplore {
           )
         )
       : Promise.resolve([]);
+
+    if (this.injectEntities) {
+      const entitiesHashes = await MutationHelper.getMutationEntitiesHashes(
+        mutation,
+        this.entityResolver
+      );
+      const entities = await this.entityResolver.getEntities(entitiesHashes);
+      mutation.entities = entities;
+    }
 
     /** optimistically cache as read details and update on the base layer */
     await Promise.all([
