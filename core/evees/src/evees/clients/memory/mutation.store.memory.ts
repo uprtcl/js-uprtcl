@@ -116,9 +116,10 @@ export class MutationStoreMemory implements ClientMutationStore {
     let of: string[] = [];
 
     /** filter updates only to perspectives under a given element */
-    if (options && options.under) {
+    if (options && options.start) {
       /**  */
-      const allUnder = options.under.elements.map((under) => {
+      const allUnder = options.start.elements.map((under) => {
+        if (under.direction === 'above') throw new Error('Cant filter above');
         return this.getUnder(under.id);
       });
       of = Array.prototype.concat.apply([], allUnder);

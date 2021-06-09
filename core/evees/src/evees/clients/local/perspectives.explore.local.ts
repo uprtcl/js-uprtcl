@@ -30,35 +30,27 @@ export class LocalExplore implements ClientExplore {
     options: SearchOptions,
     fetchOptions?: GetPerspectiveOptions
   ): Promise<SearchResult> {
-    if (options.forks) {
-      if (!options.under) throw new Error('forks must be found under some perspective');
-      const forks = await this.independentSubPerspectivesRec(
-        options.under.elements[0].id,
-        undefined,
-        options.under.levels
-      );
-
-      return { perspectiveIds: forks.map((fork) => fork.forkIds[0]), forksDetails: forks };
-    }
+    // TODO: search forks for web3 gov
 
     let perspectiveIds: string[] = [];
 
-    if (options.under) {
-      const underId = options.under.elements[0].id;
+    if (options.start) {
+      const results = await Promise.all(
+        options.start.elements.map(async (el) => {
+          if (el.direction && el.direction === 'above') {
+            const perspective = await this.db.perspectivesDetails.get(el.id);
+            if (perspective) {
+              return perspective.onEcosystem;
+            } else {
+              return [];
+            }
+          } else {
+            return this.db.perspectivesDetails.where('onEcosystem').equals(el.id).primaryKeys();
+          }
+        })
+      );
 
-      perspectiveIds = await this.db.perspectivesDetails
-        .where('onEcosystem')
-        .equals(underId)
-        .primaryKeys();
-    }
-
-    if (options.above) {
-      const aboveId = options.above.elements[0].id;
-
-      const perspective = await this.db.perspectivesDetails.get(aboveId);
-      if (perspective) {
-        perspectiveIds = perspective.onEcosystem;
-      }
+      perspectiveIds = Array.prototype.concat.apply([], results);
     }
 
     return { perspectiveIds };

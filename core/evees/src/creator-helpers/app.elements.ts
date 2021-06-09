@@ -177,7 +177,7 @@ export class AppElements {
     }
 
     await this.evees.flush({
-      under: { elements: [{ id: this.home.perspective.hash, levels: 3 }] },
+      start: { elements: [{ id: this.home.perspective.hash, levels: 3 }] },
     });
   }
 

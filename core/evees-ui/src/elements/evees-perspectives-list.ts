@@ -40,7 +40,7 @@ export class EveesPerspectivesList extends servicesConnect(LitElement) {
     this.loadingPerspectives = true;
 
     const { perspectiveIds: otherPerspectives } = await this.evees.explore({
-      under: { elements: [{ id: this.perspectiveId }] },
+      start: { elements: [{ id: this.perspectiveId }] },
     });
 
     const perspectivesData: PerspectiveData[] = await Promise.all(

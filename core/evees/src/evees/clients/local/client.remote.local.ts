@@ -1,6 +1,6 @@
-import { IndexDataHelper } from 'src/evees/index.data.helper';
-import { Signed } from 'src/patterns';
-import { Logger } from 'src/utils/logger';
+import { IndexDataHelper } from '../../index.data.helper';
+import { Signed } from '../../../patterns/';
+import { Logger } from '../../../utils';
 import { snapDefaultPerspective } from '../../default.perspectives';
 
 import {
@@ -74,6 +74,10 @@ export class ClientRemoteLocal implements ClientRemote {
 
   async update(mutation: EveesMutationCreate): Promise<void> {
     if (LOGINFO) this.logger.log(`update()`, { mutation });
+
+    if (mutation.entities) {
+      await this.entityRemote.persistEntities(mutation.entities);
+    }
 
     if (mutation.newPerspectives) {
       await this.updatePerspectives(mutation.newPerspectives.map((np) => np.update));
