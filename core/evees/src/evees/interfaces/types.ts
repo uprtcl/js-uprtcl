@@ -2,11 +2,6 @@ import { Entity } from './entity';
 import { ClientRemote } from './client.remote';
 import { Signed } from '../../patterns';
 
-export declare enum Join {
-  inner = 'INNER_JOIN',
-  full = 'FULL_JOIN',
-}
-
 /** Core perspective format. A perspective is like a URL, it includes the coordinates to reach a current head.
  * The hash of the perspective is the perspective id. */
 export interface Perspective {
@@ -162,6 +157,11 @@ export interface SearchOptions {
     first: number;
     offset: number;
   };
+}
+
+export enum Join {
+  inner = 'INNER_JOIN',
+  full = 'FULL_JOIN',
 }
 
 export interface SearchOptionsTree {
