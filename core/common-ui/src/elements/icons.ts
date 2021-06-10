@@ -36,7 +36,6 @@ export const icons = {
   content_copy: html` <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="black"
     width="18px"
     height="18px"
   >
@@ -50,39 +49,6 @@ export const icons = {
       <path fill="none" d="M0 0h24v24H0V0z" />
       <path
         d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
-      />
-    </svg>
-  `,
-  close_purple:html`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g filter="url(#filter0_i)">
-  <rect width="32" height="32" rx="16" fill="#EFEFFD"/>
-  <path fill-rule="evenodd" clip-rule="evenodd" d="M16 17.0605L10.5303 22.5301L9.46967 21.4695L14.9393 15.9998L9.46967 10.5301L10.5303 9.46949L16 14.9392L21.4697 9.46948L22.5303 10.5301L17.0607 15.9998L22.5303 21.4695L21.4697 22.5301L16 17.0605Z" fill="#4B4DED"/>
-  </g>
-  <defs>
-  <filter id="filter0_i" x="0" y="-0.5" width="32" height="32.5" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-  <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-  <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-  <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-  <feOffset dy="-1"/>
-  <feGaussianBlur stdDeviation="0.25"/>
-  <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-  <feColorMatrix type="matrix" values="0 0 0 0 0.054902 0 0 0 0 0.054902 0 0 0 0 0.172549 0 0 0 0.4 0"/>
-  <feBlend mode="overlay" in2="shape" result="effect1_innerShadow"/>
-  </filter>
-  </defs>
-  </svg>
-  `,
-  hourglass_empty: html`
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="black"
-      width="18px"
-      height="18px"
-    >
-      <path d="M0 0h24v24H0V0z" fill="none" />
-      <path
-        d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z"
       />
     </svg>
   `,
@@ -166,7 +132,6 @@ export const icons = {
     xmlns="http://www.w3.org/2000/svg"
     enable-background="new 0 0 24 24"
     viewBox="0 0 24 24"
-    fill="black"
     width="18px"
     height="18px"
     style="transform: rotate(90deg);"
@@ -578,7 +543,22 @@ export const icons = {
       fill-rule="evenodd"
       clip-rule="evenodd"
       d="M5.89242 6.33863C6.69114 6.33863 7.33863 5.69114 7.33863 4.89242C7.33863 4.0937 6.69114 3.44621 5.89242 3.44621C5.0937 3.44621 4.44621 4.0937 4.44621 4.89242C4.44621 5.69114 5.0937 6.33863 5.89242 6.33863ZM6.62176 7.69211C7.86612 7.36886 8.78485 6.23793 8.78485 4.89242C8.78485 3.29498 7.48986 2 5.89242 2C4.29498 2 3 3.29498 3 4.89242C3 6.24151 3.92363 7.37488 5.17303 7.69467V9.55112C5.17303 11.2314 6.53513 12.5935 8.21537 12.5935H10.9681V16.3053C9.71876 16.6251 8.79516 17.7585 8.79516 19.1076C8.79516 20.705 10.0901 22 11.6876 22C13.285 22 14.58 20.705 14.58 19.1076C14.58 17.7621 13.6613 16.6311 12.4169 16.3079V12.5935H15.1693C16.8495 12.5935 18.2116 11.2314 18.2116 9.55112V7.6868C19.4457 7.35664 20.3546 6.23067 20.3546 4.89242C20.3546 3.29498 19.0596 2 17.4621 2C15.8647 2 14.5697 3.29498 14.5697 4.89242C14.5697 6.24875 15.5033 7.38703 16.7629 7.69975V9.55112C16.7629 10.4312 16.0494 11.1447 15.1693 11.1447H8.21537C7.33524 11.1447 6.62176 10.4312 6.62176 9.55112V7.69211ZM17.4621 6.33863C18.2609 6.33863 18.9084 5.69114 18.9084 4.89242C18.9084 4.0937 18.2609 3.44621 17.4621 3.44621C16.6634 3.44621 16.0159 4.0937 16.0159 4.89242C16.0159 5.69114 16.6634 6.33863 17.4621 6.33863ZM13.1338 19.1076C13.1338 19.9063 12.4863 20.5538 11.6876 20.5538C10.8889 20.5538 10.2414 19.9063 10.2414 19.1076C10.2414 18.3089 10.8889 17.6614 11.6876 17.6614C12.4863 17.6614 13.1338 18.3089 13.1338 19.1076Z"
-      fill="black"
     />
   </svg>`,
+  two_dots: html`<svg width="16" height="4" viewBox="0 0 13 4" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M10.9963 3C11.5486 3 11.9963 2.55228 11.9963 2C11.9963 1.44772 11.5486 1 10.9963 1C10.444 1 9.99628 1.44772 9.99628 2C9.99628 2.55228 10.444 3 10.9963 3Z"
+      stroke="#828282"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M2.9964 3C3.54868 3 3.9964 2.55228 3.9964 2C3.9964 1.44772 3.54868 1 2.9964 1C2.44411 1 1.9964 1.44772 1.9964 2C1.9964 2.55228 2.44411 3 2.9964 3Z"
+      stroke="#828282"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg> `,
 };

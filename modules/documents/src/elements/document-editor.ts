@@ -1009,7 +1009,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       }
 
       * {
-        font-family: 'Lora', serif;
+        font-family: 'Lora', 'normal';
+        line-height: 1.8rem;
       }
 
       .editor-container {
@@ -1065,9 +1066,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         margin: 0 0.2rem;
         height: inherit;
       }
-      .doc-endSpace {
-        /* height: 50vh; */
-      }
       .publish-button {
         width: 190px;
       }
@@ -1089,7 +1087,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       .evee-info {
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: start;
+        margin-top: -3px;
+        margin-right: 0.9vw;
       }
 
       .empty-evees-info {

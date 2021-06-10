@@ -61,6 +61,10 @@ export class UprtclIconButton extends LitElement {
         :host {
           display: inline-block;
         }
+        svg {
+          fill: var(--svg-fill, 'black');
+          height: var(--svg-height, 10px);
+        }
         .icon-button-layout {
           width: 36px;
           height: 36px;

@@ -343,8 +343,6 @@ export const styles = css`
   }
 
   .ProseMirror {
-    padding: 4px 8px 4px 14px;
-    line-height: 1.2;
     outline: none;
   }
 
