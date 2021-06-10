@@ -876,26 +876,26 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     // for the topNode (the docId), the uref can change, for the other nodes it can't (if it does, a new editor is rendered)
     const uref = node.coord.length === 1 && node.coord[0] === 0 ? this.uref : node.uref;
 
-    let paddingTop = '0px';
+    let marginTop = '-2.5px';
     if (node.draft.type === TextType.Title) {
       switch (node.level) {
         case 0:
-          paddingTop = '2px';
+          marginTop = '7px';
           break;
         case 1:
-          paddingTop = '2px';
+          marginTop = '4px';
           break;
         case 2:
-          paddingTop = '2px';
+          marginTop = '2px';
           break;
         default:
-          paddingTop = '2px';
+          marginTop = '2px';
           break;
       }
     }
 
     if (node.draftType === 'Quantity') {
-      paddingTop = '14px';
+      marginTop = '14px';
     }
 
     return html`
@@ -905,8 +905,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         @drop=${(e) => this.handleDrop(e, node)}
       >
         ${this.showInfo
-          ? html` <div class="evee-info" style=${`padding-top:${paddingTop}`}>
-              ${this.getEveeInfo ? this.getEveeInfo(uref) : ''}
+          ? html` <div class="evee-info" style=${`margin-top:${marginTop}`}>
+              ${this.getEveeInfo ? this.getEveeInfo({ uref, parentId: this.parentId }) : ''}
             </div>`
           : html`<div class="empty-evees-info"></div>`}
         <div class="node-content">
@@ -1088,7 +1088,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: start;
-        margin-top: -3px;
         margin-right: 0.9vw;
       }
 
