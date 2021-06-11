@@ -906,7 +906,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       >
         ${this.showInfo
           ? html` <div class="evee-info" style=${`margin-top:${marginTop}`}>
-              ${this.getEveeInfo ? this.getEveeInfo({ uref, parentId: this.parentId }) : ''}
+              ${this.getEveeInfo
+                ? this.getEveeInfo({ uref, parentId: node.parent ? node.parent.uref : undefined })
+                : ''}
             </div>`
           : html`<div class="empty-evees-info"></div>`}
         <div class="node-content">
