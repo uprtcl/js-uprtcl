@@ -1,4 +1,6 @@
-import { MutationHelper } from 'src/evees/utils';
+import lodash from 'lodash';
+
+import { MutationHelper } from '../../utils';
 import {
   ClientCacheStore,
   ClientAndExplore,
@@ -68,23 +70,32 @@ export class ClientCache implements ClientAndExplore {
   async update(mutation: EveesMutationCreate): Promise<void> {
     const cacheNewPerspectives = mutation.newPerspectives
       ? Promise.all(
-          mutation.newPerspectives.map((newPerspective) =>
-            this.cache.setCachedPerspective(newPerspective.perspective.hash, {
+          mutation.newPerspectives.map((newPerspective) => {
+            // cache new perspectives as canUpdate by default
+            newPerspective.update.details.canUpdate = true;
+
+            return this.cache.setCachedPerspective(newPerspective.perspective.hash, {
               update: newPerspective.update,
               levels: -1, // new perspectives are assumed to be fully on the cache
-            })
-          )
+            });
+          })
         )
       : Promise.resolve([]);
 
     const cacheUpdate = mutation.updates
       ? Promise.all(
-          mutation.updates.map((update) =>
+          mutation.updates.map(async (update) => {
+            const currentUpdate = await this.cache.getCachedPerspective(update.perspectiveId);
+            const currentDetails =
+              (currentUpdate && currentUpdate.update && currentUpdate.update.details) || {};
+
+            update.details = lodash.merge(currentDetails, update.details);
+
             this.cache.setCachedPerspective(update.perspectiveId, {
               update,
               levels: -1, // new perspectives are assumed to be fully on the cache
-            })
-          )
+            });
+          })
         )
       : Promise.resolve([]);
 
