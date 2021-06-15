@@ -6,7 +6,11 @@ import { MutationStoreMemory } from './mutation.store.memory';
 export class ClientMutationMemory extends ClientMutationBase {
   logger = new Logger('ClientOnMemory');
 
-  constructor(readonly base: ClientAndExplore, readonly name: string = 'OnMemoryClient') {
-    super(base, new MutationStoreMemory(), name);
+  constructor(
+    readonly base: ClientAndExplore,
+    readonly condensate: boolean = false,
+    readonly name: string = 'OnMemoryClient'
+  ) {
+    super(base, new MutationStoreMemory(), condensate, name);
   }
 }

@@ -115,7 +115,7 @@ export class Evees implements Client {
   }
 
   clone(name: string = 'new-client', client?: ClientFull, config?: EveesConfig): Evees {
-    client = client || new ClientMutationMemory(this.client, name);
+    client = client || new ClientMutationMemory(this.client, false, name);
 
     return new Evees(
       client,

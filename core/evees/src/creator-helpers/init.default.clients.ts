@@ -51,7 +51,7 @@ export const initDefaultClientStack = (
   );
 
   const entityCacheLocal = new EntityRemoteLocal();
-  const cached = new ClientMutationLocal(clientCache, entityResolver, entityCacheLocal);
+  const cached = new ClientMutationLocal(clientCache, entityResolver, entityCacheLocal, true);
   const onMemory = new ClientMutationMemory(cached);
 
   const mergedConfig = defaultConfig(clientRemotes, config);

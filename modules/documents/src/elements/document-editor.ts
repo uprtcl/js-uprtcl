@@ -315,6 +315,11 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     // optimistically set the dratf
     node.draft = draft;
 
+    /** index onEcosystem.
+     * onEcosystem is not really a formal and exaustive list
+     * of the perspective onEcosystem (all other perspectives of which
+     * this perspective is on their ecosystem), but a local mark used
+     * to flush portions of mutations based on their parents. */
     const parents: string[] = [node.uref];
     let parent = node.parent;
     while (parent !== undefined) {

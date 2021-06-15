@@ -44,8 +44,8 @@ export class ClientMutationBase implements ClientAndExplore {
   constructor(
     readonly base: ClientAndExplore,
     readonly mutationStore: ClientMutationStore,
-    readonly name: string = 'client',
-    readonly readCacheEnabled: boolean = true
+    readonly condensate: boolean = false,
+    readonly name: string = 'client'
   ) {
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
@@ -224,7 +224,8 @@ export class ClientMutationBase implements ClientAndExplore {
         throw new Error('base not defined');
       }
 
-      const diff = await this.diff(options);
+      /** gets all changes (it also removes them from the cache!) */
+      const diff = await this.diff(options, this.condensate, true);
 
       if (LOGINFO) this.logger.log(`${this.name} flush -diff`, diff);
 
@@ -237,8 +238,6 @@ export class ClientMutationBase implements ClientAndExplore {
           await (this.base as ClientFull).flush(options, levels - 1);
         }
       }
-
-      await this.clear(diff);
     });
   }
 
@@ -248,7 +247,11 @@ export class ClientMutationBase implements ClientAndExplore {
   }
 
   /** a mutation with all the changes made relative to the base client */
-  async diff(options?: SearchOptions, condensate: boolean = false): Promise<EveesMutation> {
+  async diff(
+    options?: SearchOptions,
+    condensate: boolean = false,
+    clear: boolean = false
+  ): Promise<EveesMutation> {
     if (LOGINFO) this.logger.log(`${this.name} diff()`, {});
 
     const mutation = await this.mutationStore.diff(options);
@@ -259,6 +262,11 @@ export class ClientMutationBase implements ClientAndExplore {
         mutation,
         options.start.elements.map((el) => el.id)
       );
+    }
+
+    /** clears before udpates are condensed to remove intermediate ones too */
+    if (clear) {
+      await this.clear(mutation);
     }
 
     if (condensate) {
