@@ -7,6 +7,8 @@ export * from './entities/entity.resolver.base';
 
 export * from './memory/mutation.memory';
 export * from './memory/client.cache.store.memory';
+export * from './memory/explore.cached.memory';
+export * from './memory/remote.explore.cached.memory';
 
 export * from './local/mutation.store.local';
 export * from './local/perspectives.explore.local';

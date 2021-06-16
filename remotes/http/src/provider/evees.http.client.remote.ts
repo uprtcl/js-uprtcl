@@ -13,15 +13,10 @@ import {
   EveesMutation,
   EveesMutationCreate,
   PerspectiveGetResult,
-  Entity,
   SearchOptions,
   SearchResult,
-  hashObject,
-  CidConfig,
-  EntityCreate,
   ClientRemote,
   EntityRemote,
-  MutationHelper,
 } from '@uprtcl/evees';
 
 import { HttpAuthenticatedConnection } from '@uprtcl/http-provider';
