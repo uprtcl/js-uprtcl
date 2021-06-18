@@ -62,7 +62,7 @@ export class UprtclIconButton extends LitElement {
           display: inline-block;
         }
         svg {
-          fill: var(--svg-fill, 'black');
+          fill: var(--svg-fill, black);
           height: var(--svg-height, 24px);
         }
         .icon-button-layout {
