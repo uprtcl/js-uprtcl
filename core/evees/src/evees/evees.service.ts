@@ -321,6 +321,16 @@ export class Evees implements Client {
     return allBehaviors[0];
   }
 
+  tryBehaviorFirst<T = any>(object: object, behaviorName: string) {
+    try {
+      const allBehaviors = this.behavior(object, behaviorName);
+      return allBehaviors[0];
+    } catch (e) {
+      console.warn(e);
+      return undefined;
+    }
+  }
+
   /** concatenate the results of behaviors matched by this object,
    * assuming each match will be an array of elements,
    * and remove duplicates */

@@ -79,7 +79,7 @@ export class EveesLoginWidget extends servicesConnect(LitElement) {
         @click=${() => this.logoutAll()}
       ></uprtcl-icon-button> -->
       ${this.evees.remotes.map((remote: RemoteWithUI) => {
-        return remote.lense !== undefined
+        return remote.lense !== undefined && remote.lense() !== undefined
           ? remote.lense().render({ remoteId: remote.id })
           : html`
               <uprtcl-popper position="bottom-left">
