@@ -33,6 +33,7 @@ export { servicesConnect } from './container/multi-connect.mixin';
 export { MultiContainer } from './container/multi.container';
 
 export { ProposalsWithUI } from './interfaces/proposals.with-ui';
+export { RemoteExploreCachedOnMemoryWithUI } from './clients/remote.explore.cached.with-ui';
 
 export { registerComponents } from './register.components';
 export { initDefault } from './init';

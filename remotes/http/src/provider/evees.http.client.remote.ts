@@ -15,9 +15,10 @@ import {
   PerspectiveGetResult,
   SearchOptions,
   SearchResult,
-  ClientRemote,
   EntityRemote,
 } from '@uprtcl/evees';
+
+import { RemoteWithUI } from '@uprtcl/evees-ui';
 
 import { HttpAuthenticatedConnection } from '@uprtcl/http-provider';
 
@@ -28,7 +29,7 @@ import { HttpEntityRemote } from './evees.http.entity.remote';
 const evees_api = 'evees-v1';
 const LOGINFO = false;
 
-export class EveesHttp implements ClientRemote {
+export class EveesHttp implements RemoteWithUI {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   accessControl: EveesAccessControlHttp;

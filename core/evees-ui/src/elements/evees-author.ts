@@ -73,6 +73,8 @@ export class EveesAuthor extends servicesConnect(LitElement) {
         display: flex;
         flex-direction: column;
         justify-content: center;
+        --border-radius-complete: 50%;
+        --icon-size: 40px;
       }
     `;
   }

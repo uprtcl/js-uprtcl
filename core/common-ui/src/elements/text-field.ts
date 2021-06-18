@@ -79,7 +79,7 @@ export class UprtclTextField extends LitElement {
           padding-left: 16px;
           padding-right: 16px;
           height: 30px;
-          font-size: 16px;
+          font-size: var(--font-size, 16px);
           font-stretch: 100%;
           outline-style: none;
           border-style: none;
