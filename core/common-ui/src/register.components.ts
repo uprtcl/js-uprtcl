@@ -20,6 +20,7 @@ import { UprtclIndicator } from './elements/indicator';
 import { UprtclCopyToClipboard } from './elements/copy-to-clipboard';
 import { UprtclIconAndName } from './elements/icon-and-name';
 import { UprtclExpandable } from './elements/expandable';
+import { UprtclIconsGallery } from './elements/icons.gallery';
 
 export function registerComponents() {
   customElements.define('uprtcl-button', UprtclButton);
@@ -42,4 +43,5 @@ export function registerComponents() {
   customElements.define('uprtcl-copy-to-clipboard', UprtclCopyToClipboard);
   customElements.define('uprtcl-icon-and-name', UprtclIconAndName);
   customElements.define('uprtcl-expandable', UprtclExpandable);
+  customElements.define('uprtcl-icons-gallery', UprtclIconsGallery);
 }
