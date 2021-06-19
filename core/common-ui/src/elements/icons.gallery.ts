@@ -30,6 +30,7 @@ export class UprtclIconsGallery extends LitElement {
         svg {
           height: 40px;
           width: 40px;
+          margin: 1rem;
         }
       `,
     ];
