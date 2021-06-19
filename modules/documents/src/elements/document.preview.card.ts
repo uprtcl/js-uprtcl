@@ -67,7 +67,7 @@ export class DocumentPreviewCard extends servicesConnect(LitElement) {
       p {
         margin: 0;
         font-size: 16px;
-        color: #828282;
+        color: var(--gray-light);
       }
     `;
   }
