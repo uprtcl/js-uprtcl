@@ -650,9 +650,9 @@ export const icons = {
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect x="1" y="1" width="20" height="20" rx="2.33333" stroke="#7E8890" />
-    <rect x="5" y="5" width="12" height="4" rx="0.35" stroke="#7E8890" stroke-width="1.5" />
-    <rect x="5" y="13" width="12" height="4" rx="0.35" stroke="#7E8890" stroke-width="1.5" />
+    <rect x="1" y="1" width="20" height="20" rx="2.33333" />
+    <rect x="5" y="5" width="12" height="4" rx="0.35" stroke-width="1.5" />
+    <rect x="5" y="13" width="12" height="4" rx="0.35" stroke-width="1.5" />
   </svg>`,
   grid_view: html`<svg
     width="22"
@@ -661,11 +661,11 @@ export const icons = {
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <rect x="1" y="1" width="20" height="20" rx="2.33333" stroke="#7E8890" />
-    <rect x="4.75" y="4.75" width="5" height="5" rx="0.35" stroke="#7E8890" stroke-width="1.5" />
-    <rect x="4.75" y="12.25" width="5" height="5" rx="0.35" stroke="#7E8890" stroke-width="1.5" />
-    <rect x="12.25" y="4.75" width="5" height="5" rx="0.35" stroke="#7E8890" stroke-width="1.5" />
-    <rect x="12.25" y="12.25" width="5" height="5" rx="0.35" stroke="#7E8890" stroke-width="1.5" />
+    <rect x="1" y="1" width="20" height="20" rx="2.33333" />
+    <rect x="4.75" y="4.75" width="5" height="5" rx="0.35" stroke-width="1.5" />
+    <rect x="4.75" y="12.25" width="5" height="5" rx="0.35" stroke-width="1.5" />
+    <rect x="12.25" y="4.75" width="5" height="5" rx="0.35" stroke-width="1.5" />
+    <rect x="12.25" y="12.25" width="5" height="5" rx="0.35" stroke-width="1.5" />
   </svg> `,
   clock: html`<svg
     width="20"
@@ -676,14 +676,12 @@ export const icons = {
   >
     <path
       d="M10 18.3337C14.6024 18.3337 18.3334 14.6027 18.3334 10.0003C18.3334 5.39795 14.6024 1.66699 10 1.66699C5.39765 1.66699 1.66669 5.39795 1.66669 10.0003C1.66669 14.6027 5.39765 18.3337 10 18.3337Z"
-      stroke="#5C5C77"
       stroke-width="1.66667"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
     <path
       d="M10 5V10L13.3333 11.6667"
-      stroke="#5C5C77"
       stroke-width="1.66667"
       stroke-linecap="round"
       stroke-linejoin="round"

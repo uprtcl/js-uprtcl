@@ -46,6 +46,10 @@ export class UprtclIconButton extends LitElement {
       }
     }
 
+    if (['grid_view', 'list_view'].includes(this.icon)) {
+      classes.push(`stroke-based`);
+    }
+
     return html`
       <div class=${classes.join(' ')}>
         ${this.loading ? icons.loading : icons[this.icon]}
@@ -62,8 +66,13 @@ export class UprtclIconButton extends LitElement {
           display: inline-block;
         }
         svg {
-          fill: var(--svg-fill, black);
+          fill: var(--svg-fill);
+          stroke: var(--svg-stroke);
           height: var(--svg-height, 24px);
+        }
+        .stroke-based svg {
+          fill: var(--svg-fill, transparent);
+          stroke: var(--svg-stroke, black);
         }
         .icon-button-layout {
           width: 36px;
