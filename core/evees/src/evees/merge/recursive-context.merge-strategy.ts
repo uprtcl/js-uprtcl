@@ -49,7 +49,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const promises = children.map(async (child) => {
       const isPerspective = await this.isPattern(child, PerspectiveType);
       if (isPerspective) {
-        this.readPerspective(child, to);
+        await this.readPerspective(child, to);
       } else {
         Promise.resolve();
       }
