@@ -3,7 +3,7 @@ import lodash from 'lodash';
 import { MutationHelper } from '../../utils';
 import {
   ClientCacheStore,
-  ClientAndExplore,
+  ClientAndExploreCached,
   EntityResolver,
   GetPerspectiveOptions,
   PerspectiveGetResult,
@@ -12,12 +12,13 @@ import {
   Update,
   SearchOptions,
 } from '../../interfaces/';
+import { Proposals } from 'src/evees/proposals';
 
 /** read-only cache that keeps read perspecties and entities onmemory or hit the base
  *  layer if they are not found */
-export class ClientCache implements ClientAndExplore {
+export class ClientCache implements ClientAndExploreCached {
   constructor(
-    protected base: ClientAndExplore,
+    protected base: ClientAndExploreCached,
     protected cache: ClientCacheStore,
     protected entityResolver: EntityResolver,
     private injectEntities: boolean = false
@@ -147,5 +148,11 @@ export class ClientCache implements ClientAndExplore {
 
   explore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions | undefined) {
     return this.base.explore(searchOptions, fetchOptions);
+  }
+  async clearExplore(
+    searchOptions: SearchOptions,
+    fetchOptions?: GetPerspectiveOptions
+  ): Promise<void> {
+    if (this.base.clearExplore) await this.base.clearExplore(searchOptions, fetchOptions);
   }
 }

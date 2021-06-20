@@ -26,6 +26,7 @@ import { LocalAccessControl } from './access.control.local';
 import { EntityRemoteLocal } from './entity.remote.local';
 import { LocalExplore } from './perspectives.explore.local';
 import { PerspectivesStoreDB } from './perspectives.store.db';
+import { Proposals } from 'src/evees/proposals';
 
 const LOGINFO = false;
 export const LOCAL_REMOTE_ID = 'local';
@@ -158,6 +159,10 @@ export class ClientRemoteLocal implements ClientRemote {
     fetchOptions?: GetPerspectiveOptions | undefined
   ): Promise<SearchResult> {
     return this.exploreService.explore(searchOptions, fetchOptions);
+  }
+
+  clearExplore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   userId?: string | undefined;

@@ -23,6 +23,17 @@ export class ExploreCacheStoreMemory implements ExploreCacheStore {
       canonicalOptions.fetchOptions = fetchOptions;
     }
 
+    /** remove 'undefined' strings */
+    if (canonicalOptions.options.start) {
+      canonicalOptions.options.start.elements.forEach((el) => {
+        if (el.forks) {
+          if (el.forks.independentOf === 'undefined') {
+            el.forks.independentOf = undefined;
+          }
+        }
+      });
+    }
+
     return hashObject(canonicalOptions);
   }
 
@@ -47,5 +58,10 @@ export class ExploreCacheStoreMemory implements ExploreCacheStore {
 
     this.requests.delete(id);
     return undefined;
+  }
+
+  async clear(options: SearchOptions, fetchOptions: GetPerspectiveOptions) {
+    const id = await this.getId(options, fetchOptions);
+    this.requests.delete(id);
   }
 }

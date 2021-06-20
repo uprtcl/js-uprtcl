@@ -8,7 +8,7 @@ import {
   PerspectiveGetResult,
   EveesMutation,
   SearchOptions,
-  FlushConfig,
+  ClientAndExploreCached,
   EveesMutationCreate,
   ClientAndExplore,
   ClientFull,
@@ -29,7 +29,7 @@ export enum ClientCachedEvents {
 
 /** Reusable implementation of a ClientMutation service.
  * Uses a ClientMutationStore to store mutations */
-export class ClientMutationBase implements ClientAndExplore {
+export class ClientMutationBase implements ClientAndExploreCached {
   logger = new Logger('ClientCachedWithBase');
 
   /** A service to subsribe to udpate on perspectives */
@@ -42,7 +42,7 @@ export class ClientMutationBase implements ClientAndExplore {
   protected entityResolver!: EntityResolver;
 
   constructor(
-    readonly base: ClientAndExplore,
+    readonly base: ClientAndExploreCached,
     readonly mutationStore: ClientMutationStore,
     readonly condensate: boolean = false,
     readonly name: string = 'client'
@@ -116,6 +116,13 @@ export class ClientMutationBase implements ClientAndExplore {
   explore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions) {
     if (this.base && this.base.explore) {
       return this.base.explore(searchOptions, fetchOptions);
+    }
+    throw new Error('base client not defined or not have explore function');
+  }
+
+  clearExplore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions): Promise<void> {
+    if (this.base && this.base.clearExplore) {
+      return this.base.clearExplore(searchOptions, fetchOptions);
     }
     throw new Error('base client not defined or not have explore function');
   }

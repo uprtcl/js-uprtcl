@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 import {
   ClientAndExplore,
+  ClientAndExploreCached,
   EveesMutationCreate,
   GetPerspectiveOptions,
   NewPerspective,
@@ -11,7 +12,7 @@ import {
 } from '../../interfaces';
 import { ExploreCacheStore } from './explore.cache';
 
-export class ExploreCachedBase implements ClientAndExplore {
+export class ExploreCachedBase implements ClientAndExploreCached {
   cache: ExploreCacheStore;
 
   constructor(protected base: ClientAndExplore, cache: ExploreCacheStore) {
@@ -31,6 +32,13 @@ export class ExploreCachedBase implements ClientAndExplore {
     await this.cache.set(searchOptions, result, fetchOptions);
 
     return result;
+  }
+
+  async clearExplore(
+    searchOptions: SearchOptions,
+    fetchOptions?: GetPerspectiveOptions
+  ): Promise<void> {
+    return this.cache.clear(searchOptions, fetchOptions);
   }
 
   get events(): EventEmitter | undefined {

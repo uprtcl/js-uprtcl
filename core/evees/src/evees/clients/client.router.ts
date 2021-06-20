@@ -15,11 +15,12 @@ import {
   SearchOptions,
   SearchResult,
   Entity,
+  ClientAndExploreCached,
 } from '../interfaces';
 import { Proposals } from '../proposals/proposals';
 import { MutationHelper } from '../utils';
 
-export class RemoteRouter implements Client {
+export class RemoteRouter implements ClientAndExploreCached {
   logger = new Logger('RemoteRouter');
 
   proposals?: Proposals | undefined;
@@ -191,6 +192,10 @@ export class RemoteRouter implements Client {
       }
     });
     return combinedResult;
+  }
+
+  clearExplore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async getPerspective(

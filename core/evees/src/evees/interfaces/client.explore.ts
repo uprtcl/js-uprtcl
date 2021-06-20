@@ -11,3 +11,7 @@ export interface ClientExplore {
 }
 
 export interface ClientAndExplore extends Client, ClientExplore {}
+
+export interface ClientAndExploreCached extends ClientAndExplore {
+  clearExplore?(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions): Promise<void>;
+}

@@ -192,11 +192,22 @@ export class Evees implements Client {
     searchOptions: SearchOptions,
     fetchOptions?: GetPerspectiveOptions
   ): Promise<SearchResult> {
-    if (!(this.client as any).explore) {
+    if (!this.client.explore) {
       throw new Error('explore not defined');
     }
 
     return this.client.explore(searchOptions, fetchOptions);
+  }
+
+  async clearExplore(
+    searchOptions: SearchOptions,
+    fetchOptions?: GetPerspectiveOptions
+  ): Promise<void> {
+    if (!this.client.clearExplore) {
+      throw new Error('explore not defined');
+    }
+
+    return this.client.clearExplore(searchOptions, fetchOptions);
   }
 
   async getPerspective(

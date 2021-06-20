@@ -15,8 +15,7 @@ import {
   ClientCache,
 } from '../evees/clients';
 import {
-  Client,
-  ClientAndExplore,
+  ClientAndExploreCached,
   ClientRemote,
   EntityResolver,
   EveesConfig,
@@ -33,7 +32,7 @@ export const initDefaultClientStack = (
 ): Evees => {
   const entityResolver = entityResolverIn || initEntityResolver(clientRemotes);
 
-  let lastClient: ClientAndExplore;
+  let lastClient: ClientAndExploreCached;
 
   if (clientRemotes.length > 1) {
     // add router
