@@ -6,6 +6,7 @@ export interface MergeConfig {
   recurse?: boolean;
   remote?: string;
   guardianId?: string;
+  addOnEcosystem?: string[];
 }
 
 export interface MergeStrategy {

@@ -47,7 +47,7 @@ export class MutationStoreMemory implements ClientMutationStore {
 
     /** update the details (append onEcosystem tags) */
     const currentDetails = this.perspectivesDetails.get(update.perspectiveId);
-    let onEcosystem = currentDetails ? currentDetails.onEcosystem : [];
+    let onEcosystem = currentDetails ? currentDetails.onEcosystem : [update.perspectiveId];
 
     if (
       update.indexData &&

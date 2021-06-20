@@ -24,6 +24,7 @@ import {
   GetPerspectiveOptions,
   SearchResult,
   Secured,
+  IndexData,
 } from './interfaces/index';
 
 import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
@@ -913,7 +914,8 @@ export class Evees implements Client {
     perspectiveId: string,
     remoteId?: string,
     guardianId?: string,
-    options: ForkOptions = { recurse: true, detach: false }
+    options: ForkOptions = { recurse: true, detach: false },
+    indexData?: IndexData
   ): Promise<string> {
     const refPerspective: Entity<Signed<Perspective>> = await this.getEntity(perspectiveId);
     const remote = await this.getRemote(remoteId);
@@ -950,6 +952,7 @@ export class Evees implements Client {
       perspective,
       update: {
         perspectiveId: perspective.hash,
+        indexData,
         details: { headId: forkCommitId, guardianId },
       },
     });
