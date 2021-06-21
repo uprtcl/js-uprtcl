@@ -49,8 +49,8 @@ export class IndexDataHelper {
 
   static appendArrayChanges(changes: ArrayChanges, newChanges: ArrayChanges): ArrayChanges {
     const resultChanges: ArrayChanges = {
-      added: [...changes.added],
-      removed: [...changes.removed],
+      added: changes.added.concat(newChanges.added),
+      removed: changes.removed.concat(newChanges.removed),
     };
 
     /** removes cancel additions and viceversa */

@@ -53,6 +53,11 @@ export class SimpleMergeStrategy implements MergeStrategy {
       fromPerspectiveId,
       perspectiveId: toPerspectiveId,
       details: { headId: newHead },
+      indexData: {
+        linkChanges: {
+          onEcosystem: { added: config.addOnEcosystem ? config.addOnEcosystem : [], removed: [] },
+        },
+      },
     };
 
     await this.evees.updatePerspective(request);
