@@ -20,7 +20,7 @@ export const styles = css`
   }
   .button-filled {
     background-color: var(--primary, #2f80ed);
-    color: #ffffff;
+    color: var(--primary-color, #ffffff);
   }
   .button-filled svg {
     fill: white;

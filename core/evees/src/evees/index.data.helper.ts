@@ -48,31 +48,37 @@ export class IndexDataHelper {
   }
 
   static appendArrayChanges(changes: ArrayChanges, newChanges: ArrayChanges): ArrayChanges {
-    const resultChanges: ArrayChanges = {
-      added: changes.added.concat(newChanges.added),
-      removed: changes.removed.concat(newChanges.removed),
+    /** use sets to remove duplicates */
+    const changesSet = {
+      added: new Set(changes.added),
+      removed: new Set(changes.removed),
     };
 
-    /** removes cancel additions and viceversa */
-    changes.added.map((added) => {
-      const ixOfRemoved = newChanges.removed.indexOf(added);
-      if (ixOfRemoved !== -1) {
-        resultChanges.removed.splice(ixOfRemoved, 1);
-      } else {
-        resultChanges.added.push(added);
-      }
-    });
+    const newChangesSet = {
+      added: new Set(newChanges.added),
+      removed: new Set(newChanges.removed),
+    };
 
-    changes.removed.map((removed) => {
-      const ixOfAdded = newChanges.added.indexOf(removed);
-      if (ixOfAdded !== -1) {
-        resultChanges.added.splice(ixOfAdded, 1);
-      } else {
-        resultChanges.removed.push(removed);
-      }
-    });
+    // merge sets efficiently https://stackoverflow.com/a/32001750/1943661
+    const mergedChangesSet = {
+      added: new Set(
+        (function* () {
+          yield* changesSet.added;
+          yield* newChangesSet.added;
+        })()
+      ),
+      removed: new Set(
+        (function* () {
+          yield* changesSet.removed;
+          yield* newChangesSet.removed;
+        })()
+      ),
+    };
 
-    return resultChanges;
+    return {
+      added: Array.from(mergedChangesSet.added),
+      removed: Array.from(mergedChangesSet.removed),
+    };
   }
 
   static getArrayChanges(
