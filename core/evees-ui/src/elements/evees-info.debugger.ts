@@ -22,9 +22,11 @@ interface PerspectiveData {
   data?: Entity;
 }
 
+const LOGINFO = false;
+
 /** An evees info base component, it starts from the first-uref */
 export class EveesInfoDebugger extends servicesConnect(LitElement) {
-  logger = new Logger('EVEES-INFO');
+  logger = new Logger('EVEES-INFO-DEBUGGER');
 
   @property({ type: String, attribute: 'uref' })
   uref!: string;
@@ -41,14 +43,14 @@ export class EveesInfoDebugger extends servicesConnect(LitElement) {
 
   updated(changedProperties) {
     if (changedProperties.get('uref') !== undefined) {
-      this.logger.info('updated() reload', { changedProperties });
+      if (LOGINFO) this.logger.info('updated() reload', { changedProperties });
       this.load();
     }
   }
 
   /** must be called from subclass as super.load() */
   async load() {
-    this.logger.info('Loading evee perspective', this.uref);
+    if (LOGINFO) this.logger.info('Loading evee perspective', this.uref);
 
     this.remote = await this.evees.getPerspectiveRemote(this.uref);
 
@@ -72,7 +74,7 @@ export class EveesInfoDebugger extends servicesConnect(LitElement) {
       data,
     };
 
-    this.logger.info('load', { perspectiveData: this.perspectiveData });
+    if (LOGINFO) this.logger.info('load', { perspectiveData: this.perspectiveData });
 
     this.loading = false;
   }

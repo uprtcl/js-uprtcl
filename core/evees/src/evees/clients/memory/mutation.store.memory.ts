@@ -151,7 +151,11 @@ export class MutationStoreMemory implements ClientMutationStore {
         const currentUpdates = this.updates.get(perspectiveId);
         if (currentUpdates) {
           const newUpdates = currentUpdates.filter((current) => !clearUpdates.includes(current));
-          this.updates.set(perspectiveId, newUpdates);
+          if (newUpdates.length > 0) {
+            this.updates.set(perspectiveId, newUpdates);
+          } else {
+            this.updates.delete(perspectiveId);
+          }
         }
       });
 
