@@ -54,12 +54,10 @@ export const styles = css`
   }
   .button-skinny {
     background-color: transparent;
-    color: #2196f3;
-  }
-  .button-skinny svg {
+    color: var(--primary, #2f80ed);
   }
   .button-skinny:hover {
-    color: #50b0ff;
+    color: var(--primary-hover, #50b0ff);
     background-color: #eef7ff;
   }
   .button-skinny-secondary {

@@ -38,6 +38,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: Boolean, attribute: 'show-info' })
   showInfo = false;
 
+  @property({ type: Boolean, attribute: 'keep-info-padding' })
+  keepInfoPadding = false;
+
   @property({ type: Number, attribute: 'root-level' })
   rootLevel = 0;
 
@@ -915,7 +918,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
                 ? this.getEveeInfo({ uref, parentId: node.parent ? node.parent.uref : undefined })
                 : ''}
             </div>`
-          : html`<div class="empty-evees-info"></div>`}
+          : this.keepInfoPadding ? html`<div class="empty-evees-info"></div>` : ''}
         <div class="node-content">
           ${nodeLense.render(node, {
             focus: () => this.focused(node),
