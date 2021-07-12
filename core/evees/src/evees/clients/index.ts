@@ -1,5 +1,6 @@
 export * from './client.router';
 export * from './base/client.cache';
+export * from './explore/client.explore.base';
 
 export * from './entities/entity.remote.buffered';
 export * from './entities/router.entity.resolver';

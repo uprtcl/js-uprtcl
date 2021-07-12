@@ -54,7 +54,8 @@ export const snapDefaultPerspective = async (
 
 export const getHome = async (
   remote: ClientRemote,
-  userId?: string
+  userId?: string,
+  nonce: number = 0
 ): Promise<Secured<Perspective>> => {
   const creatorId = userId === undefined ? (remote.userId ? remote.userId : '') : userId;
 
@@ -64,6 +65,9 @@ export const getHome = async (
     creatorId,
     timestamp: 0,
     context: `${creatorId}.home`,
+    meta: {
+      nonce,
+    },
   };
 
   const secured = {

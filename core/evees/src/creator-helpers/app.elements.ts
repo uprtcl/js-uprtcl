@@ -24,10 +24,10 @@ export class AppElements {
     this.remote = this.evees.getRemote(remoteId);
   }
 
-  async check(): Promise<void> {
+  async check(nonce: number = 0): Promise<void> {
     if (LOGINFO) this.logger.log('check()');
     /** home space perspective is deterministic */
-    this.home.perspective = await this.evees.getHome(this.remote.id);
+    this.home.perspective = await this.evees.getHome(this.remote.id, undefined, nonce);
 
     await this.checkOrCreateHome(this.home.perspective as Secured<Perspective>);
 

@@ -92,6 +92,7 @@ export class ClientMutationBase implements ClientAndExploreCached {
      * There should be cache layer below so that this does not hit the remote */
     const baseResult = await this.base.getPerspective(perspectiveId, options);
 
+    /** TODO: updates in the queue should override the mutationStore data */
     const details = await this.mutationStore.getPerspective(perspectiveId);
     if (details) {
       return { details: lodash.merge(baseResult.details, details), slice: baseResult.slice };

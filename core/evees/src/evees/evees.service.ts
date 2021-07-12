@@ -1018,9 +1018,13 @@ export class Evees implements Client {
     }
   }
 
-  async getHome(remoteId?: string, userId?: string): Promise<Secured<Perspective>> {
+  async getHome(
+    remoteId?: string,
+    userId?: string,
+    nonce: number = 0
+  ): Promise<Secured<Perspective>> {
     const remote = this.getRemote(remoteId);
-    const home = await getHome(remote, userId ? userId : remote.userId);
+    const home = await getHome(remote, userId ? userId : remote.userId, nonce);
     return home;
   }
 
