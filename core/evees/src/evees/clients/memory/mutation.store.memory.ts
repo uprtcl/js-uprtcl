@@ -150,7 +150,15 @@ export class MutationStoreMemory implements ClientMutationStore {
       Array.from(updatesPerPersective.entries()).forEach(([perspectiveId, clearUpdates]) => {
         const currentUpdates = this.updates.get(perspectiveId);
         if (currentUpdates) {
-          const newUpdates = currentUpdates.filter((current) => !clearUpdates.includes(current));
+          // delete updates that set the head to the heads in the clear `elements` array
+          const newUpdates = currentUpdates.filter((current) =>
+            clearUpdates.filter(
+              (clear) =>
+                clear.details.headId !== undefined &&
+                clear.details.headId === current.details.headId
+            )
+          );
+
           if (newUpdates.length > 0) {
             this.updates.set(perspectiveId, newUpdates);
           } else {
