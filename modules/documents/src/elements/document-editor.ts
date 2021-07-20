@@ -76,6 +76,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
   doc: DocNode | undefined = undefined;
 
+  loadingPromise!: Promise<any>;
+
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
 
@@ -93,7 +95,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
-    await this.loadDoc();
+    this.loadingPromise = this.loadDoc();
+    await this.loadingPromise;
     this.reloading = false;
   }
 
@@ -129,7 +132,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     this.reloading = false;
   }
 
-  async loadDoc() {
+  async loadDoc(): Promise<void> {
     if (LOGINFO) this.logger.log('loadDoc()', this.uref);
 
     if (!this.uref) return;
@@ -918,7 +921,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
                 ? this.getEveeInfo({ uref, parentId: node.parent ? node.parent.uref : undefined })
                 : ''}
             </div>`
-          : this.keepInfoPadding ? html`<div class="empty-evees-info"></div>` : ''}
+          : this.keepInfoPadding
+          ? html`<div class="empty-evees-info"></div>`
+          : ''}
         <div class="node-content">
           ${nodeLense.render(node, {
             focus: () => this.focused(node),
