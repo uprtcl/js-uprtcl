@@ -281,12 +281,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       remoteId: remoteId,
       perspectiveId: perspective.hash,
       indexData: {
-        linkChanges: {
-          onEcosystem: {
-            added: parents,
-            removed: [],
-          },
-        },
+        onEcosystem: parents,
       },
     };
 
@@ -339,12 +334,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       perspectiveId: node.uref,
       object: draft,
       indexData: {
-        linkChanges: {
-          onEcosystem: {
-            added: parents,
-            removed: [],
-          },
-        },
+        onEcosystem: parents,
       },
       flush: this.flushConfig,
     };

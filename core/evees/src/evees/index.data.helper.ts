@@ -47,6 +47,17 @@ export class IndexDataHelper {
     return indexData;
   }
 
+  static setOnEcosystem(onEcosystem: string[], indexData?: IndexData): IndexData {
+    if (indexData) {
+      indexData.onEcosystem = onEcosystem;
+      return indexData;
+    } else {
+      return {
+        onEcosystem,
+      };
+    }
+  }
+
   static appendArrayChanges(changes: ArrayChanges, newChanges: ArrayChanges): ArrayChanges {
     /** use sets to remove duplicates */
     const changesSet = {
@@ -105,11 +116,6 @@ export class IndexDataHelper {
     indexData = this.combineArrayChanges(
       this.getArrayChanges(withIndexData, LinksType.linksTo),
       LinksType.linksTo,
-      indexData
-    );
-    indexData = this.combineArrayChanges(
-      this.getArrayChanges(withIndexData, LinksType.onEcosystem),
-      LinksType.onEcosystem,
       indexData
     );
     indexData.text = withIndexData ? withIndexData.text : undefined;

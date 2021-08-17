@@ -30,14 +30,15 @@ export class MutationStoreMemory implements ClientMutationStore {
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     this.newPerspectives.set(newPerspective.perspective.hash, newPerspective);
 
-    const onEcosystemChanges = IndexDataHelper.getArrayChanges(
-      newPerspective.update.indexData,
-      LinksType.onEcosystem
-    );
+    const onEcosystem = newPerspective.update.indexData
+      ? newPerspective.update.indexData.onEcosystem
+        ? newPerspective.update.indexData.onEcosystem
+        : []
+      : [];
 
     this.perspectivesDetails.set(newPerspective.perspective.hash, {
       details: newPerspective.update.details,
-      onEcosystem: onEcosystemChanges.added,
+      onEcosystem: onEcosystem,
     });
   }
 
@@ -46,22 +47,11 @@ export class MutationStoreMemory implements ClientMutationStore {
     this.updates.set(update.perspectiveId, currentUpdates.concat([update]));
 
     /** update the details (append onEcosystem tags) */
-    const currentDetails = this.perspectivesDetails.get(update.perspectiveId);
-    let onEcosystem = currentDetails ? currentDetails.onEcosystem : [update.perspectiveId];
-
-    if (
-      update.indexData &&
-      update.indexData.linkChanges &&
-      update.indexData.linkChanges.onEcosystem
-    ) {
-      /** use function to merge the onEcosystem array */
-      const newChanges = IndexDataHelper.appendArrayChanges(
-        { added: onEcosystem, removed: [] },
-        update.indexData.linkChanges.onEcosystem
-      );
-
-      onEcosystem = newChanges.added;
-    }
+    const onEcosystem = update.indexData
+      ? update.indexData.onEcosystem
+        ? update.indexData.onEcosystem
+        : []
+      : [];
 
     this.perspectivesDetails.set(update.perspectiveId, {
       details: update.details,

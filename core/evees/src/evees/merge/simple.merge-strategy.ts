@@ -54,9 +54,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
       perspectiveId: toPerspectiveId,
       details: { headId: newHead },
       indexData: {
-        linkChanges: {
-          onEcosystem: { added: config.addOnEcosystem ? config.addOnEcosystem : [], removed: [] },
-        },
+        onEcosystem: config.addOnEcosystem ? config.addOnEcosystem : [],
       },
     };
 

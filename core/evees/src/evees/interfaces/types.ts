@@ -44,6 +44,7 @@ export interface Update {
 }
 
 export interface IndexData {
+  onEcosystem?: string[];
   linkChanges?: LinkChanges;
   text?: string;
 }
@@ -59,7 +60,6 @@ export interface ArrayChanges {
 }
 
 export enum LinksType {
-  onEcosystem = 'onEcosystem',
   children = 'children',
   linksTo = 'linksTo',
 }

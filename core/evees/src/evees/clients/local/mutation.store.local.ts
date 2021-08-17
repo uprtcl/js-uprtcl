@@ -84,16 +84,17 @@ export class MutationStoreLocal implements ClientMutationStore {
   }
 
   async updateDetails(update: Update) {
-    const onEcosystemChanges = IndexDataHelper.getArrayChanges(
-      update.indexData,
-      LinksType.onEcosystem
-    );
+    const onEcosystem = update.indexData
+      ? update.indexData.onEcosystem
+        ? update.indexData.onEcosystem
+        : []
+      : [];
 
     /** keep the latest details cached */
     await this.db.perspectivesDetails.put({
       perspectiveId: update.perspectiveId,
       details: update.details,
-      onEcosystem: onEcosystemChanges.added,
+      onEcosystem: onEcosystem,
     });
   }
 

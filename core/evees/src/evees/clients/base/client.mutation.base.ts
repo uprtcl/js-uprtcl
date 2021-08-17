@@ -30,7 +30,7 @@ export enum ClientCachedEvents {
 /** Reusable implementation of a ClientMutation service.
  * Uses a ClientMutationStore to store mutations */
 export class ClientMutationBase implements ClientAndExploreCached {
-  logger = new Logger('ClientCachedWithBase');
+  protected logger;
 
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
@@ -47,6 +47,7 @@ export class ClientMutationBase implements ClientAndExploreCached {
     readonly condensate: boolean = false,
     readonly name: string = 'client'
   ) {
+    this.logger = new Logger(`ClientCached-${name}`);
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
     this.updateQueue = new AsyncQueue();
@@ -134,16 +135,16 @@ export class ClientMutationBase implements ClientAndExploreCached {
     await this.mutationStore.addUpdate(update);
 
     /** emit update */
-    const options: SearchOptions = {
-      start: { elements: [{ id: update.perspectiveId, direction: 'above' }] },
-    };
-
-    const { perspectiveIds: parentsIds } = await this.explore(options);
+    const onEcosystem = update.indexData
+      ? update.indexData.onEcosystem
+        ? update.indexData.onEcosystem
+        : []
+      : [];
 
     if (LOGINFO)
-      this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, parentsIds);
+      this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, onEcosystem);
 
-    this.events.emit(ClientEvents.ecosystemUpdated, parentsIds);
+    this.events.emit(ClientEvents.ecosystemUpdated, onEcosystem);
 
     if (LOGINFO)
       this.logger.log(`${this.name} event : ${ClientEvents.updated}`, [update.perspectiveId]);

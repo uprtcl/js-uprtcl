@@ -84,6 +84,7 @@ interface PendingUpdateDetails {
   commit: Secured<Commit>;
   data: Entity;
   timeout?: number;
+  updatePromise?: Promise<void>;
 }
 
 export class Evees implements Client {
@@ -433,6 +434,7 @@ export class Evees implements Client {
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async newPerspective(newPerspective: NewPerspective) {
+    if (LOGINFO) this.logger.log(`newPerspective`, { newPerspective });
     await this.entityResolver.putEntity(newPerspective.perspective);
     newPerspective.update = await this.appendIndexing(newPerspective.update);
     return this.client.newPerspective(newPerspective);
@@ -457,6 +459,8 @@ export class Evees implements Client {
 
   // add indexing data to all updates on a mutation
   async update(mutation: EveesMutationCreate) {
+    if (LOGINFO) this.logger.log(`update`, { mutation });
+
     if (mutation.newPerspectives) {
       await Promise.all(
         mutation.newPerspectives.map(async (np) => {
@@ -485,6 +489,8 @@ export class Evees implements Client {
    * @ {string} parentId - ID of the parent object
    */
   async createEvee(input: CreateEvee): Promise<string> {
+    if (LOGINFO) this.logger.log(`createEvee`, { input });
+
     let { remoteId } = input;
     const { object, partialPerspective, guardianId, indexData } = input;
 
@@ -561,11 +567,11 @@ export class Evees implements Client {
   async awaitPending() {
     const pending = Array.from(this.pendingUpdates.entries());
     await Promise.all(
-      pending.map(([perspectiveId, e]) => {
-        if (e.timeout) {
-          clearTimeout(e.timeout);
+      pending.map(([perspectiveId, pending]) => {
+        if (pending.timeout) {
+          clearTimeout(pending.timeout);
         }
-        return this.executeUpdate(perspectiveId);
+        return this.executeUpdateWrapper(perspectiveId);
       })
     );
   }
@@ -579,15 +585,26 @@ export class Evees implements Client {
     return this.client.diff(options);
   }
 
-  async executeUpdate(perspectiveId: string) {
+  /** store the executeUpdate promise and consider this update applied */
+  async executeUpdateWrapper(perspectiveId: string) {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
 
-    this.pendingUpdates.delete(perspectiveId);
+    /** once the updatePromise is set, the getPerspective will return that new head as the current
+     * head
+     * TODO: We are not supporting reentring calls to updatePerspectiveData. Users must wait before
+     * calling it again.*/
 
+    pending.updatePromise = this.executeUpdate(pending);
+    await pending.updatePromise;
+
+    this.pendingUpdates.delete(perspectiveId);
+  }
+
+  async executeUpdate(pending: PendingUpdateDetails) {
     if (LOGINFO)
       this.logger.log('executePending()', {
-        perspectiveId,
+        pending,
         pendingUpdates: Array.from(this.pendingUpdates.entries()),
       });
 
@@ -617,11 +634,10 @@ export class Evees implements Client {
     if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, true);
     this.events.emit(EveesEvents.pending, true);
 
-    /** create a timeout to execute (queue) this update */
+    /** create a timeout to execute this update */
     this.pendingUpdates.set(perspectiveId, updateDetails);
-
     updateDetails.timeout = setTimeout(
-      () => this.executeUpdate(perspectiveId),
+      () => this.executeUpdateWrapper(perspectiveId),
       updateDetails.flush.debounce
     );
   }
@@ -638,6 +654,13 @@ export class Evees implements Client {
     let parentsIds: string[] | undefined = undefined;
 
     if (!onHeadId) {
+      const pending = this.pendingUpdates.get(perspectiveId);
+      /** check if there is an update currently being executed,
+       * and wait for it if it does */
+      if (pending && pending.updatePromise) {
+        await pending.updatePromise;
+      }
+
       /** the parent is chosen based on the current head on the client */
       const { details } = await this.client.getPerspective(perspectiveId);
       onHeadId = details.headId;

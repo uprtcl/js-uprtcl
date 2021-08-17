@@ -103,31 +103,28 @@ export class ClientRemoteLocal implements ClientRemote {
 
         const current = await this.db.perspectivesDetails.get(update.perspectiveId);
 
-        const onEcosystemChanges = IndexDataHelper.getArrayChanges(
-          update.indexData,
-          LinksType.onEcosystem
-        );
         const childrenChanges = IndexDataHelper.getArrayChanges(
           update.indexData,
           LinksType.children
         );
 
-        const currentOnEcosystem = current ? (current.onEcosystem ? current.onEcosystem : []) : [];
         const currentChildren = current ? (current.children ? current.children : []) : [];
 
-        const newOnEcosystem = currentOnEcosystem.concat(
-          onEcosystemChanges.added.filter((e) => !currentOnEcosystem.includes(e))
-        );
-
-        const newChildren = currentOnEcosystem.concat(
+        const newChildren = currentChildren.concat(
           childrenChanges.added.filter((e) => !currentChildren.includes(e))
         );
+
+        const onEcosystem = update.indexData
+          ? update.indexData.onEcosystem
+            ? update.indexData.onEcosystem
+            : []
+          : [];
 
         return this.db.perspectivesDetails.put({
           perspectiveId: update.perspectiveId,
           details: update.details,
           context: perspective.object.payload.context,
-          onEcosystem: newOnEcosystem,
+          onEcosystem: onEcosystem,
           children: newChildren,
         });
       })

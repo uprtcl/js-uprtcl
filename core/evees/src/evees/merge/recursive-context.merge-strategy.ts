@@ -166,12 +166,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
                 config.guardianId,
                 { recurse: true, detach: config.detach !== undefined ? config.detach : false },
                 {
-                  linkChanges: {
-                    onEcosystem: {
-                      added: config.addOnEcosystem ? config.addOnEcosystem : [],
-                      removed: [],
-                    },
-                  },
+                  onEcosystem: config.addOnEcosystem ? config.addOnEcosystem : [],
                 }
               );
               return newPerspectiveId;

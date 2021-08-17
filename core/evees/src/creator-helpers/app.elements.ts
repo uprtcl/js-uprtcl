@@ -15,6 +15,7 @@ export interface AppElement {
 }
 
 const LOGINFO = false;
+
 /** the relative (to home) path of each app element */
 export class AppElements {
   readonly remote: ClientRemote;
@@ -99,12 +100,7 @@ export class AppElements {
 
     /** set onEcosystem indexing to then filter these at flush of the mutation stores */
     const indexData: IndexData = {
-      linkChanges: {
-        onEcosystem: {
-          added: [this.home.perspective.hash],
-          removed: [],
-        },
-      },
+      onEcosystem: [this.home.perspective.hash],
     };
 
     await this.evees.createEvee({

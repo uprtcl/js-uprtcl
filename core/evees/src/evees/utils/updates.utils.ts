@@ -1,7 +1,11 @@
+import { Logger } from '../../utils';
+
 import { CondensateCommits } from './condensate.commits';
 import { EveesMutation, LinksType, Update } from '../interfaces/types';
 import { EntityResolver } from '../interfaces/entity.resolver';
 import { IndexDataHelper } from '../index.data.helper';
+
+const logger = new Logger('condensateUpdates');
 
 export const condensateUpdates = async (
   updates: Update[],
@@ -28,6 +32,10 @@ export const condensateUpdates = async (
       await condensate.init();
       const eqUpdates = await condensate.condensate();
       if (eqUpdates.length !== 1) {
+        logger.error('condensate details:', {
+          allCommits: condensate.allCommits,
+          updates: condensate.updatesMap,
+        });
         throw new Error('update group has multiple heads');
       }
       group.eqUpdate = eqUpdates[0];
@@ -41,18 +49,10 @@ export const condensateUpdates = async (
 /** append onEcosystem elements to indexData of all new perspectives and updates in the mutation */
 export const mutationAppendOnEcosystem = (mutation: EveesMutation, onEcosystem: string[]) => {
   mutation.newPerspectives.forEach((np) => {
-    np.update.indexData = IndexDataHelper.combineArrayChanges(
-      { added: onEcosystem, removed: [] },
-      LinksType.onEcosystem,
-      np.update.indexData
-    );
+    np.update.indexData = IndexDataHelper.setOnEcosystem(onEcosystem, np.update.indexData);
   });
 
   mutation.updates.forEach((update) => {
-    update.indexData = IndexDataHelper.combineArrayChanges(
-      { added: onEcosystem, removed: [] },
-      LinksType.onEcosystem,
-      update.indexData
-    );
+    update.indexData = IndexDataHelper.setOnEcosystem(onEcosystem, update.indexData);
   });
 };
