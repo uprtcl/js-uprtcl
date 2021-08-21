@@ -536,6 +536,7 @@ export class Evees implements Client {
         details: {
           headId,
           guardianId,
+          canUpdate: true,
         },
         indexData,
       },

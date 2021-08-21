@@ -89,15 +89,14 @@ export class ClientMutationBase implements ClientAndExploreCached {
     perspectiveId: string,
     options?: GetPerspectiveOptions
   ): Promise<PerspectiveGetResult> {
-    /** Always ask the base layer to get the non-mutated details as base details.
-     * There should be cache layer below so that this does not hit the remote */
-    const baseResult = await this.base.getPerspective(perspectiveId, options);
-
     /** TODO: updates in the queue should override the mutationStore data */
     const details = await this.mutationStore.getPerspective(perspectiveId);
     if (details) {
-      return { details: lodash.merge(baseResult.details, details), slice: baseResult.slice };
+      return { details };
     }
+
+    /** If the mutation store don't have any details, hit the base layer */
+    const baseResult = await this.base.getPerspective(perspectiveId, options);
 
     return baseResult;
   }
@@ -131,6 +130,10 @@ export class ClientMutationBase implements ClientAndExploreCached {
 
   async updatePerspectiveEffective(update: Update) {
     if (LOGINFO) this.logger.log(`${this.name} updatePerspectiveEffective()`, { update });
+
+    // merge details with existing ones
+    const currentDetails = await this.mutationStore.getPerspective(update.perspectiveId);
+    update.details = lodash.merge(currentDetails, update.details);
 
     await this.mutationStore.addUpdate(update);
 
