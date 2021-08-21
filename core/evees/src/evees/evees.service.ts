@@ -585,10 +585,17 @@ export class Evees implements Client {
     return this.client.diff(options);
   }
 
-  /** store the executeUpdate promise and consider this update applied */
+  /** store the executeUpdate promise to track its execution and support waiting for it to be finisihed */
   async executeUpdateWrapper(perspectiveId: string) {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
+
+    if (LOGINFO)
+      this.logger.log('executeUpdateWrapper()', {
+        perspectiveId,
+        pending,
+        pendingUpdates: Array.from(this.pendingUpdates.entries()),
+      });
 
     /** once the updatePromise is set, the getPerspective will return that new head as the current
      * head
@@ -596,9 +603,23 @@ export class Evees implements Client {
      * calling it again.*/
 
     pending.updatePromise = this.executeUpdate(pending);
+    if (LOGINFO)
+      this.logger.log('executeUpdateWrapper() - executing update', {
+        promise: pending.updatePromise,
+      });
     await pending.updatePromise;
 
     this.pendingUpdates.delete(perspectiveId);
+
+    if (this.pendingUpdates.size === 0) {
+      if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, false);
+      this.events.emit(EveesEvents.pending, false);
+    }
+
+    if (LOGINFO)
+      this.logger.log('executeUpdateWrapper() - deleted', {
+        pendingUpdates: Array.from(this.pendingUpdates.entries()),
+      });
   }
 
   async executeUpdate(pending: PendingUpdateDetails) {
@@ -609,13 +630,7 @@ export class Evees implements Client {
       });
 
     await Promise.all([this.putEntity(pending.commit), this.putEntity(pending.data)]);
-
     await this.updatePerspective(pending.update, pending.flush);
-
-    if (this.pendingUpdates.size === 0) {
-      if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, false);
-      this.events.emit(EveesEvents.pending, false);
-    }
   }
 
   /** Handles the pending updates, removes the old one if needed and creates a new
