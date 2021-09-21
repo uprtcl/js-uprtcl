@@ -4,10 +4,8 @@ import {
   EveesMutation,
   PerspectiveDetails,
   SearchOptions,
-  LinksType,
   ClientMutationStore,
 } from '../../interfaces';
-import { IndexDataHelper } from '../../index.data.helper';
 import { MutationHelper } from '../../utils';
 
 /** info stored about the perspectives on the mutation that help fast
@@ -162,6 +160,7 @@ export class MutationStoreMemory implements ClientMutationStore {
       this.newPerspectives.clear();
       this.updates.clear();
       this.deletedPerspectives.clear();
+      this.perspectivesDetails.clear();
     }
   }
 

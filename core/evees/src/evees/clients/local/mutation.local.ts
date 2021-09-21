@@ -9,10 +9,10 @@ export class ClientMutationLocal extends ClientMutationBase {
   constructor(
     readonly base: ClientAndExploreCached,
     protected entityResolver: EntityResolver,
-    entityRemote: EntityRemote,
+    readonly entityCache: EntityRemote,
     readonly condensate: boolean = false,
     readonly name: string = 'local-mutation'
   ) {
-    super(base, new MutationStoreLocal(name, entityResolver, entityRemote), condensate, name);
+    super(base, new MutationStoreLocal(name, entityResolver, entityCache), condensate, name);
   }
 }

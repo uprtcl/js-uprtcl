@@ -25,8 +25,8 @@ export class MutationStoreLocal implements ClientMutationStore {
 
   constructor(
     name: string,
-    protected entityResolver: EntityResolver,
-    protected entityRemote: EntityRemote
+    readonly entityResolver: EntityResolver,
+    readonly entityCache: EntityRemote
   ) {
     this.db = new MutationStoreDB(name);
   }
@@ -52,7 +52,7 @@ export class MutationStoreLocal implements ClientMutationStore {
       newPerspective,
     });
 
-    await this.entityRemote.persistEntity(newPerspective.perspective);
+    await this.entityCache.persistEntity(newPerspective.perspective);
     await this.persistUpdateEntities(newPerspective.update);
 
     await this.updateDetails(newPerspective.update);
@@ -80,7 +80,7 @@ export class MutationStoreLocal implements ClientMutationStore {
       this.entityResolver
     );
     const entities = await this.entityResolver.getEntities(entitiesHashes);
-    await this.entityRemote.persistEntities(entities);
+    await this.entityCache.persistEntities(entities);
   }
 
   async updateDetails(update: Update) {

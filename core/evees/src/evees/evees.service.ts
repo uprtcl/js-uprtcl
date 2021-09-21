@@ -87,13 +87,28 @@ interface PendingUpdateDetails {
   updatePromise?: Promise<void>;
 }
 
+/**
+ * This is the entry point to all \_Prtcl features. Apps should use one instance of this class as the interface with
+ * \_Prtcl data. The EveesService behaves as a `Client` but includes several other support methods. */
 export class Evees implements Client {
+  /** Subscribe to events of type `EveesEvents` */
   readonly events: EventEmitter;
+
   protected logger = new Logger('Evees');
 
-  /** debounce updates to the same perspective */
+  /**
+   * Keeps track of pending updates to all perspectives and can be used to debounce (overwrite)
+   * new events over penging ones.
+   */
   protected pendingUpdates: Map<string, PendingUpdateDetails> = new Map();
 
+  /** Instantiate a new instance of the EveesService:
+   * @param cient: A full Client that supports mutations and explore.
+   * @param entityResolver: The global entityResolver.
+   * @param remotes: An array of the ClientRemotes registered in the application
+   * @param config: User configuration of the EveesService.
+   * @param modules: The EveesContentModules installed in this app.
+   */
   constructor(
     private client: ClientFull,
     readonly entityResolver: EntityResolver,
@@ -108,14 +123,29 @@ export class Evees implements Client {
 
   proposals?: Proposals | undefined;
 
+  /**
+   * Get the actual client isntance used by the EveesService
+   * */
   getClient(): ClientMutation {
     return this.client;
   }
 
+  /**
+   * Get the ProposalsService of the client
+   * */
   getProposals(): Proposals | undefined {
     return this.client.proposals;
   }
 
+  /**
+   * @description: Create a new instance of the EveesService with another name, client or configuration. If no client
+   * is provided, a new inmemory client is created on top of the current client.
+   *
+   * @param name (optional): The name of the client (useful for debugging)
+   * @param client (optional): The base client to be used on the new EveesService.
+   * @param config (optional): The EveesConfig config of the new EveesService.
+   * @returns The new instance of the EveesService.
+   */
   clone(name: string = 'new-client', client?: ClientFull, config?: EveesConfig): Evees {
     client = client || new ClientMutationMemory(this.client, false, name);
 
@@ -129,8 +159,14 @@ export class Evees implements Client {
     );
   }
 
-  /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
-   * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
+  /**
+   * @description: Clone a new instance of this `EveesService` using `this.clone()` and apply a state mutation.
+   *
+   * @param name (optional): The name of the client (useful for debugging)
+   * @param client (optional): The base client to be used on the new EveesService.
+   * @param mutation (optional): The EveesMutation with the state changes with which the new EveesService will be initialized.
+   * @returns The new instance of the EveesService.
+   */
   async cloneAndUpdate(
     name: string = 'NewClient',
     client?: ClientFull,
@@ -145,12 +181,24 @@ export class Evees implements Client {
     return evees;
   }
 
+  /**
+   * @description: Find a remote from the list of registered EveesRemote that matches the input query.
+   *
+   * @param query
+   * @returns
+   */
   findRemote<T extends ClientRemote>(query: string): T {
     const remote = this.remotes.find((r) => r.id.includes(query));
     if (!remote) throw new Error(`remote starting with ${query} not found`);
     return remote as T;
   }
 
+  /**
+   * @description: Returns the EveesRemote that exactly matches the `remoteId`.
+   *
+   * @param remoteId
+   * @returns
+   */
   getRemote<T extends ClientRemote>(remoteId?: string): T {
     if (remoteId) {
       const remote = this.remotes.find((r) => r.id === remoteId);
@@ -161,6 +209,12 @@ export class Evees implements Client {
     }
   }
 
+  /**
+   * @description: Return the EveesRemote of a perspective out the perspective id.
+   *
+   * @param perspectiveId
+   * @returns
+   */
   async getPerspectiveRemote<T extends ClientRemote>(perspectiveId: string): Promise<T> {
     const perspective = await this.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
@@ -168,28 +222,66 @@ export class Evees implements Client {
     return this.getRemote<T>(remoteId);
   }
 
+  /**
+   * @description: Return the context of a perspective out of the perspective id.
+   *
+   * @param perspectiveId
+   * @returns
+   */
   async getPerspectiveContext(perspectiveId: string): Promise<string> {
     const perspective = await this.getEntity<Signed<Perspective>>(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     return perspective.object.payload.context;
   }
 
+  /**
+   * @description: Directly expose the getEntity method of the entityResolver
+   *
+   * @param hash
+   * @returns
+   */
   async getEntity<T = any>(hash: string): Promise<Entity<T>> {
     return this.entityResolver.getEntity<T>(hash);
   }
 
+  /**
+   * @description: Directly expose the getEntities method of the entityResolver
+   *
+   * @param hashes
+   * @returns
+   */
   getEntities(hashes: string[]): Promise<Entity<any>[]> {
     return this.entityResolver.getEntities(hashes);
   }
 
+  /**
+   * @description: Directly expose the hashObject method of the entityResolver
+   *
+   * @param entity
+   * @param putFlag
+   * @returns
+   */
   async hashObject(entity: EntityCreate, putFlag: boolean = true): Promise<Entity> {
     return this.entityResolver.hashObject(entity, putFlag);
   }
 
+  /**
+   * @description: Directly expose the putEntity method of the entityResolver
+   *
+   * @param entity
+   * @returns
+   */
   async putEntity(entity: Entity) {
     return this.entityResolver.putEntity(entity);
   }
 
+  /**
+   * @description: Directly expose the explore method of the client service
+   *
+   * @param searchOptions
+   * @param fetchOptions
+   * @returns
+   */
   async explore(
     searchOptions: SearchOptions,
     fetchOptions?: GetPerspectiveOptions
@@ -201,6 +293,18 @@ export class Evees implements Client {
     return this.client.explore(searchOptions, fetchOptions);
   }
 
+  /**
+   * @description: A method to manually clear the cache of a explore query to force
+   * hitting the underlying layers. Search results reactivity is way too complex,
+   * so applications need to manually call this method when they make updates that
+   * they they know will change the results of a queries they want to see updates.
+   *
+   * Otherwise the query will return the latest cached results.
+   *
+   * @param searchOptions
+   * @param fetchOptions
+   * @returns
+   */
   async clearExplore(
     searchOptions: SearchOptions,
     fetchOptions?: GetPerspectiveOptions
@@ -212,6 +316,13 @@ export class Evees implements Client {
     return this.client.clearExplore(searchOptions, fetchOptions);
   }
 
+  /**
+   * @description: Returns the current head of a perpective.
+   *
+   * @param perspectiveId
+   * @param options
+   * @returns
+   */
   async getPerspective(
     perspectiveId: string,
     options?: GetPerspectiveOptions
@@ -445,7 +556,7 @@ export class Evees implements Client {
     await this.appendIndexing(update);
   }
 
-  /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
+  /** A helper method that injects the added and removed children to a newPerspective object and send it to the client */
   async updatePerspective(update: Update, flush?: FlushConfig) {
     if (LOGINFO) this.logger.log('updatePerspective()', update);
     await this.indexUpdate(update);
@@ -608,6 +719,8 @@ export class Evees implements Client {
       this.logger.log('executeUpdateWrapper() - executing update', {
         promise: pending.updatePromise,
       });
+
+    /** await the update to be executed */
     await pending.updatePromise;
 
     this.pendingUpdates.delete(perspectiveId);
@@ -694,7 +807,7 @@ export class Evees implements Client {
 
     const head = await this.hashObject({ object: headObject, remote: remote.id });
 
-    if (LOGINFO) this.logger.log('updatePerspectiveData() - createCommit after', head);
+    if (LOGINFO) this.logger.log('updatePerspectiveData() - createCommit after', { options, head });
 
     const update: Update = {
       perspectiveId,

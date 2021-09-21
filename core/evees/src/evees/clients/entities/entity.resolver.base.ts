@@ -9,7 +9,7 @@ import { OnMemoryEntityCache } from './entity.cache';
  * are given by the ClientMutation logic.
  * */
 export class EntityResolverBase implements EntityResolver {
-  cache: EntityCache;
+  readonly cache: EntityCache;
 
   constructor(protected base: EntityResolver, cache?: EntityCache) {
     this.cache = cache ? cache : new OnMemoryEntityCache();

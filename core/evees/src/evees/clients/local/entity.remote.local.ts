@@ -3,7 +3,7 @@ import { hashObject } from '../../utils';
 import { Logger } from '../../../utils';
 import { EntityStoreDB } from './entity.store.local.db';
 
-const LOGINFO = true;
+const LOGINFO = false;
 export class EntityRemoteLocal implements EntityRemote {
   logger = new Logger('EntityRemoteLocal');
   id: string = 'local';

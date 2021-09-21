@@ -24,4 +24,8 @@ export class OnMemoryEntityCache implements EntityCache {
   async removeEntity(hash: string): Promise<void> {
     this.entities.delete(hash);
   }
+
+  async clear() {
+    this.entities.clear();
+  }
 }

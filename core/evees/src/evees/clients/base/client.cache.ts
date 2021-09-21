@@ -69,44 +69,46 @@ export class ClientCache implements ClientAndExploreCached {
   }
 
   async update(mutation: EveesMutationCreate): Promise<void> {
-    const cacheNewPerspectives = mutation.newPerspectives
-      ? Promise.all(
-          mutation.newPerspectives.map((newPerspective) => {
-            // cache new perspectives as canUpdate by default
-            newPerspective.update.details.canUpdate = true;
+    /** optimistically cache as read details and update on the base layer */
 
-            return this.cache.setCachedPerspective(newPerspective.perspective.hash, {
-              update: newPerspective.update,
-              levels: -1, // new perspectives are assumed to be fully on the cache
-            });
-          })
+    if (mutation.newPerspectives) {
+      await Promise.all(
+        mutation.newPerspectives.map((newPerspective) => {
+          // cache new perspectives as canUpdate by default
+          newPerspective.update.details.canUpdate = true;
+
+          return this.cache.setCachedPerspective(newPerspective.perspective.hash, {
+            update: lodash.cloneDeep(newPerspective.update),
+            levels: -1, // new perspectives are assumed to be fully on the cache
+          });
+        })
+      );
+    }
+
+    if (mutation.updates) {
+      await Promise.all(
+        mutation.updates.map(async (update) => {
+          const currentUpdate = await this.cache.getCachedPerspective(update.perspectiveId);
+          const currentDetails =
+            (currentUpdate && currentUpdate.update && currentUpdate.update.details) || {};
+
+          update.details = lodash.merge(currentDetails, update.details);
+
+          this.cache.setCachedPerspective(update.perspectiveId, {
+            update: lodash.cloneDeep(update),
+            levels: -1, // new perspectives are assumed to be fully on the cache
+          });
+        })
+      );
+    }
+
+    if (mutation.deletedPerspectives) {
+      await Promise.all(
+        mutation.deletedPerspectives.map((perspectiveId) =>
+          this.cache.clearCachedPerspective(perspectiveId)
         )
-      : Promise.resolve([]);
-
-    const cacheUpdate = mutation.updates
-      ? Promise.all(
-          mutation.updates.map(async (update) => {
-            const currentUpdate = await this.cache.getCachedPerspective(update.perspectiveId);
-            const currentDetails =
-              (currentUpdate && currentUpdate.update && currentUpdate.update.details) || {};
-
-            update.details = lodash.merge(currentDetails, update.details);
-
-            this.cache.setCachedPerspective(update.perspectiveId, {
-              update,
-              levels: -1, // new perspectives are assumed to be fully on the cache
-            });
-          })
-        )
-      : Promise.resolve([]);
-
-    const cacheDeletes = mutation.deletedPerspectives
-      ? Promise.all(
-          mutation.deletedPerspectives.map((perspectiveId) =>
-            this.cache.clearCachedPerspective(perspectiveId)
-          )
-        )
-      : Promise.resolve([]);
+      );
+    }
 
     if (this.injectEntities) {
       const entitiesHashes = await MutationHelper.getMutationEntitiesHashes(
@@ -117,13 +119,7 @@ export class ClientCache implements ClientAndExploreCached {
       mutation.entities = entities;
     }
 
-    /** optimistically cache as read details and update on the base layer */
-    await Promise.all([
-      cacheNewPerspectives,
-      cacheUpdate,
-      cacheDeletes,
-      this.base.update(mutation),
-    ]);
+    await this.base.update(mutation);
   }
 
   storeEntity(entityId: string): Promise<void> {

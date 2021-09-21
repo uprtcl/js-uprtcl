@@ -184,6 +184,13 @@ export class EveesHttp implements RemoteWithUI {
 
     if (LOGINFO) this.logger.log('getPerspective() - result', result);
 
+    if (!result) {
+      this.logger.warn(`Error fetching perspective ${perspectiveId}`);
+      result = {
+        details: {},
+      };
+    }
+
     return result;
   }
 

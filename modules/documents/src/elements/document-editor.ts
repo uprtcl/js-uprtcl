@@ -398,13 +398,12 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     index = index !== undefined ? index : currentChildren.length;
 
     /** create objects if elements is not an id */
-    const getNewNodes = elements.map((el, ix) => {
+    const getNewNodes = elements.map(async (el, ix) => {
       const elIndex = (index as number) + ix;
       if (typeof el !== 'string') {
         if (el.object !== undefined) {
-          /** element is an object from which a DocNode should be create */
-          const uref = this.createNode(el.object, node, elIndex);
-          return Promise.resolve(uref);
+          /** element is an entity from which a DocNode should be create */
+          return this.createNode(el.object, node, elIndex);
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);
@@ -430,6 +429,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     });
 
     const newDraft = this.localEvees.behaviorFirst(node.draft, 'replaceChildren')(newChildren);
+
+    /** Optimistic execution. No waiting for the update to run, simply update the draft and move on */
     this.updateNode(node, newDraft);
 
     return removed;
