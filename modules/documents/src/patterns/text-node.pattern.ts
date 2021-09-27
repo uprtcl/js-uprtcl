@@ -1,28 +1,25 @@
 import { html } from 'lit-element';
-import { injectable } from 'inversify';
 
 import {
-  Pattern,
-  recognizeEntity,
-  HasChildren,
-  Entity,
-  HasTitle,
-  New,
-} from '@uprtcl/cortex';
-import {
-  Merge,
-  MergeStrategy,
-  mergeStrings,
   mergeResult,
-  HasDiffLenses,
-  DiffLens,
-  EveesWorkspace,
+  MergeConfig,
+  Pattern,
+  HasChildren,
+  HasTitle,
+  HasEmpty,
+  Evees,
+  LinkingBehaviorNames,
+  HasMerge,
+  MergingBehaviorNames,
+  MergeStrategy,
 } from '@uprtcl/evees';
-import { Lens, HasLenses } from '@uprtcl/lenses';
+import { HasDiffLenses, HasLenses, DiffLens, Lens, RenderEntityInput } from '@uprtcl/evees-ui';
 
 import { TextNode, TextType, DocNode, DocNodeEventsHandlers } from '../types';
-import { DocNodeLens } from './document-patterns';
 import { DocumentsBindings } from '../bindings';
+import { htmlToText } from '../support/documents.support';
+
+import { DocNodeLens } from './document-patterns';
 
 const propertyOrder = ['text', 'type', 'links'];
 
@@ -40,50 +37,59 @@ const typeToTextNode = (textNode: TextNode, type: TextType): TextNode => {
   };
 };
 
-export class TextNodePattern extends Pattern<Entity<TextNode>> {
-  recognize(entity: object): boolean {
-    return (
-      recognizeEntity(entity) &&
-      propertyOrder.every((p) => entity.object.hasOwnProperty(p))
-    );
+export class TextNodePattern extends Pattern<TextNode> {
+  recognize(object: any): boolean {
+    return propertyOrder.every((p) => object.hasOwnProperty(p));
   }
 
   type = DocumentsBindings.TextNodeType;
 }
 
-@injectable()
 export class TextNodeCommon
   implements
-    HasLenses<Entity<TextNode>>,
-    HasChildren<Entity<TextNode>>,
-    Merge<Entity<TextNode>> {
-  replaceChildrenLinks = (node: Entity<TextNode>) => (
+    HasLenses<TextNode, RenderEntityInput>,
+    HasChildren<TextNode>,
+    HasMerge<TextNode>,
+    HasEmpty<TextNode> {
+  [LinkingBehaviorNames.REPLACE_CHILDREN] = (node: TextNode) => (
     childrenHashes: string[]
-  ): Entity<TextNode> => ({
-    id: '',
-    object: {
-      ...node.object,
-      links: childrenHashes,
-    },
+  ): TextNode => ({
+    ...node,
+    links: childrenHashes,
   });
 
-  getChildrenLinks = (node: Entity<TextNode>): string[] => node.object.links;
+  [LinkingBehaviorNames.CHILDREN] = (node: TextNode): string[] => node.links;
 
-  links = async (node: Entity<TextNode>) => this.getChildrenLinks(node);
+  empty = (): TextNode => {
+    return { text: '', type: TextType.Title, links: [] };
+  };
 
-  lenses = (node: Entity<TextNode>): Lens[] => {
+  text = (node: TextNode): string => node.text;
+
+  lenses = (node: TextNode): Lens<RenderEntityInput>[] => {
     return [
       {
         name: 'documents:document',
         type: 'content',
-        render: (entity: Entity<any>, context: any) => {
-          return html`
-            <documents-text-node .data=${node} uref=${entity.id}>
-            </documents-text-node>
-          `;
+        render: (input: RenderEntityInput, evees?: Evees) => {
+          return html`<documents-editor
+            uref=${input.uref}
+            ?read-only=${input.readOnly}
+            .localEvees=${evees}
+          ></documents-editor>`;
         },
       },
     ];
+  };
+
+  preview = (node: TextNode): Lens<RenderEntityInput> => {
+    return {
+      name: 'documents:document-preview-card',
+      type: 'preview',
+      render: (input: any, evees?: Evees) => {
+        return html`<documents-preview-card uref=${input}></documents-preview-card>`;
+      },
+    };
   };
 
   /** lenses top is a lense that dont render the node children, leaving the job to an upper node tree controller */
@@ -106,23 +112,15 @@ export class TextNodeCommon
               @focus=${events.focus}
               @clicked-outside=${events.blur}
               @content-changed=${(e) =>
-                events.contentChanged(
-                  textToTextNode(node.draft, e.detail.content),
-                  false
-                )}
-              @enter-pressed=${(e) =>
-                events.split(e.detail.content, e.detail.asChild)}
-              @backspace-on-start=${(e) =>
-                events.joinBackward(e.detail.content)}
+                events.contentChanged(textToTextNode(node.draft, e.detail.content), false)}
+              @enter-pressed=${(e) => events.split(e.detail.content, e.detail.asChild)}
+              @backspace-on-start=${(e) => events.joinBackward(e.detail.content)}
               @delete-on-end=${(e) => events.pullDownward()}
               @keyup-on-start=${events.focusBackward}
               @keydown-on-end=${events.focusDownward}
               @lift-heading=${events.lift}
               @change-type=${(e) =>
-                events.contentChanged(
-                  typeToTextNode(node.draft, e.detail.type),
-                  e.detail.lift
-                )}
+                events.contentChanged(typeToTextNode(node.draft, e.detail.type), e.detail.lift)}
               @content-appended=${events.appended}
               @convert-to=${(e) => events.convertedTo(e.detail.type)}
             >
@@ -133,22 +131,22 @@ export class TextNodeCommon
     ];
   };
 
-  merge = (originalNode: Entity<TextNode>) => async (
-    modifications: Entity<TextNode>[],
-    mergeStrategy: MergeStrategy,
-    workspace: EveesWorkspace,
-    config: any
+  [MergingBehaviorNames.MERGE] = (originalNode: TextNode) => async (
+    modifications: TextNode[],
+    merger: MergeStrategy,
+    config: MergeConfig
   ): Promise<TextNode> => {
-    const resultText = modifications[1].object.text;
+    const resultText = modifications[1].text;
     const resultType = mergeResult(
-      originalNode.object.type,
-      modifications.map((data) => data.object.type)
+      originalNode.type,
+      modifications.map((data) => data.type)
     );
 
-    const mergedLinks = await mergeStrategy.mergeLinks(
-      originalNode.object.links,
-      modifications.map((data) => data.object.links),
-      workspace,
+    if (!merger.mergeChildren) throw new Error('mergeChildren function not found in merger');
+
+    const mergedLinks = await merger.mergeChildren(
+      originalNode.links,
+      modifications.map((data) => data.links),
       config
     );
 
@@ -160,25 +158,21 @@ export class TextNodeCommon
   };
 }
 
-@injectable()
 export class TextNodeTitle implements HasTitle, HasDiffLenses {
-  title = (textNode: Entity<TextNode>) => textNode.object.text;
+  title = (textNode: TextNode) => {
+    return htmlToText(textNode.text);
+  };
 
   diffLenses = (node?: TextNode): DiffLens[] => {
     return [
       {
         name: 'documents:document-diff',
         type: 'diff',
-        render: (
-          workspace: EveesWorkspace,
-          newEntity: Entity<TextNode>,
-          oldEntity: Entity<TextNode>,
-          summary: boolean
-        ) => {
+        render: (evees: Evees, newEntity: TextNode, oldEntity: TextNode, summary: boolean) => {
           // logger.log('lenses: documents:document - render()', { node, lensContent, context });
           return html`
             <documents-text-node-diff
-              .workspace=${workspace}
+              .evees=${evees}
               .newData=${newEntity}
               .oldData=${oldEntity}
               ?summary=${summary}

@@ -1,4 +1,4 @@
-import { Logger } from '@uprtcl/micro-orchestrator';
+import { Logger } from '@uprtcl/evees';
 import { css, html, LitElement, property } from 'lit-element';
 import { toggleMark } from 'prosemirror-commands';
 import { DOMParser, DOMSerializer } from 'prosemirror-model';
@@ -39,22 +39,22 @@ export class DocumentTextNodeEditor extends LitElement {
   toAppend!: string;
 
   @property({ type: String })
-  editable: string = 'true';
+  editable = 'true';
 
   @property({ type: String, attribute: 'toggle-action' })
-  toggleAction: string = 'true';
+  toggleAction = 'true';
 
   @property({ type: Object })
   action: any = {};
 
   @property({ type: String, attribute: 'focus-init' })
-  focusInit: string = 'false';
+  focusInit = 'false';
 
   @property({ type: Array })
   canConvertTo: string[] = [];
 
   @property({ type: Number })
-  level: number = 0;
+  level = 0;
 
   @property({ attribute: false })
   selected: Boolean = false;
@@ -93,9 +93,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   handleEditorClick = (event) => {
-    const ix = event
-      .composedPath()
-      .findIndex((el: any) => el.id === this.editorId);
+    const ix = event.composedPath().findIndex((el: any) => el.id === this.editorId);
     if (ix === -1) {
       this.dispatchEvent(new CustomEvent('clicked-outside'));
     }
@@ -146,11 +144,7 @@ export class DocumentTextNodeEditor extends LitElement {
       }
     }
 
-    if (
-      changedProperties.has('showUrlMenu') &&
-      this.showUrlMenu &&
-      this.shadowRoot != null
-    ) {
+    if (changedProperties.has('showUrlMenu') && this.showUrlMenu && this.shadowRoot != null) {
       const input = this.shadowRoot.getElementById('URL_INPUT');
       if (input) {
         input.focus();
@@ -212,9 +206,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
     const end = this.editor.view.state.doc.content.content[0].nodeSize;
 
-    this.editor.view.dispatch(
-      this.editor.view.state.tr.replace(end - 1, end, slice)
-    );
+    this.editor.view.dispatch(this.editor.view.state.tr.replace(end - 1, end, slice));
 
     this.editor.view.dispatch(
       this.editor.view.state.tr.setSelection(
@@ -251,12 +243,7 @@ export class DocumentTextNodeEditor extends LitElement {
       const newState = view.state.apply(splitTr);
       const secondPart = newState.doc.content.content[1];
 
-      view.dispatch(
-        splitTr.delete(
-          view.state.selection.$cursor.pos,
-          view.state.doc.nodeSize
-        )
-      );
+      view.dispatch(splitTr.delete(view.state.selection.$cursor.pos, view.state.doc.nodeSize));
 
       /** send event to parent */
       const fragment = this.editor.serializer.serializeFragment(secondPart);
@@ -301,10 +288,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
     /** delete */
     if (event.keyCode === 46) {
-      if (
-        view.state.selection.$cursor.pos >=
-        view.state.doc.content.content[0].nodeSize - 1
-      ) {
+      if (view.state.selection.$cursor.pos >= view.state.doc.content.content[0].nodeSize - 1) {
         event.preventDefault();
 
         const content = this.state2Html(view.state);
@@ -326,10 +310,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
     /** arrow down */
     if (event.keyCode === 40) {
-      if (
-        view.state.selection.$cursor.pos >=
-        view.state.doc.content.content[0].nodeSize - 1
-      ) {
+      if (view.state.selection.$cursor.pos >= view.state.doc.content.content[0].nodeSize - 1) {
         event.preventDefault();
         this.dispatchEvent(new CustomEvent('keydown-on-end'));
         return;
@@ -371,8 +352,7 @@ export class DocumentTextNodeEditor extends LitElement {
 
   isEditable() {
     if (LOGINFO) this.logger.log(`isEditable()`, { editable: this.editable });
-    const editable =
-      this.editable !== undefined ? this.editable === 'true' : false;
+    const editable = this.editable !== undefined ? this.editable === 'true' : false;
     return editable;
   }
 
@@ -381,7 +361,7 @@ export class DocumentTextNodeEditor extends LitElement {
       this.editor.view.destroy();
       this.editor = {};
       if (LOGINFO)
-        this.logger.log(`initEditor() - Initializing editor`, {
+        this.logger.log('initEditor() - Initializing editor', {
           init: this.init,
         });
     }
@@ -410,8 +390,7 @@ export class DocumentTextNodeEditor extends LitElement {
     this.editor.view = new EditorView(container as Node, {
       state: state,
       editable: () => this.isEditable(),
-      dispatchTransaction: (transaction) =>
-        this.dispatchTransaction(transaction),
+      dispatchTransaction: (transaction) => this.dispatchTransaction(transaction),
       handleDOMEvents: {
         focus: () =>
           this.dispatchEvent(
@@ -446,9 +425,7 @@ export class DocumentTextNodeEditor extends LitElement {
       },
       nodeViews: {
         code_block: (node, view, getPos) =>
-          new CodeBlockView(node, view, getPos, () =>
-            this.enterPressedEvent('', false)
-          ),
+          new CodeBlockView(node, view, getPos, () => this.enterPressedEvent('', false)),
       },
     });
 
@@ -509,7 +486,7 @@ export class DocumentTextNodeEditor extends LitElement {
     const newContent = this.state2Html(newState);
 
     if (LOGINFO)
-      this.logger.log(`dispatchTransaction() - content-changed`, {
+      this.logger.log('dispatchTransaction() - content-changed', {
         content,
         newContent,
       });
@@ -660,15 +637,12 @@ export class DocumentTextNodeEditor extends LitElement {
     if (this.shadowRoot == null) return { link: '', width: '', height: '' };
 
     return {
-      link: (this.shadowRoot.getElementById('URL_INPUT') as HTMLInputElement)
-        .value,
+      link: (this.shadowRoot.getElementById('URL_INPUT') as HTMLInputElement).value,
       width: this.shadowRoot.getElementById('DIM_WIDTH')
-        ? (this.shadowRoot.getElementById('DIM_WIDTH') as HTMLInputElement)
-            .value
+        ? (this.shadowRoot.getElementById('DIM_WIDTH') as HTMLInputElement).value
         : '',
       height: this.shadowRoot.getElementById('DIM_HEIGHT')
-        ? (this.shadowRoot.getElementById('DIM_HEIGHT') as HTMLInputElement)
-            .value
+        ? (this.shadowRoot.getElementById('DIM_HEIGHT') as HTMLInputElement).value
         : '',
     };
   }
@@ -704,9 +678,7 @@ export class DocumentTextNodeEditor extends LitElement {
           height !== '' ? `height:${height}px` : ''
         };max-width: 100%;margin: 0 auto;border-radius: 5px;`,
       });
-      this.dispatchTransaction(
-        this.editor.view.state.tr.replaceSelectionWith(imgNode, false)
-      );
+      this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(imgNode, false));
       this.alignNodeToCenter();
       // this.editor.view.dispatch();
     }
@@ -715,7 +687,7 @@ export class DocumentTextNodeEditor extends LitElement {
   parseYoutubeURL(url: string) {
     const getParameterByName = (name, url) => {
       name = name.replace(/[\[\]]/g, '\\$&');
-      var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
         results = regex.exec(url);
       if (!results) return null;
       if (!results[2]) return '';
@@ -753,9 +725,7 @@ export class DocumentTextNodeEditor extends LitElement {
         };height:52vw;border:0px;max-width:100%;max-height:470px;`,
       });
 
-      this.dispatchTransaction(
-        this.editor.view.state.tr.replaceSelectionWith(iframeNode, false)
-      );
+      this.dispatchTransaction(this.editor.view.state.tr.replaceSelectionWith(iframeNode, false));
       this.alignNodeToCenter();
     }
   }
@@ -817,12 +787,8 @@ export class DocumentTextNodeEditor extends LitElement {
           ${this.showDimMenu ? this.renderDimensionsMenu() : ''}
         </div>
         <div class="inp-actions">
-          <button @click=${this.subMenuCancel} class="btn btn-small">
-            ${icons.cross}
-          </button>
-          <button @click=${this.subMenuConfirm} class="btn btn-small">
-            ${icons.check}
-          </button>
+          <button @click=${this.subMenuCancel} class="btn btn-small">${icons.cross}</button>
+          <button @click=${this.subMenuConfirm} class="btn btn-small">${icons.check}</button>
         </div>
       </div>
     `;
@@ -848,10 +814,7 @@ export class DocumentTextNodeEditor extends LitElement {
       ? html`
           ${this.level > 2
             ? html`
-                <button
-                  class="btn btn-text"
-                  @click=${() => this.reduceHeading()}
-                >
+                <button class="btn btn-text" @click=${() => this.reduceHeading()}>
                   <span>h${this.level - 1}</span>
                 </button>
               `
@@ -866,9 +829,7 @@ export class DocumentTextNodeEditor extends LitElement {
   renderLevelControllers() {
     return html`
       <!-- level controllers -->
-      ${this.type === TextType.Paragraph
-        ? this.renderParagraphItems()
-        : this.renderHeadingItems()}
+      ${this.type === TextType.Paragraph ? this.renderParagraphItems() : this.renderHeadingItems()}
     `;
   }
 
@@ -883,8 +844,7 @@ export class DocumentTextNodeEditor extends LitElement {
         ? html`
             <button
               class="btn btn-square btn-large"
-              @click=${() =>
-                this.menuItemClick(this.editor.view.state.schema.marks.strong)}
+              @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.strong)}
             >
               ${icons.bold}
             </button>
@@ -892,8 +852,7 @@ export class DocumentTextNodeEditor extends LitElement {
         : ''}
       <button
         class="btn btn-square btn-large"
-        @click=${() =>
-          this.menuItemClick(this.editor.view.state.schema.marks.em)}
+        @click=${() => this.menuItemClick(this.editor.view.state.schema.marks.em)}
       >
         ${icons.em}
       </button>
@@ -909,10 +868,7 @@ export class DocumentTextNodeEditor extends LitElement {
   }
 
   hasSelection() {
-    if (
-      this.editor.view.state.selection.from > 1 ||
-      this.editor.view.state.selection.to > 1
-    ) {
+    if (this.editor.view.state.selection.from > 1 || this.editor.view.state.selection.to > 1) {
       return true;
     }
     return false;
@@ -922,13 +878,9 @@ export class DocumentTextNodeEditor extends LitElement {
     const node = this.editor.view.state.doc.content.content[0];
     const end = node.nodeSize;
     const newType =
-      node.type.name !== 'code_block'
-        ? blockSchema.nodes.code_block
-        : blockSchema.nodes.paragraph;
+      node.type.name !== 'code_block' ? blockSchema.nodes.code_block : blockSchema.nodes.paragraph;
 
-    this.editor.view.dispatch(
-      this.editor.view.state.tr.setBlockType(0, end, newType)
-    );
+    this.editor.view.dispatch(this.editor.view.state.tr.setBlockType(0, end, newType));
   }
 
   renderConvertMenu() {
@@ -937,9 +889,7 @@ export class DocumentTextNodeEditor extends LitElement {
       <uprtcl-list>
         ${this.canConvertTo.map(
           (to) =>
-            html`<uprtcl-list-item @click=${(e) => this.convertTo(to, e)}
-              >${to}</uprtcl-list-item
-            >`
+            html`<uprtcl-list-item @click=${(e) => this.convertTo(to, e)}>${to}</uprtcl-list-item>`
         )}
       </uprtcl-list>
     </uprtcl-popper>`;
@@ -962,9 +912,7 @@ export class DocumentTextNodeEditor extends LitElement {
       </button>
     `;
     const codeSubMenu = html`
-      <button class="btn btn-square btn-small" @click=${this.toggleCode}>
-        ${icons.code}
-      </button>
+      <button class="btn btn-square btn-small" @click=${this.toggleCode}>${icons.code}</button>
     `;
 
     const type = this.getBlockType();
@@ -1017,9 +965,6 @@ export class DocumentTextNodeEditor extends LitElement {
         :host {
           position: relative;
           width: 100%;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
-            'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji',
-            'Segoe UI Symbol';
         }
 
         a {

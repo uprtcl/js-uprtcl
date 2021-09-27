@@ -1,26 +1,12 @@
 {
   "packages": [
     "connections/http",
-    "connections/orbitdb",
     "connections/ethereum",
-    "connections/ipfs",
-    "core/cortex",
-    "core/graphql",
-    "core/lenses",
-    "core/micro-orchestrator",
-    "core/multiplatform",
-    "core/redux",
-    "modules/common-ui",
-    "modules/evees",
-    "modules/evees-reader",
-    "modules/wikis",
+    "core/evees",
+    "core/evees-ui",
+    "core/common-ui",
     "modules/documents",
-    "remotes/evees-local",
-    "remotes/evees-http",
-    "remotes/evees-blockchain",
-    "remotes/evees-ethereum",
-    "remotes/evees-orbitdb",
-    "remotes/evees-polkadot"
+    "remotes/http"
   ],
   "version": "independent"
 }

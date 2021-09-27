@@ -23,7 +23,7 @@ module.exports = (config) =>
     },
     webpack: {
       mode: 'development',
-      entry: `./src/uprtcl-wikis.ts`,
+      entry: './src/uprtcl-wikis.ts',
       output: {
         filename: 'bundle.js',
       },

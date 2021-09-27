@@ -1,155 +1,126 @@
-import { LitElement, property, html, css } from 'lit-element';
-import { ApolloClient } from 'apollo-boost';
-import isEqual from 'lodash-es/isEqual';
-
-import { ApolloClientModule } from '@uprtcl/graphql';
+import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
 const styleMap = (style) => {
   return Object.entries(style).reduce((styleString, [propName, propValue]) => {
-    propName = propName.replace(
-      /([A-Z])/g,
-      (matches) => `-${matches[0].toLowerCase()}`
-    );
+    propName = propName.replace(/([A-Z])/g, (matches) => `-${matches[0].toLowerCase()}`);
     return `${styleString}${propName}:${propValue};`;
   }, '');
 };
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
 import {
-  HasChildren,
-  CortexModule,
-  PatternRecognizer,
-  Entity,
-} from '@uprtcl/cortex';
-import {
-  EveesRemote,
-  EveesModule,
-  UPDATE_HEAD,
-  eveeColor,
-  ContentUpdatedEvent,
-  CREATE_ENTITY,
-  EveesDraftsLocal,
-  EveesHelpers,
-  deriveSecured,
-  Perspective,
-  Secured,
-  hashObject,
-  EveesConfig,
-  EveesInfoConfig,
+  Logger,
+  PerspectiveType,
+  CommitType,
+  Evees,
+  UpdatePerspectiveData,
+  CreateEvee,
+  FlushConfig,
 } from '@uprtcl/evees';
-import { MenuConfig } from '@uprtcl/common-ui';
-import { loadEntity } from '@uprtcl/multiplatform';
+import { servicesConnect, eveeColor } from '@uprtcl/evees-ui';
 
 import { TextType, DocNode, CustomBlocks } from '../types';
-import { HasDocNodeLenses } from '../patterns/document-patterns';
 import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
+import { DocumentsModule } from '../documents.module';
 
 const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
-const PLACEHOLDER_TOKEN = '_PLACEHOLDER_';
 
-export class DocumentEditor extends moduleConnect(LitElement) {
+export class DocumentEditor extends servicesConnect(LitElement) {
   logger = new Logger('DOCUMENT-EDITOR');
 
   @property({ type: String, attribute: 'uref' })
-  firstRef!: string;
-
-  @property({ attribute: false })
   uref!: string;
 
   @property({ type: Boolean, attribute: 'read-only' })
-  readOnly: boolean = false;
+  readOnly = false;
+
+  @property({ type: Boolean, attribute: 'show-info' })
+  showInfo = false;
+
+  @property({ type: Boolean, attribute: 'keep-info-padding' })
+  keepInfoPadding = false;
 
   @property({ type: Number, attribute: 'root-level' })
-  rootLevel: number = 0;
+  rootLevel = 0;
 
-  @property({ type: String })
-  parentId: string = '';
+  @property({ type: String, attribute: 'parent-id' })
+  parentId!: string;
+
+  /** if true, content updates are emited instead of sent to the localEvees */
+  @property({ type: Boolean, attribute: 'emit-updates' })
+  emitUpdates: boolean = false;
 
   @property({ type: String, attribute: 'default-type' })
-  defaultType: string = EveesModule.bindings.PerspectiveType;
-
-  @property({ type: Object })
-  eveesInfoConfig: EveesInfoConfig = {};
-
-  @property({ attribute: false })
-  docHasChanges: boolean = false;
-
-  @property({ attribute: false })
-  persistingAll: boolean = false;
-
-  @property({ type: Boolean, attribute: false })
-  showCommitMessage: boolean = false;
+  defaultType: string = PerspectiveType;
 
   @property({ type: String })
   color!: string;
 
-  @property({ attribute: false })
-  reloading: boolean = true;
+  @property({ type: Object })
+  flushConfig!: FlushConfig;
 
-  @property({ attribute: false })
+  @internalProperty()
+  getEveeInfo!: Function;
+
+  @property({ type: Object, attribute: false })
+  localEvees!: Evees;
+
+  @internalProperty()
+  reloading = true;
+
+  @internalProperty()
   checkedOutPerspectives: {
     [key: string]: { firstUref: string; newUref: string };
   } = {};
 
   doc: DocNode | undefined = undefined;
-  client!: ApolloClient<any>;
 
-  protected remotes!: EveesRemote[];
-  protected recognizer!: PatternRecognizer;
+  loadingPromise!: Promise<any>;
+
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
 
-  draftService = new EveesDraftsLocal();
-
   async firstUpdated() {
-    this.remotes = this.requestAll(EveesModule.bindings.EveesRemote);
-    this.recognizer = this.request(CortexModule.bindings.Recognizer);
-
-    if (this.hasDependency(DocumentsBindings.CustomBlocks)) {
-      this.customBlocks = this.request(DocumentsBindings.CustomBlocks);
-    }
-
-    const config = this.request(EveesModule.bindings.Config) as EveesConfig;
-    this.editableRemotesIds = config.editableRemotesIds
-      ? config.editableRemotesIds
+    const documentsModule = this.evees.modules.get(DocumentsModule.id);
+    this.customBlocks = documentsModule ? documentsModule.config.customBlocks : undefined;
+    this.editableRemotesIds = this.evees.config.editableRemotesIds
+      ? this.evees.config.editableRemotesIds
       : [];
 
-    if (!this.client) {
-      this.client = this.request(ApolloClientModule.bindings.Client);
+    /** overwrite evees sercive with provided client */
+    if (!this.localEvees) {
+      this.localEvees = this.evees;
     }
-
-    this.uref = this.firstRef;
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
-    await this.loadDoc();
+    this.loadingPromise = this.loadDoc();
+    await this.loadingPromise;
     this.reloading = false;
   }
 
   updated(changedProperties) {
-    if (LOGINFO)
-      this.logger.log('updated()', {
-        uref: this.uref,
-        firstRef: this.firstRef,
-        changedProperties,
-      });
+    // if (LOGINFO)
+    //   this.logger.log('updated()', {
+    //     uref: this.uref,
+    //     changedProperties,
+    //   });
 
-    let reload: boolean = false;
+    let reload = false;
 
-    if (changedProperties.has('firstRef')) {
-      this.uref = this.firstRef;
-    }
     if (changedProperties.has('uref')) {
       reload = true;
     }
-    if (changedProperties.has('client')) {
+
+    if (changedProperties.has('localEvees')) {
       reload = true;
     }
-    if (changedProperties.has('editable')) {
+
+    if (changedProperties.has('readOnly')) {
       reload = true;
     }
+
     if (reload) {
       this.reload();
     }
@@ -161,9 +132,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.reloading = false;
   }
 
-  async loadDoc() {
-    if (!this.client) return;
-
+  async loadDoc(): Promise<void> {
     if (LOGINFO) this.logger.log('loadDoc()', this.uref);
 
     if (!this.uref) return;
@@ -171,24 +140,18 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     this.requestUpdate();
   }
 
-  async loadNodeRec(
-    uref: string,
-    ix?: number,
-    parent?: DocNode
-  ): Promise<DocNode> {
+  async loadNodeRec(uref: string, ix?: number, parent?: DocNode): Promise<DocNode> {
     if (LOGINFO) this.logger.log('loadNodeRec()', { uref, ix, parent });
 
-    const node = await this.loadNode(uref, parent, ix);
+    const node = await this.refToNode(uref, parent, ix);
 
-    const loadChildren = node.hasChildren
-      .getChildrenLinks({ id: '', object: node.draft })
-      .map(
-        async (child, ix): Promise<DocNode> => {
-          return child !== undefined && child !== ''
-            ? await this.loadNodeRec(child, ix, node)
-            : node.childrenNodes[ix];
-        }
-      );
+    const loadChildren = this.localEvees.behaviorConcat(node.draft, 'children').map(
+      async (child, ix): Promise<DocNode> => {
+        return child !== undefined && child !== ''
+          ? await this.loadNodeRec(child, ix, node)
+          : node.childrenNodes[ix];
+      }
+    );
 
     node.parent = parent;
     node.childrenNodes = await Promise.all(loadChildren);
@@ -202,95 +165,58 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async refToNode(uref: string, parent?: DocNode, ix?: number) {
-    const entity = await loadEntity(this.client, uref);
-    if (!entity) throw Error(`Entity not found ${uref}`);
+    const entity = await this.localEvees.getEntity(uref);
 
-    let entityType = this.recognizer.recognizeType(entity);
+    let entityType = this.localEvees.recognizer.recognizeType(entity.object);
 
     let editable = false;
-    let remoteId: string | undefined;
-    let context: string | undefined;
     let dataId: string | undefined;
-    let headId: string | undefined;
+    let remoteId: string | undefined;
 
-    if (entityType === EveesModule.bindings.PerspectiveType) {
-      remoteId = await EveesHelpers.getPerspectiveRemoteId(
-        this.client,
-        entity.id
-      );
+    if (entityType === PerspectiveType) {
+      const remote = await this.localEvees.getPerspectiveRemote(entity.hash);
+      remoteId = remote.id;
 
-      const remote = this.remotes.find((r) => r.id === remoteId);
-      if (!remote) throw new Error(`remote not found for ${remoteId}`);
-
-      let canWrite: boolean = false;
+      const { details } = await this.localEvees.getPerspective(uref, { levels: -1 });
+      const headId = details.headId;
 
       if (!this.readOnly) {
         const editableRemote =
-          this.editableRemotesIds.length > 0
-            ? this.editableRemotesIds.includes(remote.id)
-            : true;
+          this.editableRemotesIds.length > 0 ? this.editableRemotesIds.includes(remote.id) : true;
         if (editableRemote) {
-          canWrite = await EveesHelpers.canWrite(this.client, uref);
+          editable = details.canUpdate !== undefined ? details.canUpdate : false;
         }
-      }
-
-      if (!this.readOnly) {
-        editable = canWrite;
-        headId = await EveesHelpers.getPerspectiveHeadId(
-          this.client,
-          entity.id
-        );
-        dataId =
-          headId !== undefined
-            ? await EveesHelpers.getCommitDataId(this.client, headId)
-            : undefined;
       } else {
         editable = false;
-        dataId = await EveesHelpers.getPerspectiveDataId(
-          this.client,
-          entity.id
-        );
-        context = '';
-        headId = '';
       }
+
+      const head = headId ? await this.localEvees.getEntity(headId) : undefined;
+      dataId = head ? head.object.payload.dataId : undefined;
     } else {
-      if (entityType === EveesModule.bindings.CommitType) {
+      if (entityType === CommitType) {
         if (!parent) throw new Error('Commit must have a parent');
 
         editable = parent.editable;
-        remoteId = parent.remote;
-        dataId = await EveesHelpers.getCommitDataId(this.client, entity.id);
-        headId = uref;
+        remoteId = parent.remoteId;
+
+        const head = await this.localEvees.getEntity(uref);
+        dataId = head ? head.object.payload.dataId : undefined;
       } else {
         entityType = 'Data';
-        editable = false;
         remoteId = '';
+        editable = false;
         dataId = uref;
-        headId = '';
       }
     }
 
-    if (!dataId || !entityType)
-      throw Error(`data not loaded for uref ${this.uref}`);
+    if (!dataId || !entityType) throw Error(`data not loaded for uref ${uref}`);
 
     // TODO get data and patterns hasChildren/hasDocNodeLenses from query
-    const data: Entity<any> | undefined = await loadEntity(this.client, dataId);
-    if (!data) throw Error('Data undefined');
-
-    const dataType = this.recognizer.recognizeType(data);
+    const data = await this.localEvees.getEntity(dataId);
+    const dataType = this.localEvees.recognizer.recognizeType(data.object);
     const canConvertTo = this.customBlocks
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];
-
-    const hasChildren: HasChildren = this.recognizer
-      .recognizeBehaviours(data)
-      .find((b) => (b as HasChildren).getChildrenLinks);
-    const hasDocNodeLenses: HasDocNodeLenses = this.recognizer
-      .recognizeBehaviours(data)
-      .find((b) => (b as HasDocNodeLenses).docNodeLenses);
-
-    if (!hasChildren) throw Error('hasChildren undefined');
-    if (!hasDocNodeLenses) throw Error('hasDocNodeLenses undefined');
 
     /** disable editable */
     if (this.readOnly) {
@@ -301,404 +227,78 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const coord = this.setNodeCoordinates(parent, ix);
 
     // Add node level
-    const level = this.setNodeLevel(coord);
+    const level = this.getLevel(coord);
 
     const node: DocNode = {
-      uref: entity.id,
-      isPlaceholder: false,
+      uref: entity.hash,
+      remoteId,
       type: entityType,
       ix,
-      hasChildren,
       childrenNodes: [],
       data,
       draft: data ? data.object : undefined,
       draftType: dataType,
       coord,
       level,
-      headId,
-      hasDocNodeLenses,
       editable,
-      remote: remoteId,
-      context,
       focused: false,
-      timestamp: Date.now(),
       canConvertTo,
     };
 
     return node;
   }
 
-  setNodeCoordinates(parent?: DocNode, ix?: number) {
-    const currentIndex = ix ? ix : 0;
-    const coord =
-      parent && parent.coord
-        ? parent.coord.concat([currentIndex])
-        : [currentIndex];
-
-    return coord;
-  }
-
-  setNodeLevel(coord) {
-    return this.rootLevel + (coord.length - 1);
-  }
-
-  isPlaceholder(uref: string): boolean {
-    return uref.startsWith(PLACEHOLDER_TOKEN);
-  }
-
-  async loadNode(
-    uref: string,
-    parent?: DocNode,
-    ix?: number
-  ): Promise<DocNode> {
-    if (LOGINFO) this.logger.log('loadNode()', { uref, ix });
-
-    let node;
-    if (this.isPlaceholder(uref)) {
-      const draft = await this.draftService.getDraft(uref);
-      node = this.draftToPlaceholder(draft, parent, ix);
-    } else {
-      node = await this.refToNode(uref, parent, ix);
-
-      /** initialize draft */
-      const draft = await this.draftService.getDraft(uref);
-      if (draft !== undefined) {
-        node.draft = draft;
-      }
-    }
-
-    if (LOGINFO) this.logger.log('loadNode() post', { uref, ix, node });
-
-    return node;
-  }
-
-  defaultEntity(text: string, type: TextType) {
-    return {
-      data: { text, type, links: [] },
-      entityType: DocumentsBindings.TextNodeType,
-    };
-  }
-
-  hasChangesAll() {
-    if (!this.doc) return false;
-    return this.hasChangesRec(this.doc);
-  }
-
-  hasChanges(node: DocNode) {
-    if (node.uref === '') return true; // is placeholder
-    if (!node.data) return true;
-    if (!isEqual(node.data.object, node.draft)) return true;
-    return false;
-  }
-
-  hasChangesRec(node: DocNode) {
-    if (this.hasChanges(node)) return true;
-    const ix = node.childrenNodes.find((child) => this.hasChangesRec(child));
-    if (ix !== undefined) return true;
-    return false;
-  }
-
-  performUpdate() {
-    this.docHasChanges = this.hasChangesAll();
-    // console.log({ hasChanges: this.docHasChanges });
-    let event = new CustomEvent('doc-changed', {
-      detail: {
-        docChanged: this.docHasChanges,
-      },
-    });
-    this.dispatchEvent(event);
-    super.performUpdate();
-  }
-
-  async persistAll(message?: string) {
-    if (!this.doc) return;
-    this.persistingAll = true;
-
-    if (this.doc.remote === undefined)
-      throw Error('top element must have an remote');
-
-    await this.preparePersistRec(this.doc, this.doc.remote, message);
-    await this.persistRec(this.doc);
-
-    const remote = this.remotes.find(
-      (r) => r.id == (this.doc as DocNode).remote
-    );
-    if (!remote) throw new Error('remote undefined');
-    if ((remote as any).flush) {
-      await (remote as any).flush();
-    }
-
-    /** reload doc from backend */
-    await this.loadDoc();
-    this.requestUpdate();
-
-    this.persistingAll = false;
-  }
-
-  async preparePersistRec(
-    node: DocNode,
-    defaultAuthority: string,
-    message?: string
-  ) {
-    const prepareChildren = node.childrenNodes.map((child) =>
-      this.preparePersistRec(child, defaultAuthority, message)
-    );
-    await Promise.all(prepareChildren);
-
-    /** set the children with the children refs (which were created above) */
-    const { object } = node.hasChildren.replaceChildrenLinks({
-      id: '',
-      object: node.draft,
-    })(node.childrenNodes.map((node) => node.uref));
-
-    /** update draft (not on local storage) */
-    node.draft = object;
-
-    if (node.isPlaceholder) {
-      await this.preparePersist(node, defaultAuthority, message);
-    }
-  }
-
-  async derivePerspective(node: DocNode): Promise<Secured<Perspective>> {
-    const remoteInstance = this.remotes.find((r) => r.id == node.remote);
-
-    if (!remoteInstance)
-      throw new Error(`Remote not found for remote ${remoteInstance}`);
-
-    const creatorId = remoteInstance.userId ? remoteInstance.userId : '';
-
-    const context = await hashObject({
-      creatorId,
-      timestamp: node.timestamp,
-    });
-
-    const perspective: Perspective = {
-      creatorId,
-      remote: remoteInstance.id,
-      path: remoteInstance.defaultPath,
-      timestamp: node.timestamp,
-      context,
-    };
-
-    return deriveSecured<Perspective>(
-      perspective,
-      remoteInstance.store.cidConfig
-    );
-  }
-
-  /* bottom up traverse the tree to set the uref of all placeholders */
-  async preparePersist(node: DocNode, defaultRemote: string, message?: string) {
-    switch (this.defaultType) {
-      case EveesModule.bindings.PerspectiveType:
-        node.remote = node.remote !== undefined ? node.remote : defaultRemote;
-        const secured = await this.derivePerspective(node);
-        node.uref = secured.id;
-        node.type = EveesModule.bindings.PerspectiveType;
-        break;
-
-      case EveesModule.bindings.CommitType:
-        throw new Error('TBD');
-      // const secured = await this.deriveCommit(node);
-      // node.uref = commitId;
-      // node.type = EveesModule.bindings.CommitType;
-      // break;
-
-      default:
-        throw new Error('TBD');
-      // const dataId = await this.createEntity(node.draft, node.remote);
-      // node.uref = dataId;
-      // break;
-    }
-  }
-
-  /* top down persist all new nodes in their backend */
-  async persistRec(node: DocNode) {
-    await this.persist(node);
-
-    const persistChildren = node.childrenNodes.map((child) =>
-      this.persistRec(child)
-    );
-    await Promise.all(persistChildren);
-  }
-
-  async persist(node: DocNode, message: string = '') {
-    if (
-      !node.isPlaceholder &&
-      node.data !== undefined &&
-      isEqual(node.data.object, node.draft)
-    ) {
-      /** nothing to persist here */
-      return;
-    }
-
-    switch (node.type) {
-      case EveesModule.bindings.PerspectiveType:
-        if (node.isPlaceholder) {
-          const perspectiveId = await this.createEvee(node);
-          if (perspectiveId !== node.uref) {
-            throw new Error(
-              `perspective id ${perspectiveId} of doc node not as expected ${node.uref}`
-            );
-          }
-        } else {
-          await this.updateEvee(node, message);
-        }
-        break;
-
-      case EveesModule.bindings.CommitType:
-        const commitParents = this.isPlaceholder(node.uref)
-          ? []
-          : node.headId
-          ? [node.headId]
-          : [];
-
-        if (node.remote === undefined)
-          throw new Error('undefined remote for node');
-
-        const commitId = await this.createCommit(
-          node.draft,
-          node.remote,
-          commitParents,
-          message
-        );
-
-        if (commitId !== node.uref) {
-          throw new Error(
-            `commit id ${commitId} of doc node not as expected ${node.uref}`
-          );
-        }
-        break;
-    }
-
-    await this.draftService.removeDraft(
-      node.placeholderRef ? node.placeholderRef : node.uref
-    );
-  }
-
-  async createEntity(content: any, remote: string): Promise<string> {
-    const remoteInstance = this.remotes.find((r) => r.id === remote);
-    if (!remoteInstance)
-      throw new Error(`Remote not found for remote ${remote}`);
-    const store = remoteInstance.store;
-
-    const createTextNode = await this.client.mutate({
-      mutation: CREATE_ENTITY,
-      variables: {
-        object: content,
-        casID: store.casID,
-      },
-    });
-
-    return createTextNode.data.createEntity.id;
-  }
-
-  async createCommit(
-    content: object,
-    remote: string,
-    parentsIds?: string[],
-    message?: string
-  ): Promise<string> {
-    const dataId = await this.createEntity(content, remote);
-
-    const remoteInstance = this.remotes.find((r) => r.id === remote);
-    if (!remoteInstance)
-      throw new Error(`Remote not found for remote ${remote}`);
-
-    return await EveesHelpers.createCommit(this.client, remoteInstance.store, {
-      dataId,
-      parentsIds,
-    });
-  }
-
-  async updateEvee(node: DocNode, message?: string): Promise<void> {
-    if (node.remote === undefined)
-      throw Error(`remote not defined for node ${node.uref}`);
-
-    const commitId = await this.createCommit(
-      node.draft,
-      node.remote,
-      node.headId ? [node.headId] : []
-    );
-
-    await this.client.mutate({
-      mutation: UPDATE_HEAD,
-      variables: {
-        perspectiveId: node.uref,
-        headId: commitId,
-        message,
-      },
-    });
-
-    /** inform the external world if top element */
-    if (this.doc && node.uref === this.doc.uref) {
-      this.dispatchEvent(
-        new ContentUpdatedEvent({
-          bubbles: true,
-          composed: true,
-          detail: { uref: this.uref as string },
-        })
-      );
-    }
-  }
-
-  async createEvee(node: DocNode): Promise<string> {
-    if (node.remote === undefined) throw new Error('undefined remote for node');
-
-    if (LOGINFO) this.logger.log('createEvee()', { node });
-
-    const commitId = await this.createCommit(node.draft, node.remote);
-
-    const remoteInstance = this.remotes.find((r) => r.id === node.remote);
-    if (!remoteInstance)
-      throw new Error(`Remote not found for remote ${node.remote}`);
-
-    // using the same function used in preparePersist to get the same id
-    const secured = await this.derivePerspective(node);
-
-    return EveesHelpers.createPerspective(this.client, remoteInstance, {
-      ...secured.object.payload,
-      headId: commitId,
-      parentId: node.parent ? node.parent.uref : undefined,
-    });
-  }
-
-  draftToPlaceholder(draft: any, parent?: DocNode, ix?: number): DocNode {
-    const draftForReco = { id: '', object: draft };
-    const hasChildren = this.recognizer
-      .recognizeBehaviours(draftForReco)
-      .find((b) => (b as HasChildren).getChildrenLinks);
-
-    const hasDocNodeLenses = this.recognizer
-      .recognizeBehaviours(draftForReco)
-      .find((b) => (b as HasDocNodeLenses).docNodeLenses);
-
-    if (!hasChildren)
-      throw new Error(
-        `hasChildren not found for object ${JSON.stringify(draftForReco)}`
-      );
-    if (!hasDocNodeLenses)
-      throw new Error(
-        `hasDocNodeLenses not found for object ${JSON.stringify(draftForReco)}`
-      );
-
-    const dataType = this.recognizer.recognizeType(draftForReco);
+  async createNode(draft: any, parent?: DocNode, ix?: number): Promise<DocNode> {
+    const dataType = this.localEvees.recognizer.recognizeType(draft);
     const canConvertTo = this.customBlocks
       ? Object.getOwnPropertyNames(this.customBlocks[dataType].canConvertTo)
       : [];
 
-    const randint = 0 + Math.floor((10000 - 0) * Math.random());
-    const uref = PLACEHOLDER_TOKEN + `-${ix !== undefined ? ix : 0}-${randint}`;
+    if (!parent) {
+      throw new Error("Can't create a new node without a parent");
+    }
+
+    const remoteId = parent.remoteId;
+
+    /** create is sent asyncronously, the flow continues as if it were successful */
+    const parents: string[] = [parent.uref];
+    let grandParent = parent.parent;
+    while (grandParent !== undefined) {
+      if (!parents.includes(grandParent.uref)) {
+        parents.push(grandParent.uref);
+      }
+      grandParent = grandParent.parent;
+    }
+
+    /** snap is async because it performs a hash, should be fast enough for UX flow */
+    const perspective = await this.localEvees.getRemote(remoteId).snapPerspective({});
+    /** Perspective entity is created and await for it to be ready for immediate reading. */
+    await this.localEvees.putEntity(perspective);
+
+    const creteEvee: CreateEvee = {
+      object: draft,
+      guardianId: parent ? parent.uref : undefined,
+      remoteId: remoteId,
+      perspectiveId: perspective.hash,
+      indexData: {
+        onEcosystem: parents,
+      },
+    };
+
+    /** Create is sent asyncronously, the flow continues as if it were successful */
+    this.localEvees.createEvee(creteEvee);
+
+    if (LOGINFO) this.logger.log(`createNode()`, { perspective, draft });
 
     // Add node coordinates
     const coord = this.setNodeCoordinates(parent, ix);
 
     // Add node level
-    const level = this.setNodeLevel(coord);
+    const level = this.getLevel(coord);
 
     return {
-      uref,
-      placeholderRef: uref,
-      isPlaceholder: true,
+      uref: perspective.hash,
+      remoteId,
       ix,
       parent,
       draft,
@@ -706,12 +306,58 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       coord,
       level,
       childrenNodes: [],
-      hasChildren,
-      hasDocNodeLenses,
       editable: true,
       focused: false,
-      timestamp: Date.now(),
       canConvertTo,
+    };
+  }
+
+  async updateNode(node: DocNode, draft: any) {
+    // optimistically set the dratf
+    node.draft = draft;
+
+    /** index onEcosystem.
+     * onEcosystem is not really a formal and exaustive list
+     * of the perspective onEcosystem (all other perspectives of which
+     * this perspective is on their ecosystem), but a local mark used
+     * to flush portions of mutations based on their parents. */
+    const parents: string[] = [node.uref];
+    let parent = node.parent;
+    while (parent !== undefined) {
+      if (!parents.includes(parent.uref)) {
+        parents.push(parent.uref);
+      }
+      parent = parent.parent;
+    }
+
+    const update: UpdatePerspectiveData = {
+      perspectiveId: node.uref,
+      object: draft,
+      indexData: {
+        onEcosystem: parents,
+      },
+      flush: this.flushConfig,
+    };
+
+    if (LOGINFO) this.logger.log('updatePerspectiveData()', { update });
+    this.localEvees.updatePerspectiveData(update);
+  }
+
+  setNodeCoordinates(parent?: DocNode, ix?: number) {
+    const currentIndex = ix ? ix : 0;
+    const coord = parent && parent.coord ? parent.coord.concat([currentIndex]) : [currentIndex];
+
+    return coord;
+  }
+
+  getLevel(coord) {
+    return this.rootLevel + (coord.length - 1);
+  }
+
+  defaultEntity(text: string, type: TextType) {
+    return {
+      data: { text, type, links: [] },
+      entityType: DocumentsBindings.TextNodeType,
     };
   }
 
@@ -722,8 +368,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     /** root node */
     let leaf = this.doc;
     let thisCoord = coord.shift();
-    if (thisCoord !== 0)
-      throw new Error('What? the first coordinate must always be zero');
+    if (thisCoord !== 0) throw new Error('What? the first coordinate must always be zero');
     if (!leaf) throw new Error('doc not defined');
 
     /** navigate to the parent node */
@@ -740,43 +385,25 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     leaf.childrenNodes[childIx] = node;
   }
 
-  createPlaceholder(draft: any, parent?: DocNode, ix?: number): DocNode {
-    const node = this.draftToPlaceholder(draft, parent, ix);
-    /** async store */
-    this.draftService.setDraft(node.uref, node.draft);
-    return node;
-  }
-
-  setNodeDraft(node, draft) {
-    node.draft = draft;
-    /** async store */
-    this.draftService.setDraft(node.uref, draft);
-  }
-
   /** node updated as reference */
   async spliceChildren(
     node: DocNode,
     elements: any[] = [],
     index?: number,
-    count: number = 0
+    count = 0
   ): Promise<DocNode[]> {
-    if (LOGINFO)
-      this.logger.log('spliceChildren()', { node, elements, index, count });
+    if (LOGINFO) this.logger.log('spliceChildren()', { node, elements, index, count });
 
-    const currentChildren = node.hasChildren.getChildrenLinks({
-      id: '',
-      object: node.draft,
-    });
+    const currentChildren: string[] = this.localEvees.behaviorConcat(node.draft, 'children');
     index = index !== undefined ? index : currentChildren.length;
 
     /** create objects if elements is not an id */
-    const getNewNodes = elements.map((el, ix) => {
+    const getNewNodes = elements.map(async (el, ix) => {
       const elIndex = (index as number) + ix;
       if (typeof el !== 'string') {
         if (el.object !== undefined) {
-          /** element is an object from which a DocNode should be create */
-          const placeholder = this.createPlaceholder(el.object, node, elIndex);
-          return Promise.resolve(placeholder);
+          /** element is an entity from which a DocNode should be create */
+          return this.createNode(el.object, node, elIndex);
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);
@@ -801,11 +428,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       child.level = node.level + 1;
     });
 
-    const { object } = node.hasChildren.replaceChildrenLinks({
-      id: '',
-      object: node.draft,
-    })(newChildren);
-    this.setNodeDraft(node, object);
+    const newDraft = this.localEvees.behaviorFirst(node.draft, 'replaceChildren')(newChildren);
+
+    /** Optimistic execution. No waiting for the update to run, simply update the draft and move on */
+    this.updateNode(node, newDraft);
 
     return removed;
   }
@@ -949,7 +575,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     const oldType = node.draft.type;
 
-    this.setNodeDraft(node, content);
+    await this.updateNode(node, content);
 
     /** react to type change by manipulating the tree */
     /** PAR => TITLE */
@@ -966,12 +592,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     /** TITLE => PAR */
     if (oldType === TextType.Title && content.type === TextType.Paragraph) {
       /** remove this node children */
-      const children = await this.spliceChildren(
-        node,
-        [],
-        0,
-        node.childrenNodes.length
-      );
+      const children = await this.spliceChildren(node, [], 0, node.childrenNodes.length);
       /** append backwards this node with its children as siblings */
       await this.appendBackwards(node, '', [node].concat(children));
     }
@@ -995,9 +616,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       node.parent,
       [],
       ixNext,
-      deltaWithChidren !== -1
-        ? deltaWithChidren
-        : node.parent.childrenNodes.length - ixNext
+      deltaWithChidren !== -1 ? deltaWithChidren : node.parent.childrenNodes.length - ixNext
     );
 
     /** add them as child of this node */
@@ -1034,14 +653,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     if (elements.length > 0) {
       if (backwardNode.parent !== undefined) {
-        if (backwardNode.ix === undefined)
-          throw new Error('cant append elements');
+        if (backwardNode.ix === undefined) throw new Error('cant append elements');
         /** add elements as siblings of backward node */
-        await this.spliceChildren(
-          backwardNode.parent,
-          elements,
-          backwardNode.ix + 1
-        );
+        await this.spliceChildren(backwardNode.parent, elements, backwardNode.ix + 1);
       } else {
         /** add elements as children of backward node */
         await this.spliceChildren(backwardNode, elements, 0);
@@ -1058,25 +672,23 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   async convertedTo(node: DocNode, type: string) {
-    if (!node.draftType)
-      throw new Error(`Draft type not defined for ${JSON.stringify(node)}`);
+    if (!node.draftType) throw new Error(`Draft type not defined for ${JSON.stringify(node)}`);
 
-    const newObject = await this.customBlocks[node.draftType].canConvertTo[
-      type
-    ](node, this.client);
+    const newObject = await this.customBlocks[node.draftType].canConvertTo[type](
+      node,
+      this.localEvees
+    );
 
     /** update all the node properties */
-    node = this.draftToPlaceholder(newObject, node.parent, node.ix);
+    node = await this.createNode(newObject, node.parent, node.ix);
 
-    const loadChildren = node.hasChildren
-      .getChildrenLinks({ id: '', object: node.draft })
-      .map(
-        async (child, ix): Promise<DocNode> => {
-          return child !== undefined && child !== ''
-            ? await this.loadNodeRec(child, ix, node)
-            : node.childrenNodes[ix];
-        }
-      );
+    const loadChildren = this.localEvees.behaviorConcat(node.draft, 'children').map(
+      async (child, ix): Promise<DocNode> => {
+        return child !== undefined && child !== ''
+          ? await this.loadNodeRec(child, ix, node)
+          : node.childrenNodes[ix];
+      }
+    );
 
     node.childrenNodes = await Promise.all(loadChildren);
 
@@ -1089,12 +701,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (LOGINFO) this.logger.log('joinBackward()', { node, tail });
 
     /** remove this node children */
-    const removed = await this.spliceChildren(
-      node,
-      [],
-      0,
-      node.childrenNodes.length
-    );
+    const removed = await this.spliceChildren(node, [], 0, node.childrenNodes.length);
     await this.appendBackwards(node, tail, removed);
 
     this.requestUpdate();
@@ -1160,9 +767,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     if (node.childrenNodes.length === 0) {
       return node;
     } else {
-      return this.getLastNodeRec(
-        node.childrenNodes[node.childrenNodes.length - 1]
-      );
+      return this.getLastNodeRec(node.childrenNodes[node.childrenNodes.length - 1]);
     }
   }
 
@@ -1183,32 +788,6 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       event.stopPropagation();
       this.uref = event.detail.perspectiveId;
     }) as EventListener);
-
-    this.addEventListener('keydown', ((event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 's') {
-        event.preventDefault();
-        event.stopPropagation();
-        this.persistAll();
-      }
-    }) as EventListener);
-  }
-
-  commitWithMessageClicked() {
-    this.showCommitMessage = true;
-  }
-
-  cancelCommitClicked() {
-    this.showCommitMessage = false;
-  }
-
-  acceptCommitClicked() {
-    if (!this.shadowRoot) return;
-    const input = this.shadowRoot.getElementById('COMMIT_MESSAGE') as any;
-    const message = input.value;
-
-    this.showCommitMessage = false;
-
-    this.persistAll(message);
   }
 
   handleNodePerspectiveCheckout(e: CustomEvent, node: DocNode) {
@@ -1235,10 +814,7 @@ export class DocumentEditor extends moduleConnect(LitElement) {
     const nodeCoord = JSON.stringify(node.coord);
 
     if (this.checkedOutPerspectives[nodeCoord] !== undefined) {
-      if (
-        this.checkedOutPerspectives[nodeCoord].firstUref ===
-        e.detail.perspectiveId
-      ) {
+      if (this.checkedOutPerspectives[nodeCoord].firstUref === e.detail.perspectiveId) {
         delete this.checkedOutPerspectives[nodeCoord];
       } else {
         this.checkedOutPerspectives[nodeCoord].newUref = e.detail.perspectiveId;
@@ -1289,45 +865,39 @@ export class DocumentEditor extends moduleConnect(LitElement) {
   }
 
   renderWithCortex(node: DocNode) {
-    return html` <cortex-entity hash=${node.uref}></cortex-entity> `;
+    return html` <uprtcl-entity uref=${node.uref}></uprtcl-entity> `;
   }
 
   renderTopRow(node: DocNode) {
-    if (LOGINFO) this.logger.log('renderTopRow()', { node });
+    // if (LOGINFO) this.logger.log('renderTopRow()', { node });
     /** the uref to which the parent is pointing at */
 
-    const nodeLense = node.hasDocNodeLenses.docNodeLenses()[0];
-    const hasIcon = this.hasChanges(node);
+    const nodeLense = this.localEvees.behaviorFirst(node.draft, 'docNodeLenses')[0];
     const icon = node.uref === '' ? icons.add_box : icons.edit;
 
     // for the topNode (the docId), the uref can change, for the other nodes it can't (if it does, a new editor is rendered)
-    const uref =
-      node.coord.length === 1 && node.coord[0] === 0 ? this.uref : node.uref;
-    const firstRef =
-      node.coord.length === 1 && node.coord[0] === 0
-        ? this.firstRef
-        : node.uref;
+    const uref = node.coord.length === 1 && node.coord[0] === 0 ? this.uref : node.uref;
 
-    let paddingTop = '0px';
+    let marginTop = '-2.5px';
     if (node.draft.type === TextType.Title) {
       switch (node.level) {
         case 0:
-          paddingTop = '20px';
+          marginTop = '7px';
           break;
         case 1:
-          paddingTop = '14px';
+          marginTop = '4px';
           break;
         case 2:
-          paddingTop = '10px';
+          marginTop = '2px';
           break;
         default:
-          paddingTop = '0px';
+          marginTop = '2px';
           break;
       }
     }
 
     if (node.draftType === 'Quantity') {
-      paddingTop = '14px';
+      marginTop = '14px';
     }
 
     return html`
@@ -1336,24 +906,14 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         @dragover=${(e) => this.draggingOver(e, node)}
         @drop=${(e) => this.handleDrop(e, node)}
       >
-        ${!this.readOnly
-          ? html`<div class="evee-info" style=${`padding-top:${paddingTop}`}>
-              ${!node.isPlaceholder && this.eveesInfoConfig.showInfo
-                ? html`
-                    <evees-info-popper
-                      parent-id=${node.parent
-                        ? node.parent.uref
-                        : this.parentId}
-                      uref=${uref}
-                      first-uref=${firstRef}
-                      evee-color=${this.getColor()}
-                      @checkout-perspective=${(e) =>
-                        this.handleNodePerspectiveCheckout(e, node)}
-                      .eveesInfoConfig=${this.eveesInfoConfig}
-                    ></evees-info-popper>
-                  `
-                : html` <div class="empty-evees-info"></div> `}
+        ${this.showInfo
+          ? html` <div class="evee-info" style=${`margin-top:${marginTop}`}>
+              ${this.getEveeInfo
+                ? this.getEveeInfo({ uref, parentId: node.parent ? node.parent.uref : undefined })
+                : ''}
             </div>`
+          : this.keepInfoPadding
+          ? html`<div class="empty-evees-info"></div>`
           : ''}
         <div class="node-content">
           ${nodeLense.render(node, {
@@ -1366,12 +926,10 @@ export class DocumentEditor extends moduleConnect(LitElement) {
             joinBackward: (tail: string) => this.joinBackward(node, tail),
             pullDownward: () => this.pullDownward(node),
             lift: () => this.lift(node),
-            split: (tail: string, asChild: boolean) =>
-              this.split(node, tail, asChild),
+            split: (tail: string, asChild: boolean) => this.split(node, tail, asChild),
             appended: () => this.appended(node),
             convertedTo: (type) => this.convertedTo(node, type),
           })}
-          ${hasIcon ? html` <div class="node-mark">${icon}</div> ` : ''}
         </div>
         ${node.draggingOver ? html`<div class="row-dragging-over"></div>` : ''}
       </div>
@@ -1399,13 +957,15 @@ export class DocumentEditor extends moduleConnect(LitElement) {
           ?read-only=${this.readOnly}
           root-level=${node.level}
           color=${this.getColor()}
-          @checkout-perspective=${(e) =>
-            this.handleEditorPerspectiveCheckout(e, node)}
-          .eveesInfoConfig=${this.eveesInfoConfig}
+          @checkout-perspective=${(e) => this.handleEditorPerspectiveCheckout(e, node)}
         >
         </documents-editor>
       `;
     }
+
+    const renderHere = node.draft
+      ? this.localEvees.behaviorFirst(node.draft, 'docNodeLenses').length > 0
+      : false;
 
     return html`
       <div
@@ -1414,82 +974,17 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         })}
         class="doc-node-container"
       >
-        ${node.hasDocNodeLenses.docNodeLenses().length > 0
-          ? this.renderHere(node)
-          : this.renderWithCortex(node)}
+        ${renderHere ? this.renderHere(node) : this.renderWithCortex(node)}
       </div>
     `;
   }
 
-  commitOptionSelected(e) {
-    switch (e.detail.key) {
-      case 'push':
-        this.persistAll();
-        break;
-
-      case 'push-with-message':
-        this.commitWithMessageClicked();
-        break;
-    }
-  }
-
-  renderTopBar() {
-    const options: MenuConfig = {
-      'push-with-message': {
-        icon: 'notes',
-        text: 'push with message',
-      },
-    };
-    return html`
-      <div class="doc-topbar">
-        ${this.docHasChanges && !this.showCommitMessage
-          ? html`
-              <uprtcl-button-loading
-                icon="unarchive"
-                @click=${() => this.persistAll()}
-                ?loading=${this.persistingAll}
-              >
-                push
-              </uprtcl-button-loading>
-              <uprtcl-help>
-                <span>
-                  Your current changes are safely stored on this device and
-                  won't be lost.<br /><br />
-                  "Push" them if<br /><br />
-                  <li>You are about to propose a merge.</li>
-                  <br />
-                  <li>
-                    This draft is public and you want them to be visible to
-                    others.
-                  </li>
-                </span>
-              </uprtcl-help>
-            `
-          : ''}
-        ${this.showCommitMessage
-          ? html`
-              <uprtcl-textfield id="COMMIT_MESSAGE" label="Message">
-              </uprtcl-textfield>
-              <uprtcl-icon-button
-                icon="clear"
-                @click=${this.cancelCommitClicked}
-                button
-              >
-              </uprtcl-icon-button>
-              <uprtcl-icon-button
-                icon="done"
-                @click=${this.acceptCommitClicked}
-                button
-              >
-              </uprtcl-icon-button>
-            `
-          : ''}
-      </div>
-    `;
+  renderDocumentEnd() {
+    return html` <div class="doc-endSpace"></div>`;
   }
 
   render() {
-    if (LOGINFO) this.logger.log('render()', { doc: this.doc });
+    // if (LOGINFO) this.logger.log('render()', { doc: this.doc });
 
     if (this.reloading || this.doc === undefined) {
       return html` <uprtcl-loading></uprtcl-loading> `;
@@ -1503,9 +998,9 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
     return html`
       <div class=${editorClasses.join(' ')}>
-        ${this.renderTopBar()} ${this.renderDocNode(this.doc)}
+        ${this.renderDocNode(this.doc)} ${this.renderDocumentEnd()}
       </div>
-      <div @click=${this.clickAreaClicked} class="click-area"></div>
+      <!-- <div @click=${this.clickAreaClicked} class="click-area"></div> -->
     `;
   }
 
@@ -1516,10 +1011,21 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         display: flex;
         flex-direction: column;
         text-align: left;
-      }
-      .editor-container {
         position: relative;
+      }
+
+      * {
+        font-family: 'Lora', 'normal';
+        line-height: 1.8rem;
+      }
+
+      .editor-container {
         width: 100%;
+        height: 100%;
+      }
+
+      .editor-container::-webkit-scrollbar {
+        display: none;
       }
       .padding-bottom {
         padding-bottom: 20vh;
@@ -1528,12 +1034,21 @@ export class DocumentEditor extends moduleConnect(LitElement) {
         flex-grow: 1;
       }
       .doc-topbar {
-        position: absolute;
         top: 16px;
         right: 16px;
         display: flex;
         z-index: 2;
+        /* Testing */
+        height: 50px;
+        flex-direction: row-reverse;
+        padding: 0 1rem;
       }
+      .doc-topbar li {
+        list-style-type: none;
+        margin: auto 0.7rem;
+        display: inline-block;
+      }
+
       .doc-topbar uprtcl-button-loading {
         opacity: 0.9;
         margin-right: 6px;
@@ -1542,8 +1057,24 @@ export class DocumentEditor extends moduleConnect(LitElement) {
 
       .doc-node-container {
         border-radius: 4px;
+        max-width: 1280px;
+        margin: auto;
       }
 
+      .doc-actionbar {
+        position: absolute;
+        bottom: 5%;
+        right: 5%;
+        display: flex;
+        align-items: center;
+      }
+      .doc-actionbar > * {
+        margin: 0 0.2rem;
+        height: inherit;
+      }
+      .publish-button {
+        width: 190px;
+      }
       .row {
         position: relative;
         padding: 4px 0px;
@@ -1562,11 +1093,12 @@ export class DocumentEditor extends moduleConnect(LitElement) {
       .evee-info {
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: start;
+        margin-right: 0.9vw;
       }
 
       .empty-evees-info {
-        width: 30px;
+        width: 10px;
         height: 10px;
       }
 

@@ -1,11 +1,13 @@
-import 'reflect-metadata';
-
 // Http
 export { HttpConnection } from './http.connection';
-export { HttpProvider } from './http.provider';
-export { HttpStore } from './http.store';
-export { HttpStoreCached } from './http.store.cached';
+export { HttpAuthenticatedConnectionImp } from './http.auth.connection.imp';
+export { HttpAuthenticatedConnection } from './http.auth.connection.if';
+export { HttpMultiConnection } from './http.multi.connection';
 
-export { HttpEthAuthProvider } from './http-eth-auth.provider';
-export { HttpAuth0Provider } from './http-auth0.provider';
-export { KnownSourcesHttp } from './known-sources.http';
+export { HttpEthToken } from './auth/http-eth-auth.token';
+export { HttpEthConnection } from './auth/http.eth.connection';
+
+export { HttpAuth0Token } from './auth/http-auth0.token';
+export { HttpAuth0Connection } from './auth/http.auth0.connection';
+
+export { HttpSupertest } from './http.supertest';

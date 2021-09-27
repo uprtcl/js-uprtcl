@@ -1,58 +1,73 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Entity } from '@uprtcl/cortex';
-import { EveesWorkspace } from '@uprtcl/evees';
+import { Client, Logger } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees-ui';
 
 import { TextNode } from '../types';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
-export class TextNodeDiff extends moduleConnect(LitElement) {
+export class TextNodeDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: Boolean })
-  summary: boolean = false;
+  summary = false;
 
-  @property({ attribute: false })
-  workspace!: EveesWorkspace;
+  @internalProperty()
+  client!: Client;
 
-  @property({ attribute: false })
-  newData!: Entity<TextNode>;
+  @internalProperty()
+  newData!: TextNode;
 
-  @property({ attribute: false })
-  oldData!: Entity<TextNode>;
+  @internalProperty()
+  oldData!: TextNode;
+
+  @internalProperty()
+  loading = true;
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', {
       newData: this.newData,
-      oldData: this.oldData
+      oldData: this.oldData,
     });
+    this.loadChanges();
+  }
+
+  async loadChanges() {
+    this.loading = true;
+    this.loading = false;
   }
 
   render() {
-    if (this.newData === undefined || this.oldData === undefined) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+    if (this.loading) {
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
+    const hasChanges = !this.oldData || this.newData.text !== this.oldData.text;
+
     return html`
-      <div class="page-edited-title">Updated</div>
-      <div class="document-container old-page">
-        <documents-editor
-          .client=${this.workspace.workspace}
-          uref=${this.oldData.id}
-          read-only
-        ></documents-editor>
-      </div>
-      <div class="document-container new-page">
-        <documents-editor
-          .client=${this.workspace.workspace}
-          uref=${this.newData.id}
-          read-only
-        ></documents-editor>
-      </div>
+      ${hasChanges
+        ? html`<evees-diff-row type="edit">
+            <div class="versions-container">
+              ${this.oldData
+                ? html`<div class="document-container old-page">
+                    <documents-text-node-editor
+                      .init=${this.oldData.text}
+                      type=${this.oldData.type}
+                      editable="false"
+                    ></documents-text-node-editor>
+                  </div>`
+                : ''}
+              <div class="document-container new-page">
+                <documents-text-node-editor
+                  .init=${this.newData.text}
+                  type=${this.oldData.type}
+                  editable="false"
+                ></documents-text-node-editor>
+              </div>
+            </div>
+          </evees-diff-row> `
+        : ''}
     `;
   }
 
@@ -61,18 +76,9 @@ export class TextNodeDiff extends moduleConnect(LitElement) {
       :host {
         text-align: left;
       }
-      .page-edited-title {
-        font-weight: bold;
-        margin-bottom: 9px;
-        color: gray;
-      }
       .document-container {
-        padding: 2vw;
         border-radius: 3px;
-        margin-bottom: 16px;
-      }
-      .editor-container {
-        border-radius: 3px;
+        width: 100;
       }
       .new-page {
         background-color: #abdaab;

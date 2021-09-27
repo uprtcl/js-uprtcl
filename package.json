@@ -11,8 +11,13 @@
     "build": "lerna run build",
     "clean": "lerna clean --yes",
     "dev": "lerna run dev --parallel",
+    "fix:prettier": "prettier --write  . \"**/*.{js,ts,json,md}\"",
+    "fix:eslint": "npm run lint:eslint -- --fix",
     "ibuild": "npm i && npm run clean && npm run bootstrap && npm run build",
     "hard-reset": "find . -type d -name node_modules -prune -exec rm -rf {} \\; && find . -type d -name dist -prune -exec rm -rf {} \\; &&  find . -name \"package-lock.json\" -delete && npm i && npm run clean && npm run bootstrap && npm run build",
+    "lint:prettier": "prettier --list-different . \"**/*.{js,ts,json,md}\" ",
+    "lint:eslint": "eslint --quiet --fix --cache --ext .js --ext .ts .",
+    "lint": "npm run lint:eslint  ",
     "test": "lerna run test",
     "test:watch": "lerna run test:watch --parallel",
     "docs:dev": "vuepress dev docs",
@@ -23,11 +28,22 @@
   },
   "devDependencies": {
     "@types/node": "^10.11.0",
+    "@typescript-eslint/eslint-plugin": "^4.11.1",
+    "@typescript-eslint/parser": "^4.11.1",
+    "colors": "^1.4.0",
+    "eslint": "^7.16.0",
+    "eslint-config-prettier": "^7.1.0",
+    "eslint-plugin-lit": "^1.3.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.3.0",
+    "husky": "^4.3.6",
     "lerna": "^3.21.0",
+    "lint-staged": "^10.5.3",
+    "prettier": "^2.2.1",
     "shelljs": "^0.8.3",
     "ts-node": "=7.0.1",
-    "vuepress": "^1.2.0",
-    "colors": "^1.4.0"
+    "typescript": "^4.2.3",
+    "vuepress": "^1.2.0"
   },
   "contributors": [
     {
@@ -48,7 +64,6 @@
   },
   "sideEffects": false,
   "engines": {
-    "node": ">=12.0.0"
-  },
-  "dependencies": {}
+    "node": ">=12 <13"
+  }
 }

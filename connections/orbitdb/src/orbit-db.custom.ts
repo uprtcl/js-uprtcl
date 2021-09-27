@@ -2,13 +2,9 @@ import OrbitDB from 'orbit-db';
 import IPFS from 'ipfs';
 
 import OrbitDBSet from '@tabcat/orbit-db-set';
-import {
-  IdentityProvider,
-  Keystore,
-} from '@tabcat/orbit-db-identity-provider-d';
+import { IdentityProvider, Keystore } from '@tabcat/orbit-db-identity-provider-d';
 
-import { Logger } from '@uprtcl/micro-orchestrator';
-import { Connection, ConnectionOptions } from '@uprtcl/multiplatform';
+import { Connection, ConnectionOptions, Logger } from '@uprtcl/evees';
 import { PinnerCached } from '@uprtcl/ipfs-provider';
 
 import { IdentitySource } from './identity.source';
@@ -54,7 +50,6 @@ export class OrbitDBCustom extends Connection {
     protected acls: any[],
     protected identitySource: IdentitySource,
     public pinner?: PinnerCached,
-    protected pinnerMultiaddr?: string,
     public ipfs?: any,
     options?: ConnectionOptions
   ) {
@@ -110,13 +105,8 @@ export class OrbitDBCustom extends Connection {
     );
 
     if (!signedAccountEntry) {
-      const signature = await this.identitySource.signText(
-        mappingMsg(identity.id)
-      );
-      this.logger.log(
-        `Address mapping added to store ${mappingStore.address}`,
-        signature
-      );
+      const signature = await this.identitySource.signText(mappingMsg(identity.id));
+      this.logger.log(`Address mapping added to store ${mappingStore.address}`, signature);
       await mappingStore.add(signature);
     }
 
@@ -152,8 +142,7 @@ export class OrbitDBCustom extends Connection {
 
   public async storeAddress(type: string, entity: any): Promise<string> {
     const storeManifest = this.getManifest(type);
-    if (storeManifest === undefined)
-      throw new Error(`store if type ${type} not found`);
+    if (storeManifest === undefined) throw new Error(`store of type ${type} not found`);
 
     return this.instance.determineAddress(
       storeManifest.name(entity),
@@ -166,10 +155,7 @@ export class OrbitDBCustom extends Connection {
     // this.logger.log(`${address} -- Openning store`);
     let db;
 
-    const hadDB = await this.instance._haveLocalData(
-      this.instance.cache,
-      address
-    );
+    const hadDB = await this.instance._haveLocalData(this.instance.cache, address);
 
     if (this.instance.stores[address]) {
       // this.logger.log(`${address} -- Store loaded. HadDB: ${hadDB}`);
@@ -179,9 +165,7 @@ export class OrbitDBCustom extends Connection {
       db = this.storeQueue[address];
     } else {
       if (ENABLE_LOG) {
-        this.logger.log(
-          `${address} -- Store init - first time. HadDB: ${hadDB}`
-        );
+        this.logger.log(`${address} -- Store init - first time. HadDB: ${hadDB}`);
       }
       db = this.storeQueue[address] = this.instance
         .open(address, { identity: this.identity })
@@ -203,9 +187,7 @@ export class OrbitDBCustom extends Connection {
       // wait for replication the first time I read this DB.
       if (this.pinner && (await this.pinner.isPinned(db.address))) {
         if (ENABLE_LOG) {
-          this.logger.log(
-            `${db.address} -- Awaiting replication. HadDB: ${hadDB}`
-          );
+          this.logger.log(`${db.address} -- Awaiting replication. HadDB: ${hadDB}`);
         }
         await new Promise<void>((resolve) => {
           db.events.on('replicated', async (r) => {
@@ -221,11 +203,7 @@ export class OrbitDBCustom extends Connection {
     return db;
   }
 
-  public async getStore(
-    type: string,
-    entity?: any,
-    pin: boolean = false
-  ): Promise<any> {
+  public async getStore(type: string, entity?: any, pin = false): Promise<any> {
     const address = await this.storeAddress(type, entity);
     const store = this.openStore(address);
     if (pin) {

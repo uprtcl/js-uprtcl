@@ -1,44 +1,35 @@
-import { LitElement, property, html, css } from 'lit-element';
+import { LitElement, property, html, css, internalProperty } from 'lit-element';
 
-import { moduleConnect, Logger } from '@uprtcl/micro-orchestrator';
-import { Entity } from '@uprtcl/cortex';
+import { Evees, Logger } from '@uprtcl/evees';
+import { servicesConnect } from '@uprtcl/evees-ui';
 
 import { Wiki } from '../types';
-import { EveesWorkspace } from '@uprtcl/evees';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
-interface PageDetails {
-  uref: string;
-  title: string;
-}
-
-export class WikiDiff extends moduleConnect(LitElement) {
+export class WikiDiff extends servicesConnect(LitElement) {
   logger = new Logger('EVEES-DIFF');
 
   @property({ type: Boolean })
-  summary: boolean = false;
+  summary = false;
 
-  @property({ attribute: false })
-  workspace!: EveesWorkspace;
+  @internalProperty()
+  newData!: Wiki;
 
-  @property({ attribute: false })
-  newData!: Entity<Wiki>;
+  @internalProperty()
+  oldData!: Wiki;
 
-  @property({ attribute: false })
-  oldData!: Entity<Wiki>;
+  @internalProperty()
+  loading = true;
 
-  @property({ attribute: false })
-  loading: boolean = true;
+  localEvees!: Evees;
 
-  newPages!: string[];
-  deletedPages!: string[];
-  oldTitle: string = '';
+  oldTitle = '';
 
   async firstUpdated() {
     this.logger.log('firstUpdated()', {
       newData: this.newData,
-      oldData: this.oldData
+      oldData: this.oldData,
     });
 
     this.loadChanges();
@@ -46,30 +37,13 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
   async loadChanges() {
     this.loading = true;
-
-    const oldPages = this.oldData ? this.oldData.object.pages : [];
-    this.oldTitle = this.oldData ? this.oldData.object.title : '';
-
-    this.newPages = this.newData.object.pages.filter(page =>
-      this.oldData ? !oldPages.includes(page) : true
-    );
-    this.deletedPages = this.oldData
-      ? oldPages.filter(page => !this.newData.object.pages.includes(page))
-      : [];
-
+    this.oldTitle = this.oldData ? this.oldData.title : '';
     this.loading = false;
   }
 
-  renderPage(page: string, classes: string[]) {
-    return html`
-      <div class=${['page-row'].concat(classes).join(' ')}>
-        <documents-editor
-          .client=${this.workspace.workspace}
-          uref=${page}
-          read-only
-        ></documents-editor>
-      </div>
-    `;
+  async getTitle(uref: string): Promise<string> {
+    const data = await this.localEvees.getPerspectiveData(uref);
+    return this.localEvees.behaviorFirst(data.object, 'title');
   }
 
   renderTitleChange(title: string, classes: string[]) {
@@ -82,60 +56,19 @@ export class WikiDiff extends moduleConnect(LitElement) {
 
   render() {
     if (this.loading) {
-      return html`
-        <uprtcl-loading></uprtcl-loading>
-      `;
+      return html` <uprtcl-loading></uprtcl-loading> `;
     }
 
-    const titleChanged = this.newData.object.title !== this.oldTitle;
-
-    const newPages = this.newPages !== undefined ? this.newPages : [];
-    const deletedPages = this.deletedPages !== undefined ? this.deletedPages : [];
-
-    if (this.summary) {
-      return html`
-        ${titleChanged
-          ? html`
-              <span class="">Title changed, </span>
-            `
-          : ''}
-        ${newPages.length
-          ? html`
-              <span>${newPages.length} new pages added,</span>
-            `
-          : ''}
-        ${deletedPages.length
-          ? html`
-              <span>${deletedPages.length} pages deleted.</span>
-            `
-          : ''}
-      `;
-    }
+    const titleChanged = this.newData.title !== this.oldTitle;
 
     return html`
       ${titleChanged
         ? html`
-            <div class="pages-list">
-              <div class="page-list-title">New Title</div>
-              ${this.renderTitleChange(this.newData.object.title, ['green-background'])}
+            <evees-diff-row type="edit"
+              ><div class="page-list-title">New Title</div>
+              ${this.renderTitleChange(this.newData.title, ['green-background'])}
               ${this.renderTitleChange(this.oldTitle, ['red-background'])}
-            </div>
-          `
-        : ''}
-      ${newPages.length > 0
-        ? html`
-            <div class="pages-list">
-              <div class="page-list-title">Pages Added</div>
-              ${newPages.map(page => this.renderPage(page, ['green-background']))}
-            </div>
-          `
-        : ''}
-      ${deletedPages.length > 0
-        ? html`
-            <div class="pages-list">
-              <div class="page-list-title">Pages Removed</div>
-              ${deletedPages.map(page => this.renderPage(page, ['red-background']))}
-            </div>
+            </evees-diff-row>
           `
         : ''}
     `;
