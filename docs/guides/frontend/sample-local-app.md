@@ -16,7 +16,11 @@ Perspectives are stored in an Evees Remote, while hashed objects are stored in a
 
 The first thing you need to do is to load at least one Evees Remote and one CAS Store which your application will use to manage content.
 
+<<<<<<< HEAD
 ```js
+=======
+```
+>>>>>>> 63f4d1791d7fd2b60ef6ece689fcc58bf443f601
 // Store entities in IndexedDB
 const store = new CASLocal();
 
@@ -50,7 +54,11 @@ While on a file system you usually nest objects inside folders, in \_Prtcl you c
 
 Each user has a unique perspective on each remote whose ID can be derived from the userid (in that remote), we call this the Home perspective.
 
+<<<<<<< HEAD
 ```js
+=======
+```
+>>>>>>> 63f4d1791d7fd2b60ef6ece689fcc58bf443f601
 // get the home perspective of the logged user in the remote
 const home = await getHome(remote);
 const homeData = await evees.tryGetPerspectiveData(home.id);
@@ -74,6 +82,7 @@ if (!homeData) {
 We only need to initialize the application structure once.
 
 Now that the app structure is there, we can create our first thought.
+<<<<<<< HEAD
 s
 
 ```js
@@ -81,12 +90,25 @@ const thoughtId = evees.createEvee({ text: '_Prtcl is cool' });
 
 // and add it inside out thoughts container.
 await evees.updatePerspectiveData(thoughts.id, { thoughts: [thoughtId] });
+=======
+
+```
+    const thoughtId = evees.createEvee({ text: '_Prtcl is cool' })
+
+    // and add it inside out thoughts container.
+    await evees.updatePerspectiveData(thoughts.id, { thoughts: [thoughtId]});
+>>>>>>> 63f4d1791d7fd2b60ef6ece689fcc58bf443f601
 ```
 
 And we can now fetch all the thoughts have a link to a give tag as
 
+<<<<<<< HEAD
 ```js
 evees.searchEngine.explore({ under: [thoughts.id], linksTo: [tagId] });
+=======
+```
+    evees.searchEngine.explore({ under: [thoughts.id], linksTo: [tagId] })
+>>>>>>> 63f4d1791d7fd2b60ef6ece689fcc58bf443f601
 ```
 
 And that's it!
