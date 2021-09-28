@@ -1,46 +1,37 @@
 # Introduction
 
-The **\_Prtcl** implementation provides a generic, modular and extensible infrastructure to develop whole web applications by composing small building blocks together.
+The Underscore Protocol (**\_Prtcl**) includes a set of tools for building interoperable content-management applications compatible with Web3 platforms and Web2-APIs.
 
-All of this is based on top of `MicroOrchestrator`, the base orchestrator for all the modules. This pattern is inspired by [micro-frontend](https://micro-frontends.org/), but wants to take this approach further using new emerging technologies, mainly [custom elements](https://developers.google.com/web/fundamentals/web-components/customelements) combined with extensible and composable [GraphQl](https://graphql.org/learn/) schemas.
+It combines some of the concepts of The Web and Linked Data, promoting the use of global identifiers for every object handled by a web application, with the data structure of GIT, where each object evolves as a sequence of snapshots (commits).
 
-This project is Open Source, so [feedback and contributions](https://github.com/uprtcl/js-uprtcl/issues) are very well welcome and appreciated!
+Objects from \_prtcl-compatible applications are suitable to be:
 
-## Where to start
+- _referenced_ from any other application and platform, using URL-like global identifiers extended to include emerging web3 platforms.
 
-There are **different ways of integrating _Prtcl** in your app. This guide covers 4 approaches with ascending level of depth and difficulty:
+- _rendered and updated_ on any other application, with reusable web-components and data type recognition.
 
-1. [How to install and use micro-modules](use/installing-the-micro-orchestrator): **only install, configure and use the modules that fit your requirements**, and develop your app on top of those.
+- _forked_ by creating new branches of the same object on different platforms and by different authors.
 
-2. [How to use the evees module](evees/using-the-evees-module): **evees** (or *Evolving entities*) are at the core of how the _Prtcl creates and evolves ideas; learn how to load and use them into your app.
+## Client
 
-3. [How to build a micro-module](develop/developing-micro-modules): appropriated if you want to create a **small group of services or elements that should be able to be reused** by other `MicroOrchestrator` applications.  
+\_Prtcl client libraries can be used to create and update \_Prtcl objects on one ore more platforms from the same application. The libraries include multi-layer mutation buffering, data fetching cache, and event-based reactivity for efficiently reading and updating data.
 
-4. [How to build a cortex-module](cortex/what-is-cortex): **add a new type of entity** that can be referenced and is interoperable together with all other modules that implement **pattern behaviour**.
+## Remotes
 
-Choose the approach that fits better your needs. It is recommended to start from only using `MicroModules`, and progressively learn how to develop them in depth.
+\_Prtcl remotes are servers or connectors to Web3 networks that can store and update \_Prtcl content. Similar to a web-server, they resolve object's unique ids into their current content.
 
-## Reusable modules
+For Web2 applications \_Prtcl offers a NodeJS + DGraph headless CMS that can be deployed inhouse, or consumed directly from the cloud.
 
-Modules are groups of funcionality that can be integrated with one another to compose bigger applications. A module usually includes: services to backends, GraphQl schemas and resolvers, and patterns and lenses; all of them work together to fetch, create and interpret some kind of entity or data.
+For Web3 applications \_Prtcl offers connectors with Ethereum, Polkadot, Holochain and OrbitDB networks. These services can be paired with our web-server CMS to offer, indexing, discovery and performant data fetching.
 
-You can reuse or adapt _Prtcl-compatible modules in your app and let your users create, branch and reorganize the content from your app as Evees. This is a list of the web-components from the modules that (**will soon be**) available:
+## Modules and UI Components
 
-   - `GenericPost`: Bundles of text and images, similar to a Tweet or a Facebook post.
-   - `SimpleEditor`: Simple editor to write blog-posts or documents that can scale. 
-   - `KanbanBoard`: Kanban board to organize cards in columns.
-   - `Calendar`: Calendar board to crate and display events.
-   - `Drawer`: A drawer to organize and store Evees.
+\_Prtcl is building Intercreativity, a web-application that is similar to recent applications like Notion or Roam Research, but that is \_prtcl-compatible. Intercreativity is extensible and modules and UI components from Intercreativity, such as it's block-based text editor, are built to be reusable on other content-management applications.
 
-This is how the web components listed above might look like:
-<p align="center">
-  <img src="https://collectiveone-b1.s3.us-east-2.amazonaws.com/Web/Collage.png?t=1" width="800">
-</p>
+# Where to start
 
-**`js-uprtcl`** provides you with:
+Now that you have a broad view of \_Prtcl, what do you want to do?
 
-- Bootstrap basic modules to deal with common types of behaviour and data. 
-- All the infrastructure needed to develop new modules:
-  - Helper services to connect with different service providers (Holochain, Ethereum, IPFS, websockets, etc.)
-  - Multiplatform services to interact with those service providers
-  - Reusable web-components (lenses) and patterns
+**[\_Prtcl Data Structures](https://www.google.com)**: An overview of \_Prtcl primitives used to handle linked objects from multiple platforms.
+
+**[Sample Application](https:www.cool.com)**:

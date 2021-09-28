@@ -1,0 +1,39 @@
+# How is data explored / discovered?
+
+Linking and nesting becomes specially relevant when exploring and discovering data. All content management applications should support basic read and update operations, but they also need to intelligently filter and flexibly categorize content to work properly.
+
+Similar to the semantic web, remotes storing \_Prtcl data are also expected to index their content and resolve queries about it. However, instead of using a generic query language like GraphQL or SparQL, \_Prtcl follows a simplified approach purposely built around the concepts of linking and nesting.
+
+While being specific and opinionated, \_Prtcl query standard is enough for building most content-management applications like web forums, personal and collaborative documentation applications and eventually social networks.
+
+## Quering data
+
+Querying \_Prtcl data is currently limited to a filtering operation, this is, each query should start from the global set of all perspectives and return a subset.
+
+The subset of perspectives is obtained by denoting one or more "starting" perspectives, and then specifying the search direction relative to them, which can be either 'above' or 'under'.
+
+Searching 'above' a given perspective is a way of "locating" that object. The result of the query corresponds to all the other perspectives of which the given object is a child.
+
+Searching 'under' a given perspective is a way of exploring a perspective (since children are conceputally considered part of their parents).
+
+Once the "starting" perspectives and the direction of search is provided, additional filters can be applied based on the presence or absence of generic links, and/or standard text-based filters.
+
+Finally, querying supports specifying the number of levels to include above or below a perspective.
+
+As we will show later on Intercreativity, nesting and linking can be used to design content-management applications with relatively advanced and opinionated business logics.
+
+The figure below shows how what would be a flat graph is usually represented in \_Prtcl, and how local trees arise from the child links between the perspectives. In the figure, the red dashed box is the set of perspectives above "p7", while the violet dahsed box represents the set of perspectives under "p7".
+
+The blue dashed links are generic links that can be used to filter results, for example, querying all perspectives under "p7" having a link to "p9"
+
+![](https://docs.google.com/drawings/d/e/2PACX-1vT1REC7ejiZx8QLJ_kBNp06tHxzUS9LHzEv4tx-8W1R1gab_iNVCoB5GbPyIyItVcsrsoZmbjq52y5F/pub?w=620&h=729)
+
+## Explore Services
+
+\_Prtcl makes an additiona distinction between Evees Remote and an Explore Service. This way multiple remotes can share the same Explore Service, or one remote can be explored with different Explore Services.
+
+In practice, it's possible that one remote, say a web-server, will provide all three services at once, namely:
+
+- keep the latest version of a perspective.
+- store inmutable entities.
+- explore the space of linked, nested and forked perspectives.
