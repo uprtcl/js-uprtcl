@@ -30,10 +30,6 @@ The blue dashed links are generic links that can be used to filter results, for 
 
 ## Explore Services
 
-\_Prtcl makes an additiona distinction between Evees Remote and an Explore Service. This way multiple remotes can share the same Explore Service, or one remote can be explored with different Explore Services.
+\_Prtcl makes an additional distinction between Evees Remote and an Explore Service. The Evees Remote stores the head of each perspective, while the Explore Service resolves queries.
 
-In practice, it's possible that one remote, say a web-server, will provide all three services at once, namely:
-
-- keep the latest version of a perspective.
-- store inmutable entities.
-- explore the space of linked, nested and forked perspectives.
+On web3 technologies, where data is stored on public networks, it's more natural to have one or more separate indexing services to explore the data. This is included as part of \_Prtcl's architecture.
