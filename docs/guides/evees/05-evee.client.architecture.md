@@ -18,4 +18,25 @@ An `EveesService` instance is a convenient wrapper around other \_Prtcl services
 
 A simple example of how to initialize the `EveesService` using a local `EveesRemote` (an EveesRemote that stores data on the browser IndexedDB) is shown below:
 
+```js
+/** We first need to instantiate an EntityResolver, which will resolve hashes into their corresponding entities */
+const entityRemote = new EntityRemoteLocal();
+const entityRouter = new RouterEntityResolver([entityRemote]);
+const entityResolver = new EntityResolverBase(entityRouter);
+
+/** We then instantiate a PerspectiveStoreDB using IndexedDB to serve as our "local" Remote data storage */
+const perspectiveStoreDB = new PerspectivesStoreDB();
+
+/** The local explore service receives the local PerspectiveStoreDB to search for perspectives */
+const exploreService = new LocalExplore(perspectiveStoreDB);
+
+/** The EveesRemote is, then, a local remote that needs the EntityResolver, to resolve entities during its operations, the perspectiveStoreDB, to create and update perspectives, the entityRemote, to persist entities, and the ExploreService, to query perspectives */
+const eveesRemote = new ClientRemoteLocal(
+  entityResolver,
+  perspectiveStoreDB,
+  entityRemote,
+  exploreService
+);
+```
+
 You can run the app from [this repository]().

@@ -10,12 +10,11 @@ export interface CachedUpdate {
 export interface ClientMutationStore {
   newPerspective(newPerspective: NewPerspective): Promise<void>;
   addUpdate(update: Update): Promise<void>;
-  deletedPerspective(perspectiveId: string): Promise<void>;
-
-  deleteNewPerspective(perspectiveId: string): Promise<void>;
+  deletePerspective(perspectiveId: string): Promise<void>;
 
   getNewPerspectives(): Promise<NewPerspective[]>;
   getNewPerspective(perspectiveId: string): Promise<NewPerspective | undefined>;
+  deleteNewPerspective(perspectiveId: string): Promise<void>;
 
   getUpdates(): Promise<Update[]>;
   getUpdatesOf(perspectiveId: string): Promise<Update[]>;

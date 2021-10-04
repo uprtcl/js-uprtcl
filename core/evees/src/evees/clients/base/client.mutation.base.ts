@@ -189,9 +189,7 @@ export class ClientMutationBase implements ClientAndExploreCached {
     await this.enqueueTask(() =>
       Promise.all(
         perspectiveIds.map(async (perspectiveId) => {
-          this.mutationStore.deletedPerspective(perspectiveId);
-          /** set the current known details of that perspective, can update is set to true */
-          this.mutationStore.deleteNewPerspective(perspectiveId);
+          await this.mutationStore.deletePerspective(perspectiveId);
         })
       )
     );
