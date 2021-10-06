@@ -599,7 +599,7 @@ export class Evees implements Client {
    * @ {PartialPerspective} - Optional perspective details
    * @ {string} parentId - ID of the parent object
    */
-  async createEvee(input: CreateEvee): Promise<string> {
+  async createEvee(input: CreateEvee = {}): Promise<string> {
     if (LOGINFO) this.logger.log(`createEvee`, { input });
 
     let { remoteId } = input;

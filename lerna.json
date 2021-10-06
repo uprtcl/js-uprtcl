@@ -6,7 +6,8 @@
     "core/evees-ui",
     "core/common-ui",
     "modules/documents",
-    "remotes/http"
+    "remotes/http",
+    "samples"
   ],
   "version": "independent"
 }

@@ -51,9 +51,19 @@ export class LocalExplore implements ClientExplore {
       );
 
       perspectiveIds = Array.prototype.concat.apply([], results);
-    }
 
-    return { perspectiveIds };
+      return { perspectiveIds };
+    } else {
+      // return all perspectives
+      const all = await this.db.perspectivesDetails.toArray();
+      const details = all.map((el) => {
+        return { id: el.perspectiveId, details: el.details };
+      });
+      return {
+        perspectiveIds: details.map((d) => d.id),
+        slice: { perspectives: details, entities: [] },
+      };
+    }
   }
 
   async getPerspectiveLocal(perspectiveId): Promise<PerspectiveLocal> {

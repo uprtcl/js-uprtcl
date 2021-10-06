@@ -13,7 +13,12 @@ import {
   EntityRemote,
   Entity,
 } from '../../interfaces/index';
-import { MutationStoreDB, NewPerspectiveLocal, UpdateLocal } from './mutation.store.local.db';
+import {
+  DeletedLocal,
+  MutationStoreDB,
+  NewPerspectiveLocal,
+  UpdateLocal,
+} from './mutation.store.local.db';
 
 /** use local storage as cache of ClientCachedWithBase.
  * Persist entities on an EntityRemote (most likely also local)
@@ -98,8 +103,10 @@ export class MutationStoreLocal implements ClientMutationStore {
     });
   }
 
-  async deletedPerspective(perspectiveId: string) {
-    await this.db.deletedPerspectives.put(perspectiveId);
+  async deletePerspective(perspectiveId: string) {
+    await this.db.deletedPerspectives.put({ perspectiveId }, perspectiveId);
+
+    await this.deleteNewPerspective(perspectiveId);
   }
 
   async deleteNewPerspective(perspectiveId: string) {
@@ -136,8 +143,8 @@ export class MutationStoreLocal implements ClientMutationStore {
   }
 
   async getDeletedPerspective(under: string[] = []): Promise<string[]> {
-    const local = await this.getFiltered<string>(under, this.db.deletedPerspectives);
-    return local;
+    const local = await this.getFiltered<DeletedLocal>(under, this.db.deletedPerspectives);
+    return local.map((local) => local.perspectiveId);
   }
 
   async diff(options?: SearchOptions): Promise<EveesMutation> {

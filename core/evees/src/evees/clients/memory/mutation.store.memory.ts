@@ -67,8 +67,10 @@ export class MutationStoreMemory implements ClientMutationStore {
     return matched as string[];
   }
 
-  async deletedPerspective(perspectiveId: string) {
+  async deletePerspective(perspectiveId: string) {
     this.deletedPerspectives.add(perspectiveId);
+
+    await this.deleteNewPerspective(perspectiveId);
   }
 
   async deleteNewPerspective(perspectiveId: string) {
