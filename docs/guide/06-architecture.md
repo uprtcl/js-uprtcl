@@ -1,4 +1,4 @@
-# What can I do with \_Prtcl libraries?
+# Introduction
 
 \_Prtcl includes a set of libraries that help you build multi-platform content-management applications. These libraries offer:
 

@@ -60,11 +60,9 @@ export interface ClientMutation extends Client {
 }
 ```
 
-### ClientRemote (EveesRemote)
+### ClientRemote
 
-A `ClientRemote` interface is the interface that an `EveesRemote` needs to implement.
-
-It is simple a `Client` with a remote `id`, a function to synchronously snap new perspectives (create the id of a perspective) and an `EntityRemote`, where all the entities associated to perspectives stored in that `ClientRemote` should be persisted.
+A `ClientRemote` is simple a `Client` with a remote `id`, a function to synchronously snap new perspectives (create the id of a perspective) and an `EntityRemote`, where all the entities associated to perspectives stored in that `ClientRemote` should be persisted.
 
 These are the essential parts of the `ClientRemote` interface
 
@@ -84,7 +82,7 @@ export interface ClientRemote extends ClientAndExploreCached, Ready, ConnectionL
 }
 ```
 
-### Client Explore
+### ClientExplore
 
 As already mentioned in the Explore section, quering for perspectives based on their content, links and children is done by a `ClientExplore`. A client explore simple adds the `explore()` method to a `Client`.
 

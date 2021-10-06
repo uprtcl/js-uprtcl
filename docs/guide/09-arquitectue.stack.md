@@ -1,10 +1,10 @@
-## Client stack
+## Client Stack
 
 Clients are designed to be stacked one on top of each other. This way an application can make changes on the top layer, and only flush these changes to lower layers when considered necessary.
 
 A defaul stack is built by the [`initDefaultClientStack(...)`](https://github.com/uprtcl/js-uprtcl/blob/master/core/evees/src/creator-helpers/init.default.clients.ts) function.
 
-This function will instantiate the following Client layers:
+This function will instantiate the following Client layers: s
 
 - An on-memory ClientMutation as the top layer.
 - A local ClientMutation that persist changes on the browser IndexedDB

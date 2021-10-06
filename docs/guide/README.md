@@ -1,8 +1,8 @@
 # Introduction
 
-The Underscore Protocol (**\_Prtcl**) includes a set of tools for building interoperable content-management applications compatible with Web3 platforms and Web2-APIs.
+The Underscore Protocol (**\_Prtcl**) offers a set of tools for building interoperable content-management applications compatible with Web3 platforms and Web2 APIs.
 
-It combines some of the concepts of The Web and Linked Data, promoting the use of global identifiers for every object handled by a web application, with the data structure of GIT, where each object evolves as a sequence of snapshots (commits).
+It combines some of the concepts of The Web and Linked Data, promoting the use of global identifiers for every data object that is handled by a web application, with the data structure of GIT, where each object evolves as a sequence of linked snapshots (commits).
 
 Objects from \_prtcl-compatible applications are suitable to be:
 
@@ -12,7 +12,7 @@ Objects from \_prtcl-compatible applications are suitable to be:
 
 - _forked_ by creating new branches of the same object on different platforms and by different authors.
 
-## Client
+## Client Libraries
 
 \_Prtcl client libraries can be used to create and update \_Prtcl objects on one ore more platforms from the same application. The libraries include multi-layer mutation buffering, data fetching cache, and event-based reactivity for efficiently reading and updating data.
 
@@ -26,12 +26,10 @@ For Web3 applications \_Prtcl offers connectors with Ethereum, Polkadot, Holocha
 
 ## Modules and UI Components
 
-\_Prtcl is building Intercreativity, a web-application that is similar to recent applications like Notion or Roam Research, but that is \_prtcl-compatible. Intercreativity is extensible and modules and UI components from Intercreativity, such as it's block-based text editor, are built to be reusable on other content-management applications.
+\_Prtcl is building Intercreativity, a web-application that is similar to recent applications like Notion or Roam Research, but that is \_prtcl-compatible.
 
-# Where to start
+Intercreativity is extensible and modules and UI components from Intercreativity, such as it's block-based text editor, are built to be reusable on other content-management applications.
 
-Now that you have a broad view of \_Prtcl, what do you want to do?
+## Ok! What's next then?
 
-**[\_Prtcl Data Structures](https://www.google.com)**: An overview of \_Prtcl primitives used to handle linked objects from multiple platforms.
-
-**[Sample Application](https:www.cool.com)**:
+**[\_Prtcl Architecture](/guides/evees)**: An overview of \_Prtcl primitives used to handle linked objects from multiple platforms.

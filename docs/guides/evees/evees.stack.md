@@ -1,3 +1,0 @@
-# Client
-
-A Client
