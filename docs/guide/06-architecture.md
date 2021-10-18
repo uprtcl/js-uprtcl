@@ -32,7 +32,7 @@ You can see how the `EveesService` class is instantiated [here](https://github.c
 
 ## Create, Update, Delete
 
-Once the `EveesService` instance has been initialized it is made available to other web-components in the app (the example uses Lit-Element components) using a the \_Prtcl `MultiContainer` wrapper component and made available in the [`App.ts`](https://github.com/uprtcl/example-local/blob/main/src/app.ts) component using the `servicesConnect()` factory function.
+Once the `EveesService` instance has been initialized it is made available to other web-components in the app (the example uses Lit-Element components) using the \_Prtcl `MultiContainer` wrapper component and made available in the [`App.ts`](https://github.com/uprtcl/example-local/blob/main/src/app.ts) component using the `servicesConnect()` factory function.
 
 ```ts
 export class App extends servicesConnect(LitElement) {...}
@@ -48,14 +48,14 @@ await this.evees.createEvee({ object: { text } });
 
 By default, changes are applied only at the top level client (the OnMemory client), and thus they are applied very fast.
 
-If we want to apply this changes to the lower levels, (the local muatation client and the local remote) we need to manually call the flush function.
+If we want to apply this changes to the lower levels, (the local mutation client and the local remote) we need to manually call the flush function.
 
 ```ts
 await this.evees.createEvee({ object: { text } });
 await this.evees.flush();
 ```
 
-After calling flush, the note will be stored in the LocalEveesRemote. If the remote were an external remote, say a web server, the perspective would be created in the server only after calling flush.
+After calling flush, the note will be stored in the LocalEveesRemote. If the remotes were an external remote, say a web server, the perspective would be created in the server only after calling flush.
 
 Updating and deleting are equivalent to creating a perspective. Here are the code snippets used in the example app:
 
@@ -86,4 +86,4 @@ await Promise.all(
 
 The query will result the notes ids, which need to be sent to the `getPerspectiveData()` function to retrieve their latest value.
 
-In the next section we will dive deeper into the example, introduce the concept of mutations and provide a detaild diagram of the layer stack of services that are used in this app.
+In the next section we will dive deeper into the example, introduce the concept of mutations and provide a detailed diagram of the layer stack of services that are used in this app.

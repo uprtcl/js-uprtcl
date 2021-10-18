@@ -39,7 +39,7 @@ export interface Client {
 
 A [`ClientMutation`](https://github.com/uprtcl/js-uprtcl/blob/master/core/evees/src/evees/interfa,ces/client.mutation.ts) is a `Client` that is designed to live on top of another "base" `Client`, and that stores all the changes made _relative_ to that base Client.
 
-Once these changes are stored, a `ClientMutation` offers the option to `flush()` gthem into the base `Client` as a single `update()` call.
+Once these changes are stored, a `ClientMutation` offers the option to `flush()` them into the base `Client` as a single `update()` call.
 
 These are the essential parts of the `ClientMutation` interface:
 

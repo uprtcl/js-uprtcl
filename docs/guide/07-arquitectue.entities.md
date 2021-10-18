@@ -12,13 +12,13 @@ export interface Entity<T = any> {
 
 The object property is a canonical JSON object (stored as a JS object) whose properties are ordered alphabetically and which is then serialized using [cbor](https://cbor.io/).
 
-Once serialized, the hash of the bytes is obtained a hashing algorithm and the `hash` property is set as the [CID](ipfs://bafybeidkl4t5ydt2jl5p4ltfrsi6bee36yr22d5urjxx6rr76ev3ekb3pa/anatomy-of-a-cid) of the hash. Any valid `CID` is a valid `Entity` hash.
+Once serialized, the hash of the bytes is obtained using a hashing algorithm and the `hash` property is set as the [CID](ipfs://bafybeidkl4t5ydt2jl5p4ltfrsi6bee36yr22d5urjxx6rr76ev3ekb3pa/anatomy-of-a-cid) of the hash. Any valid `CID` is a valid `Entity` hash.
 
 Entities are used by clients to store the head of each perspective, as a `Commit` object.
 
 A commit has the hash of the parent commit and that of the actual data object, both of type `Entity`. This means that the head commit of a perspective has, encoded on its hash, an immutable summary of the entire history of the perspective (all its commits) and all the associated data objects of each commit.
 
-In \_Prtcl, a global EntityResolver class is created to resolve any entity required by any function in the application. This reduces the complexity when exploring perspectives but forces us to manually chose the entities that need to be persisted together each Client.
+In \_Prtcl, a global `EntityResolver` class is created to resolve any entity required by any function in the application. This reduces the complexity when exploring perspectives but forces us to manually prepare the entities that need to be persisted together each Client.
 
 ## Entity availability strategy
 

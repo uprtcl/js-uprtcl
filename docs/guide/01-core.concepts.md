@@ -1,5 +1,7 @@
 # Introduction
 
+\_Prtcl assumes a clear distinction between an app and its data. \_Prtcl applications offer unique and reusable references to each digital object they handle. This is the basic feature on top of which interoperability is built.
+
 ## Where is data stored in a \_Prtcl application?
 
 \_Prtcl applications can handle data stored on different platforms or "remotes" where each data object has a global unique identifier that we refer to as the "perspective id".
@@ -16,13 +18,13 @@ In the figure below, one application is handling content from three different pl
 
 ![](https://docs.google.com/drawings/d/e/2PACX-1vSbcI2SNPOy0QRSYzg-lYUKfSEkXtvQTuqH72hiQCnXoElPZPUZNGAww_LuQwSK27M9pn-5EQkNEQCY/pub?w=600&h=400)
 
-\_Prtcl vison is not too different from one of a world of applications all of them offering an open and standard API to their data. It can be implemented in Web2 applications, on top of open and standard APIs and/or on Web3, where data, by definition is not wall-gradened by any single entity.
+\_Prtcl vison is not too different from one of a world of applications all of them offering an open and standard API to their data. It can be implemented in Web2 applications, on top of open and standard APIs and/or on Web3, where data, by definition is not wall-gardened by any single entity.
 
 ## Basic operations (Read and Update)
 
 A "Client Remote" is a platform or network from which a perspective's current head commit can be read and updated. A remote is included as part of an application using a javascript connector class.
 
-In \_Prtcl, there is a clear distinction between Client Remotes, which are platforms that store mutable references and can, thus, store and update the hash of the latest commit of a given perspective, and "Entity Remotes", which are platforms that store the hashed objects.
+In \_Prtcl, there is a clear distinction between Client Remotes, which are platforms that store mutable references and can, thus, store and update the hash of the latest commit of a given perspective, and "Entity Remotes", which are platforms that store the hashed objects themselves.
 
 An application can use one or more Entity Remotes to store hashed objects. This is because an Entity Remote cannot manipulate the data it stores without changing its hash and, thus, it doest not need to be trusted the same way a Client Remote does.
 
