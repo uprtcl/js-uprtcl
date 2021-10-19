@@ -285,8 +285,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       },
     };
 
-    /** await for creation (should be fast as it will happen on the OnMemory Client) */
-    await this.localEvees.createEvee(creteEvee);
+    /** Create is sent asyncronously, the flow continues as if it were successful */
+    this.localEvees.createEvee(creteEvee);
 
     if (LOGINFO) this.logger.log(`createNode()`, { perspective, draft });
 

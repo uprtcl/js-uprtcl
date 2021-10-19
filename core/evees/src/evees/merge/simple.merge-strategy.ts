@@ -1,13 +1,18 @@
+import { Logger } from '../../utils';
+
 import { Update } from '../interfaces/types';
 import { CreateCommit, Evees } from '../evees.service';
 
 import findMostRecentCommonAncestor from './common-ancestor';
 import { MergeConfig, MergeStrategy } from './merge-strategy';
 import { Entity } from '../interfaces/entity';
-import { Client } from '../interfaces/client';
 import { EntityResolver } from '../interfaces/entity.resolver';
 
+const LOGINFO = true;
+
 export class SimpleMergeStrategy implements MergeStrategy {
+  logger = new Logger('MergeStrategy');
+
   constructor(protected evees: Evees) {}
 
   async mergePerspectivesExternal(
@@ -15,6 +20,12 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromPerspectiveId: string,
     config: MergeConfig
   ): Promise<string> {
+    if (LOGINFO)
+      this.logger.log('mergePerspectivesExternal()', {
+        toPerspectiveId,
+        fromPerspectiveId,
+        config,
+      });
     return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
   }
 
@@ -23,6 +34,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
     fromPerspectiveId: string,
     config: MergeConfig
   ): Promise<string> {
+    if (LOGINFO)
+      this.logger.log('mergePerspectives()', { toPerspectiveId, fromPerspectiveId, config });
+
     if (toPerspectiveId === fromPerspectiveId) {
       return toPerspectiveId;
     }
@@ -36,6 +50,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     let newHead: string | undefined;
 
+    if (LOGINFO) this.logger.log('mergeCommits()', { toHeadId, fromHeadId, config });
     newHead = fromHeadId
       ? await this.mergeCommits(toHeadId, fromHeadId, toRemote.id, config)
       : toHeadId;
@@ -58,7 +73,9 @@ export class SimpleMergeStrategy implements MergeStrategy {
       },
     };
 
+    if (LOGINFO) this.logger.log('updatePerspective()', { request });
     await this.evees.updatePerspective(request);
+
     return toPerspectiveId;
   }
 
@@ -97,7 +114,6 @@ export class SimpleMergeStrategy implements MergeStrategy {
     /** merges can be done from defined perspectives to undefined ones. If the "to" perspective
      * head and data are undefined, we need to know the initial data object (usually the correspondent of the "empty" object)
      * to be used as reference for the merge, and assume the ancestorData and the to branch have that data as its current value */
-
     const emptyObject = this.evees.behaviorFirst(fromData.object, 'empty');
     const emptyEntity = await this.evees
       .getRemote(remote)
@@ -121,6 +137,7 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const ancestorData = ancestorId ? await this.evees.getCommitData(ancestorId) : emptyEntity;
 
+    if (LOGINFO) this.logger.log('mergeData()', { ancestorData, newDatasDefined, config });
     const mergedObject = await this.mergeData(ancestorData, newDatasDefined, config);
 
     const data = await this.evees.hashObject({ object: mergedObject, remote });
