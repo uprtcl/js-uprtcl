@@ -8,7 +8,7 @@ import { MergeConfig, MergeStrategy } from './merge-strategy';
 import { Entity } from '../interfaces/entity';
 import { EntityResolver } from '../interfaces/entity.resolver';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export class SimpleMergeStrategy implements MergeStrategy {
   logger = new Logger('MergeStrategy');
@@ -50,10 +50,13 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     let newHead: string | undefined;
 
-    if (LOGINFO) this.logger.log('mergeCommits()', { toHeadId, fromHeadId, config });
+    if (LOGINFO) this.logger.log('mergeCommits() - pre', { toHeadId, fromHeadId, config });
     newHead = fromHeadId
       ? await this.mergeCommits(toHeadId, fromHeadId, toRemote.id, config)
       : toHeadId;
+
+    if (LOGINFO)
+      this.logger.log('mergeCommits() - post', { newHead, toHeadId, fromHeadId, config });
 
     /** prevent an update head to the same head */
     if (newHead === toHeadId) {
@@ -137,8 +140,15 @@ export class SimpleMergeStrategy implements MergeStrategy {
 
     const ancestorData = ancestorId ? await this.evees.getCommitData(ancestorId) : emptyEntity;
 
-    if (LOGINFO) this.logger.log('mergeData()', { ancestorData, newDatasDefined, config });
+    if (LOGINFO) this.logger.log('mergeData() - pre', { ancestorData, newDatasDefined, config });
     const mergedObject = await this.mergeData(ancestorData, newDatasDefined, config);
+    if (LOGINFO)
+      this.logger.log('mergeData() - done', {
+        mergedObject,
+        ancestorData,
+        newDatasDefined,
+        config,
+      });
 
     const data = await this.evees.hashObject({ object: mergedObject, remote });
     /** prevent an update head to the same data */
