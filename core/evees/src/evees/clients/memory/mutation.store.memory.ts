@@ -138,20 +138,28 @@ export class MutationStoreMemory implements ClientMutationStore {
       /** remove all the updates in the elements mutation from the updates in memory */
       const updatesPerPersective = MutationHelper.getUpdatesPerPerspective(elements);
       Array.from(updatesPerPersective.entries()).forEach(([perspectiveId, clearUpdates]) => {
+        // currentUpdate holds all the updates of the perspectiveId
         const currentUpdates = this.updates.get(perspectiveId);
         if (currentUpdates) {
-          // delete updates that set the head to the heads in the clear `elements` array
-          const newUpdates = currentUpdates.filter((current) =>
-            clearUpdates.filter(
-              (clear) =>
-                clear.details.headId !== undefined &&
-                clear.details.headId === current.details.headId
-            )
-          );
+          // delete updates that set the head to one of the heads in the updates of the clear `elements` array. We do this
+          // by finding all updates that should remain.
+          const nonDeletedUpdates = currentUpdates.filter((current) => {
+            // for each current update, return true (keep) if the clearUpdates DO NOT contain it.
+            const shouldDelete =
+              clearUpdates.findIndex(
+                (clear) =>
+                  clear.details.headId !== undefined &&
+                  clear.details.headId === current.details.headId
+              ) !== -1;
+            // if it should be deleted, return false so it is filtered out of the currentUpdates into the nonDeletedUpdates.
+            return !shouldDelete;
+          });
 
-          if (newUpdates.length > 0) {
-            this.updates.set(perspectiveId, newUpdates);
+          /** if there are remaining nonDeletedUpdates, set as the updates array for the perspective */
+          if (nonDeletedUpdates.length > 0) {
+            this.updates.set(perspectiveId, nonDeletedUpdates);
           } else {
+            /** otherwise delete the entry from the map to clean the map key */
             this.updates.delete(perspectiveId);
           }
         }

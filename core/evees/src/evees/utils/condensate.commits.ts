@@ -129,14 +129,6 @@ export class CondensateCommits {
           const childUpdate = this.updatesMap.get(childId);
           if (!childUpdate) throw new Error('child Updated not found');
 
-          const combinedIndexData = IndexDataHelper.combine(indexData, childUpdate.indexData);
-          if (this.logEnabled)
-            this.logger.log('condenseUpdate() - combinedIndexData', {
-              combinedIndexData,
-              indexData,
-              childUpdateIndexData: childUpdate.indexData,
-            });
-
           const newList = [...currentList];
           newList.push(commitId);
 
@@ -145,7 +137,7 @@ export class CondensateCommits {
             onParents,
             forking,
             newList,
-            combinedIndexData
+            indexData
           );
           return updates;
         })

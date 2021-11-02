@@ -24,13 +24,7 @@ export { SimpleMergeStrategy } from './evees/merge/simple.merge-strategy';
 export { RecursiveContextMergeStrategy } from './evees/merge/recursive-context.merge-strategy';
 export { HasMerge, MergingBehaviorNames } from './evees/merge/merge.behaviour';
 
-export {
-  mergeStrings,
-  mergeResult,
-  mergeArrays,
-  arrayDiff,
-  combineMutations,
-} from './evees/merge/utils';
+export { mergeStrings, mergeResult, mergeArrays, combineMutations } from './evees/merge/utils';
 
 /** Utils */
 export { isAncestorOf } from './evees/merge/ancestor';

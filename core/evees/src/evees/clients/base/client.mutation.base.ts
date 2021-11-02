@@ -21,7 +21,7 @@ import { AsyncQueue } from '../../../utils/async';
 
 import { condensateUpdates, mutationAppendOnEcosystem } from '../../utils/updates.utils';
 
-const LOGINFO = false;
+const LOGINFO = true;
 
 export enum ClientCachedEvents {
   pending = 'changes-pending',
@@ -237,7 +237,7 @@ export class ClientMutationBase implements ClientAndExploreCached {
       /** gets all changes (it also removes them from the cache!) */
       const diff = await this.diff(options, this.condensate, true);
 
-      if (LOGINFO) this.logger.log(`${this.name} flush -diff`, diff);
+      if (LOGINFO) this.logger.log(`${this.name} flush - diff`, diff);
 
       // if levels !== 0, apply the mutatio to the base client
       await this.base.update(diff);
@@ -253,7 +253,7 @@ export class ClientMutationBase implements ClientAndExploreCached {
 
   async clear(elements: EveesMutation): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} clear()`, { updateQueue: this.updateQueue });
-    this.mutationStore.clear(elements);
+    await this.mutationStore.clear(elements);
   }
 
   /** a mutation with all the changes made relative to the base client */

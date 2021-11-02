@@ -35,7 +35,6 @@ import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 
 import { createCommit, getHome } from './default.perspectives';
 import { ClientMutationMemory } from './clients/memory/mutation.memory';
-import { arrayDiff } from './merge/utils';
 import { FindAncestor } from './utils/find.ancestor';
 import { Proposals } from './proposals/proposals';
 import { Entity, EntityCreate } from './interfaces/entity';
@@ -46,7 +45,7 @@ import { ClientRemote } from './interfaces/client.remote';
 import { ClientFull } from './interfaces/client.full';
 import { EntityResolver } from './interfaces/entity.resolver';
 
-const LOGINFO = false;
+const LOGINFO = true;
 
 export interface CreateCommit {
   dataId: string;
@@ -428,7 +427,7 @@ export class Evees implements Client {
   private hasBehavior(object: object, behaviorName: string) {
     try {
       this.behavior(object, behaviorName);
-    } catch (e) {
+    } catch (e: any) {
       if (e.code === BEHAVIOUR_NOT_FOUND_ERROR) {
         return false;
       } else {
@@ -501,30 +500,12 @@ export class Evees implements Client {
       if (has) {
         const children = this.behaviorConcat(data.object, patternName);
 
-        let oldChildren: string[] = [];
-
-        if (head && head.object.payload.parentsIds.length > 0) {
-          const parent = await this.getEntity<Signed<Commit>>(head.object.payload.parentsIds[0]);
-          const oldData = await this.getEntity(parent.object.payload.dataId);
-
-          const oldHas = this.hasBehavior(oldData.object, patternName);
-          oldChildren = oldHas ? this.behaviorConcat(oldData.object, patternName) : [];
-        }
-
-        const { added, removed } = arrayDiff(oldChildren, children);
-
         if (!update.indexData) {
           update.indexData = {};
         }
 
         /** set the details */
-        update.indexData.linkChanges = {
-          ...update.indexData.linkChanges,
-          [patternName]: {
-            added,
-            removed,
-          },
-        };
+        update.indexData.links = { children };
       }
     }
 

@@ -101,22 +101,15 @@ export class ClientRemoteLocal implements ClientRemote {
           update.perspectiveId
         );
 
-        const current = await this.db.perspectivesDetails.get(update.perspectiveId);
-
-        const childrenChanges = IndexDataHelper.getArrayChanges(
-          update.indexData,
-          LinksType.children
-        );
-
-        const currentChildren = current ? (current.children ? current.children : []) : [];
-
-        const newChildren = currentChildren.concat(
-          childrenChanges.added.filter((e) => !currentChildren.includes(e))
-        );
-
         const onEcosystem = update.indexData
           ? update.indexData.onEcosystem
             ? update.indexData.onEcosystem
+            : []
+          : [];
+
+        const children = update.indexData
+          ? update.indexData.links
+            ? update.indexData.links.children
             : []
           : [];
 
@@ -125,7 +118,7 @@ export class ClientRemoteLocal implements ClientRemote {
           details: update.details,
           context: perspective.object.payload.context,
           onEcosystem: onEcosystem,
-          children: newChildren,
+          children,
         });
       })
     );
