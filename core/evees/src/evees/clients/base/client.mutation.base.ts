@@ -132,7 +132,14 @@ export class ClientMutationBase implements ClientAndExploreCached {
     if (LOGINFO) this.logger.log(`${this.name} updatePerspectiveEffective()`, { update });
 
     // merge details with existing ones
-    const currentDetails = await this.mutationStore.getPerspective(update.perspectiveId);
+    let currentDetails = await this.mutationStore.getPerspective(update.perspectiveId);
+
+    // if currentDetails are not defined in the mutation, ask the base layer details and build upon them
+    if (!currentDetails) {
+      const result = await this.base.getPerspective(update.perspectiveId);
+      currentDetails = result.details;
+    }
+
     update.details = lodash.merge(currentDetails, update.details);
 
     await this.mutationStore.addUpdate(update);

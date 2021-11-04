@@ -33,8 +33,10 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
   @internalProperty()
   localEvees!: Evees;
 
-  canUpdate!: boolean;
+  @internalProperty()
   guardianId!: string | undefined;
+
+  canUpdate!: boolean;
 
   perspective: Secured<Perspective> | undefined;
   head: Secured<Commit> | undefined;
