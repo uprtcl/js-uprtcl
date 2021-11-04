@@ -23,7 +23,7 @@ import { icons } from './prosemirror/icons';
 import { DocumentsBindings } from '../bindings';
 import { DocumentsModule } from '../documents.module';
 
-const LOGINFO = true;
+const LOGINFO = false;
 const SELECTED_BACKGROUND = 'rgb(200,200,200,0.2);';
 
 export class DocumentEditor extends servicesConnect(LitElement) {

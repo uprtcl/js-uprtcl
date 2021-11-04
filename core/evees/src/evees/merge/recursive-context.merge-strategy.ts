@@ -8,7 +8,7 @@ export interface FromTo {
   from?: string;
 }
 
-const LOGINFO = true;
+const LOGINFO = false;
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   perspectivesByContext: Map<string, FromTo> = new Map();
 

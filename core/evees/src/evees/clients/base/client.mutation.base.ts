@@ -21,7 +21,7 @@ import { AsyncQueue } from '../../../utils/async';
 
 import { condensateUpdates, mutationAppendOnEcosystem } from '../../utils/updates.utils';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export enum ClientCachedEvents {
   pending = 'changes-pending',

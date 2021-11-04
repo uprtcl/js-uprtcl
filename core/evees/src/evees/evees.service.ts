@@ -45,7 +45,7 @@ import { ClientRemote } from './interfaces/client.remote';
 import { ClientFull } from './interfaces/client.full';
 import { EntityResolver } from './interfaces/entity.resolver';
 
-const LOGINFO = true;
+const LOGINFO = false;
 
 export interface CreateCommit {
   dataId: string;
@@ -504,8 +504,12 @@ export class Evees implements Client {
           update.indexData = {};
         }
 
+        if (!update.indexData.links) {
+          update.indexData.links = {};
+        }
+
         /** set the details */
-        update.indexData.links = { children };
+        update.indexData.links[patternName] = children;
       }
     }
 

@@ -88,6 +88,16 @@ export const mergeArrays = (originalLinks: string[], modificationsLinks: string[
   return sortedLinks;
 };
 
+export const arrayDiff = (
+  oldEls: string[],
+  newEls: string[]
+): { added: string[]; removed: string[] } => {
+  return {
+    added: newEls.filter((el) => !oldEls.includes(el)),
+    removed: oldEls.filter((el) => !newEls.includes(el)),
+  };
+};
+
 export const combineMutations = (mutations: EveesMutation[]): EveesMutation => {
   const mutation: EveesMutation = {
     newPerspectives: [],
