@@ -151,7 +151,7 @@ export class AppElements {
   }
 
   async initTree(element: AppElement) {
-    if (LOGINFO) this.logger.log('initTree()', { element });
+    this.logger.log('initTree()', { element });
 
     // Create perspectives from top to bottom
     if (element.children) {

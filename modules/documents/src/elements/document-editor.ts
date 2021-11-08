@@ -340,7 +340,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     };
 
     if (LOGINFO) this.logger.log('updatePerspectiveData()', { update });
-    this.localEvees.updatePerspectiveData(update);
+    await this.localEvees.updatePerspectiveData(update);
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {

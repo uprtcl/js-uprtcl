@@ -219,7 +219,8 @@ export class ClientMutationBase implements ClientAndExploreCached {
   }
 
   newPerspective(newPerspective: NewPerspective): Promise<void> {
-    if (LOGINFO) this.logger.log(`${this.name} newPerspective()`, { newPerspective });
+    if (LOGINFO)
+      this.logger.log(`${this.name} newPerspective() - ${JSON.stringify(newPerspective.update)}`);
     return this.update({ newPerspectives: [newPerspective] });
   }
 
