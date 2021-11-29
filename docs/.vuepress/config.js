@@ -9,6 +9,7 @@ const guidesSidebar = [
       '/guide/02-perspective-id',
       '/guide/03-linking',
       '/guide/04-querying',
+      '/guide/04b-querying-example',
       '/guide/05-forking',
     ],
   },

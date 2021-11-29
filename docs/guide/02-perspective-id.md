@@ -25,6 +25,21 @@ const perspectiveId: string = hashObject(perspective);
 
 Relying on hashes that encode the properties of the locator instead of a formatted string offers a condensed and flexible way for adding an arbitrary number of new and special properties to the locator without resulting on a very long string, at the expense of reducing it's human readibility.
 
+The typescript interface of the `Perspective` can be seen [here](https://github.com/uprtcl/js-uprtcl/blob/master/core/evees/src/evees/interfaces/types.ts#L7).
+
+```ts
+interface Perspective {
+  remote: string;
+  path: string;
+  creatorId: string;
+  context: string;
+  timestamp: number;
+  meta?: any; // optional parameters handle arbitrary metadata
+}
+```
+
+The optional `meta` property can be used to add arbitrary propoties similar to "query" attributes in a URL.
+
 ## Offline computation
 
 \_Prtcl applications must be able to compute the id of a perspective locally, without requesting it to the corresponding remote. This let's applications rapidly create new ids on the fly without having to wait for the remote to provide them.
