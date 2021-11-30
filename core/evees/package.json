@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "The core _Prtcl package with all the services you need to handle Evees in a web application.",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -14,12 +14,12 @@
   "dependencies": {
     "cbor-js": "^0.1.0",
     "cids": "^1.1.6",
-    "multihashing-async": "^v2.1.2",
     "dexie": "^3.0.2",
     "diff-match-patch-ts": "^0.2.0",
     "ethers": "^5.0.9",
     "events": "^3.2.0",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.15",
+    "multihashing-async": "^v2.1.2"
   },
   "devDependencies": {
     "@rollup/plugin-json": "^4.0.1",

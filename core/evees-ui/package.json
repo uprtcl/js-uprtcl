@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/evees-ui",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Extension to @uprtc/evees package with all the browser specific dependencies",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -10,9 +10,9 @@
     "build": "npm run clean && rollup -c rollup.config.ts"
   },
   "dependencies": {
+    "@uprtcl/common-ui": "^0.2.1",
+    "@uprtcl/evees": "^0.2.1",
     "lit-element": "^2.3.0",
-    "@uprtcl/evees": "^0.2.0",
-    "@uprtcl/common-ui": "^0.2.0",
     "randomcolor": "^0.5.4"
   },
   "devDependencies": {
