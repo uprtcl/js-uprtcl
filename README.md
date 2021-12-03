@@ -1,4 +1,7 @@
 # \_Prtcl
 
-##  :warning: A large refactoring of the project is undergoing and most packages are now obsolete. Please bear with us until we update the documentation. Thanks :)
-### If you want to learn more, you can reach us at our [Discord server](https://discord.gg/QRt6WdyGNx).
+💔 Unfortunately this project only reached the stage of prototype. We faced technical issues that were out of our reach and had to move on.
+
+If you would like to learn more about our approach, check our [documentation site](https://uprtcl.github.io/js-uprtcl/guide/) or reach us at our [discord server](https://discord.gg/QRt6WdyGNx).
+
+Keep strong and keep building 💪!
