@@ -38,4 +38,4 @@ Intercreativity is extensible and modules and UI components from Intercreativity
 
 ## Ok! What's next then?
 
-**[\_Prtcl Architecture](/guide/01-core.concepts)**: An overview of \_Prtcl primitives used to handle linked objects from multiple platforms.
+**[\_Prtcl Architecture](/js-uprtcl/guide/01-core.concepts)**: An overview of \_Prtcl primitives used to handle linked objects from multiple platforms.
