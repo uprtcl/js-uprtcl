@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/http-provider",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "_Prtcl provider wrappers around the native fetch api",
   "homepage": "https://uprtcl.io",
   "scripts": {
@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^1.11.0",
-    "@uprtcl/ethereum-provider": "^0.2.0",
-    "@uprtcl/evees": "^0.2.0",
+    "@uprtcl/ethereum-provider": "^0.2.1",
+    "@uprtcl/evees": "^0.2.1",
     "ethers": "^5.0.29",
     "lit-element": "^2.3.0"
   },

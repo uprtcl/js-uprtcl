@@ -13,7 +13,12 @@ import {
   EntityRemote,
   Entity,
 } from '../../interfaces/index';
-import { MutationStoreDB, NewPerspectiveLocal, UpdateLocal } from './mutation.store.local.db';
+import {
+  DeletedLocal,
+  MutationStoreDB,
+  NewPerspectiveLocal,
+  UpdateLocal,
+} from './mutation.store.local.db';
 
 /** use local storage as cache of ClientCachedWithBase.
  * Persist entities on an EntityRemote (most likely also local)
@@ -25,8 +30,8 @@ export class MutationStoreLocal implements ClientMutationStore {
 
   constructor(
     name: string,
-    protected entityResolver: EntityResolver,
-    protected entityRemote: EntityRemote
+    readonly entityResolver: EntityResolver,
+    readonly entityCache: EntityRemote
   ) {
     this.db = new MutationStoreDB(name);
   }
@@ -52,7 +57,7 @@ export class MutationStoreLocal implements ClientMutationStore {
       newPerspective,
     });
 
-    await this.entityRemote.persistEntity(newPerspective.perspective);
+    await this.entityCache.persistEntity(newPerspective.perspective);
     await this.persistUpdateEntities(newPerspective.update);
 
     await this.updateDetails(newPerspective.update);
@@ -80,25 +85,28 @@ export class MutationStoreLocal implements ClientMutationStore {
       this.entityResolver
     );
     const entities = await this.entityResolver.getEntities(entitiesHashes);
-    await this.entityRemote.persistEntities(entities);
+    await this.entityCache.persistEntities(entities);
   }
 
   async updateDetails(update: Update) {
-    const onEcosystemChanges = IndexDataHelper.getArrayChanges(
-      update.indexData,
-      LinksType.onEcosystem
-    );
+    const onEcosystem = update.indexData
+      ? update.indexData.onEcosystem
+        ? update.indexData.onEcosystem
+        : []
+      : [];
 
     /** keep the latest details cached */
     await this.db.perspectivesDetails.put({
       perspectiveId: update.perspectiveId,
       details: update.details,
-      onEcosystem: onEcosystemChanges.added,
+      onEcosystem: onEcosystem,
     });
   }
 
-  async deletedPerspective(perspectiveId: string) {
-    await this.db.deletedPerspectives.put(perspectiveId);
+  async deletePerspective(perspectiveId: string) {
+    await this.db.deletedPerspectives.put({ perspectiveId }, perspectiveId);
+
+    await this.deleteNewPerspective(perspectiveId);
   }
 
   async deleteNewPerspective(perspectiveId: string) {
@@ -135,8 +143,8 @@ export class MutationStoreLocal implements ClientMutationStore {
   }
 
   async getDeletedPerspective(under: string[] = []): Promise<string[]> {
-    const local = await this.getFiltered<string>(under, this.db.deletedPerspectives);
-    return local;
+    const local = await this.getFiltered<DeletedLocal>(under, this.db.deletedPerspectives);
+    return local.map((local) => local.perspectiveId);
   }
 
   async diff(options?: SearchOptions): Promise<EveesMutation> {

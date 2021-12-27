@@ -1,7 +1,9 @@
-import { MutationHelper } from 'src/evees/utils';
+import lodash from 'lodash';
+
+import { MutationHelper } from '../../utils';
 import {
   ClientCacheStore,
-  ClientAndExplore,
+  ClientAndExploreCached,
   EntityResolver,
   GetPerspectiveOptions,
   PerspectiveGetResult,
@@ -10,12 +12,13 @@ import {
   Update,
   SearchOptions,
 } from '../../interfaces/';
+import { Proposals } from 'src/evees/proposals';
 
 /** read-only cache that keeps read perspecties and entities onmemory or hit the base
  *  layer if they are not found */
-export class ClientCache implements ClientAndExplore {
+export class ClientCache implements ClientAndExploreCached {
   constructor(
-    protected base: ClientAndExplore,
+    protected base: ClientAndExploreCached,
     protected cache: ClientCacheStore,
     protected entityResolver: EntityResolver,
     private injectEntities: boolean = false
@@ -66,35 +69,46 @@ export class ClientCache implements ClientAndExplore {
   }
 
   async update(mutation: EveesMutationCreate): Promise<void> {
-    const cacheNewPerspectives = mutation.newPerspectives
-      ? Promise.all(
-          mutation.newPerspectives.map((newPerspective) =>
-            this.cache.setCachedPerspective(newPerspective.perspective.hash, {
-              update: newPerspective.update,
-              levels: -1, // new perspectives are assumed to be fully on the cache
-            })
-          )
-        )
-      : Promise.resolve([]);
+    /** optimistically cache as read details and update on the base layer */
 
-    const cacheUpdate = mutation.updates
-      ? Promise.all(
-          mutation.updates.map((update) =>
-            this.cache.setCachedPerspective(update.perspectiveId, {
-              update,
-              levels: -1, // new perspectives are assumed to be fully on the cache
-            })
-          )
-        )
-      : Promise.resolve([]);
+    if (mutation.newPerspectives) {
+      await Promise.all(
+        mutation.newPerspectives.map((newPerspective) => {
+          // cache new perspectives as canUpdate by default
+          newPerspective.update.details.canUpdate = true;
 
-    const cacheDeletes = mutation.deletedPerspectives
-      ? Promise.all(
-          mutation.deletedPerspectives.map((perspectiveId) =>
-            this.cache.clearCachedPerspective(perspectiveId)
-          )
+          return this.cache.setCachedPerspective(newPerspective.perspective.hash, {
+            update: lodash.cloneDeep(newPerspective.update),
+            levels: -1, // new perspectives are assumed to be fully on the cache
+          });
+        })
+      );
+    }
+
+    if (mutation.updates) {
+      await Promise.all(
+        mutation.updates.map(async (update) => {
+          const currentUpdate = await this.cache.getCachedPerspective(update.perspectiveId);
+          const currentDetails =
+            (currentUpdate && currentUpdate.update && currentUpdate.update.details) || {};
+
+          update.details = lodash.merge(currentDetails, update.details);
+
+          this.cache.setCachedPerspective(update.perspectiveId, {
+            update: lodash.cloneDeep(update),
+            levels: -1, // new perspectives are assumed to be fully on the cache
+          });
+        })
+      );
+    }
+
+    if (mutation.deletedPerspectives) {
+      await Promise.all(
+        mutation.deletedPerspectives.map((perspectiveId) =>
+          this.cache.clearCachedPerspective(perspectiveId)
         )
-      : Promise.resolve([]);
+      );
+    }
 
     if (this.injectEntities) {
       const entitiesHashes = await MutationHelper.getMutationEntitiesHashes(
@@ -105,13 +119,7 @@ export class ClientCache implements ClientAndExplore {
       mutation.entities = entities;
     }
 
-    /** optimistically cache as read details and update on the base layer */
-    await Promise.all([
-      cacheNewPerspectives,
-      cacheUpdate,
-      cacheDeletes,
-      this.base.update(mutation),
-    ]);
+    await this.base.update(mutation);
   }
 
   storeEntity(entityId: string): Promise<void> {
@@ -136,5 +144,11 @@ export class ClientCache implements ClientAndExplore {
 
   explore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions | undefined) {
     return this.base.explore(searchOptions, fetchOptions);
+  }
+  async clearExplore(
+    searchOptions: SearchOptions,
+    fetchOptions?: GetPerspectiveOptions
+  ): Promise<void> {
+    if (this.base.clearExplore) await this.base.clearExplore(searchOptions, fetchOptions);
   }
 }

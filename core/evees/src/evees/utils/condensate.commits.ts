@@ -99,10 +99,9 @@ export class CondensateCommits {
     Array.from(this.allCommits.values()).filter((commit) => {
       const parentsIds = this.getParents(commit);
       /** find at least one parent that is not in the original DAG */
-      const notIn = parentsIds.findIndex((parentId) => !this.allCommits.has(parentId));
-      if (notIn === -1) {
-        /** internal commit */
-      } else {
+      const parentIx = parentsIds.findIndex((parentId) => this.allCommits.has(parentId));
+      const isTail = parentIx === -1 || parentsIds.length === 0;
+      if (isTail) {
         /** tail commit */
         tails.push(commit.hash);
       }
@@ -130,14 +129,6 @@ export class CondensateCommits {
           const childUpdate = this.updatesMap.get(childId);
           if (!childUpdate) throw new Error('child Updated not found');
 
-          const combinedIndexData = IndexDataHelper.combine(indexData, childUpdate.indexData);
-          if (this.logEnabled)
-            this.logger.log('condenseUpdate() - combinedIndexData', {
-              combinedIndexData,
-              indexData,
-              childUpdateIndexData: childUpdate.indexData,
-            });
-
           const newList = [...currentList];
           newList.push(commitId);
 
@@ -146,7 +137,7 @@ export class CondensateCommits {
             onParents,
             forking,
             newList,
-            combinedIndexData
+            indexData
           );
           return updates;
         })

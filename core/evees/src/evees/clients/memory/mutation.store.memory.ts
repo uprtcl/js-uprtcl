@@ -4,10 +4,8 @@ import {
   EveesMutation,
   PerspectiveDetails,
   SearchOptions,
-  LinksType,
   ClientMutationStore,
 } from '../../interfaces';
-import { IndexDataHelper } from '../../index.data.helper';
 import { MutationHelper } from '../../utils';
 
 /** info stored about the perspectives on the mutation that help fast
@@ -30,14 +28,15 @@ export class MutationStoreMemory implements ClientMutationStore {
   async newPerspective(newPerspective: NewPerspective): Promise<void> {
     this.newPerspectives.set(newPerspective.perspective.hash, newPerspective);
 
-    const onEcosystemChanges = IndexDataHelper.getArrayChanges(
-      newPerspective.update.indexData,
-      LinksType.onEcosystem
-    );
+    const onEcosystem = newPerspective.update.indexData
+      ? newPerspective.update.indexData.onEcosystem
+        ? newPerspective.update.indexData.onEcosystem
+        : []
+      : [];
 
     this.perspectivesDetails.set(newPerspective.perspective.hash, {
       details: newPerspective.update.details,
-      onEcosystem: onEcosystemChanges.added,
+      onEcosystem: onEcosystem,
     });
   }
 
@@ -46,23 +45,11 @@ export class MutationStoreMemory implements ClientMutationStore {
     this.updates.set(update.perspectiveId, currentUpdates.concat([update]));
 
     /** update the details (append onEcosystem tags) */
-    const currentDetails = this.perspectivesDetails.get(update.perspectiveId);
-    let onEcosystem = currentDetails ? currentDetails.onEcosystem : [];
-
-    if (
-      update.indexData &&
-      update.indexData.linkChanges &&
-      update.indexData.linkChanges.onEcosystem
-    ) {
-      /** use function to remove existing values from ecosystme if in the
-       * removed array of the update indexData */
-      const newChanges = IndexDataHelper.appendArrayChanges(
-        { added: onEcosystem, removed: [] },
-        update.indexData.linkChanges.onEcosystem
-      );
-
-      onEcosystem = newChanges.added;
-    }
+    const onEcosystem = update.indexData
+      ? update.indexData.onEcosystem
+        ? update.indexData.onEcosystem
+        : []
+      : [];
 
     this.perspectivesDetails.set(update.perspectiveId, {
       details: update.details,
@@ -80,8 +67,10 @@ export class MutationStoreMemory implements ClientMutationStore {
     return matched as string[];
   }
 
-  async deletedPerspective(perspectiveId: string) {
+  async deletePerspective(perspectiveId: string) {
     this.deletedPerspectives.add(perspectiveId);
+
+    await this.deleteNewPerspective(perspectiveId);
   }
 
   async deleteNewPerspective(perspectiveId: string) {
@@ -149,10 +138,30 @@ export class MutationStoreMemory implements ClientMutationStore {
       /** remove all the updates in the elements mutation from the updates in memory */
       const updatesPerPersective = MutationHelper.getUpdatesPerPerspective(elements);
       Array.from(updatesPerPersective.entries()).forEach(([perspectiveId, clearUpdates]) => {
+        // currentUpdate holds all the updates of the perspectiveId
         const currentUpdates = this.updates.get(perspectiveId);
         if (currentUpdates) {
-          const newUpdates = currentUpdates.filter((current) => !clearUpdates.includes(current));
-          this.updates.set(perspectiveId, newUpdates);
+          // delete updates that set the head to one of the heads in the updates of the clear `elements` array. We do this
+          // by finding all updates that should remain.
+          const nonDeletedUpdates = currentUpdates.filter((current) => {
+            // for each current update, return true (keep) if the clearUpdates DO NOT contain it.
+            const shouldDelete =
+              clearUpdates.findIndex(
+                (clear) =>
+                  clear.details.headId !== undefined &&
+                  clear.details.headId === current.details.headId
+              ) !== -1;
+            // if it should be deleted, return false so it is filtered out of the currentUpdates into the nonDeletedUpdates.
+            return !shouldDelete;
+          });
+
+          /** if there are remaining nonDeletedUpdates, set as the updates array for the perspective */
+          if (nonDeletedUpdates.length > 0) {
+            this.updates.set(perspectiveId, nonDeletedUpdates);
+          } else {
+            /** otherwise delete the entry from the map to clean the map key */
+            this.updates.delete(perspectiveId);
+          }
         }
       });
 
@@ -161,6 +170,7 @@ export class MutationStoreMemory implements ClientMutationStore {
       this.newPerspectives.clear();
       this.updates.clear();
       this.deletedPerspectives.clear();
+      this.perspectivesDetails.clear();
     }
   }
 

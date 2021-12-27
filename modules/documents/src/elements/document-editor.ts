@@ -38,6 +38,9 @@ export class DocumentEditor extends servicesConnect(LitElement) {
   @property({ type: Boolean, attribute: 'show-info' })
   showInfo = false;
 
+  @property({ type: Boolean, attribute: 'keep-info-padding' })
+  keepInfoPadding = false;
+
   @property({ type: Number, attribute: 'root-level' })
   rootLevel = 0;
 
@@ -73,6 +76,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
   doc: DocNode | undefined = undefined;
 
+  loadingPromise!: Promise<any>;
+
   protected editableRemotesIds!: string[];
   protected customBlocks!: CustomBlocks;
 
@@ -90,7 +95,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
 
     if (LOGINFO) this.logger.log('firstUpdated()', this.uref);
 
-    await this.loadDoc();
+    this.loadingPromise = this.loadDoc();
+    await this.loadingPromise;
     this.reloading = false;
   }
 
@@ -126,7 +132,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     this.reloading = false;
   }
 
-  async loadDoc() {
+  async loadDoc(): Promise<void> {
     if (LOGINFO) this.logger.log('loadDoc()', this.uref);
 
     if (!this.uref) return;
@@ -275,12 +281,7 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       remoteId: remoteId,
       perspectiveId: perspective.hash,
       indexData: {
-        linkChanges: {
-          onEcosystem: {
-            added: parents,
-            removed: [],
-          },
-        },
+        onEcosystem: parents,
       },
     };
 
@@ -315,6 +316,11 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     // optimistically set the dratf
     node.draft = draft;
 
+    /** index onEcosystem.
+     * onEcosystem is not really a formal and exaustive list
+     * of the perspective onEcosystem (all other perspectives of which
+     * this perspective is on their ecosystem), but a local mark used
+     * to flush portions of mutations based on their parents. */
     const parents: string[] = [node.uref];
     let parent = node.parent;
     while (parent !== undefined) {
@@ -328,18 +334,13 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       perspectiveId: node.uref,
       object: draft,
       indexData: {
-        linkChanges: {
-          onEcosystem: {
-            added: parents,
-            removed: [],
-          },
-        },
+        onEcosystem: parents,
       },
       flush: this.flushConfig,
     };
 
     if (LOGINFO) this.logger.log('updatePerspectiveData()', { update });
-    this.localEvees.updatePerspectiveData(update);
+    await this.localEvees.updatePerspectiveData(update);
   }
 
   setNodeCoordinates(parent?: DocNode, ix?: number) {
@@ -397,13 +398,12 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     index = index !== undefined ? index : currentChildren.length;
 
     /** create objects if elements is not an id */
-    const getNewNodes = elements.map((el, ix) => {
+    const getNewNodes = elements.map(async (el, ix) => {
       const elIndex = (index as number) + ix;
       if (typeof el !== 'string') {
         if (el.object !== undefined) {
-          /** element is an object from which a DocNode should be create */
-          const uref = this.createNode(el.object, node, elIndex);
-          return Promise.resolve(uref);
+          /** element is an entity from which a DocNode should be create */
+          return this.createNode(el.object, node, elIndex);
         } else {
           /** element is a DocNode */
           return Promise.resolve(el);
@@ -429,6 +429,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     });
 
     const newDraft = this.localEvees.behaviorFirst(node.draft, 'replaceChildren')(newChildren);
+
+    /** Optimistic execution. No waiting for the update to run, simply update the draft and move on */
     this.updateNode(node, newDraft);
 
     return removed;
@@ -876,26 +878,26 @@ export class DocumentEditor extends servicesConnect(LitElement) {
     // for the topNode (the docId), the uref can change, for the other nodes it can't (if it does, a new editor is rendered)
     const uref = node.coord.length === 1 && node.coord[0] === 0 ? this.uref : node.uref;
 
-    let paddingTop = '0px';
+    let marginTop = '-2.5px';
     if (node.draft.type === TextType.Title) {
       switch (node.level) {
         case 0:
-          paddingTop = '2px';
+          marginTop = '7px';
           break;
         case 1:
-          paddingTop = '2px';
+          marginTop = '4px';
           break;
         case 2:
-          paddingTop = '2px';
+          marginTop = '2px';
           break;
         default:
-          paddingTop = '2px';
+          marginTop = '2px';
           break;
       }
     }
 
     if (node.draftType === 'Quantity') {
-      paddingTop = '14px';
+      marginTop = '14px';
     }
 
     return html`
@@ -905,10 +907,14 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         @drop=${(e) => this.handleDrop(e, node)}
       >
         ${this.showInfo
-          ? html` <div class="evee-info" style=${`padding-top:${paddingTop}`}>
-              ${this.getEveeInfo ? this.getEveeInfo(uref) : ''}
+          ? html` <div class="evee-info" style=${`margin-top:${marginTop}`}>
+              ${this.getEveeInfo
+                ? this.getEveeInfo({ uref, parentId: node.parent ? node.parent.uref : undefined })
+                : ''}
             </div>`
-          : html`<div class="empty-evees-info"></div>`}
+          : this.keepInfoPadding
+          ? html`<div class="empty-evees-info"></div>`
+          : ''}
         <div class="node-content">
           ${nodeLense.render(node, {
             focus: () => this.focused(node),
@@ -1009,7 +1015,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       }
 
       * {
-        font-family: 'Lora', serif;
+        font-family: 'Lora', 'normal';
+        line-height: 1.8rem;
       }
 
       .editor-container {
@@ -1065,9 +1072,6 @@ export class DocumentEditor extends servicesConnect(LitElement) {
         margin: 0 0.2rem;
         height: inherit;
       }
-      .doc-endSpace {
-        /* height: 50vh; */
-      }
       .publish-button {
         width: 190px;
       }
@@ -1089,7 +1093,8 @@ export class DocumentEditor extends servicesConnect(LitElement) {
       .evee-info {
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: start;
+        margin-right: 0.9vw;
       }
 
       .empty-evees-info {

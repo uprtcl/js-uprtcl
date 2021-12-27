@@ -105,7 +105,7 @@ export class UprtclPopper extends LitElement {
       }
 
       .info-box {
-        color: rgba(0, 0, 0, 0.87);
+        color: var(--color, rgba(0, 0, 0, 0.87));
         z-index: 20;
         position: absolute;
         width: var(--box-width, 'initial');

@@ -1,1 +1,0 @@
-../../../packages/cortex/README.md

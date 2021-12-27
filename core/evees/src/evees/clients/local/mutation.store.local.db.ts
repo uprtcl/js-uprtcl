@@ -13,6 +13,10 @@ export interface NewPerspectiveLocal {
   newPerspective: NewPerspective;
 }
 
+export interface DeletedLocal {
+  perspectiveId: string;
+}
+
 export interface UpdateLocal {
   /** the id is a combination of perspectiveId and newHeadId */
   id: string;
@@ -25,7 +29,7 @@ export class MutationStoreDB extends Dexie {
   perspectivesDetails: Dexie.Table<PerspectiveCachedLocal, string>;
   newPerspectives: Dexie.Table<NewPerspectiveLocal, string>;
   updates: Dexie.Table<UpdateLocal, string>;
-  deletedPerspectives: Dexie.Table<string, string>;
+  deletedPerspectives: Dexie.Table<DeletedLocal, string>;
 
   constructor(prefix: string = 'client-local') {
     super(`${prefix}-evees-store`);

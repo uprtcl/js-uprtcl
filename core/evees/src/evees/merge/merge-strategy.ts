@@ -1,11 +1,10 @@
-import { Entity } from '../../cas/interfaces/entity';
-
 export interface MergeConfig {
   forceOwner?: boolean;
   detach?: boolean;
   recurse?: boolean;
   remote?: string;
   guardianId?: string;
+  addOnEcosystem?: string[];
 }
 
 export interface MergeStrategy {

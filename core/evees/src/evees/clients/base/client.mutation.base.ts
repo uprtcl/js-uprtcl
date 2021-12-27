@@ -8,7 +8,7 @@ import {
   PerspectiveGetResult,
   EveesMutation,
   SearchOptions,
-  FlushConfig,
+  ClientAndExploreCached,
   EveesMutationCreate,
   ClientAndExplore,
   ClientFull,
@@ -29,8 +29,8 @@ export enum ClientCachedEvents {
 
 /** Reusable implementation of a ClientMutation service.
  * Uses a ClientMutationStore to store mutations */
-export class ClientMutationBase implements ClientAndExplore {
-  logger = new Logger('ClientCachedWithBase');
+export class ClientMutationBase implements ClientAndExploreCached {
+  protected logger;
 
   /** A service to subsribe to udpate on perspectives */
   readonly events: EventEmitter;
@@ -42,11 +42,12 @@ export class ClientMutationBase implements ClientAndExplore {
   protected entityResolver!: EntityResolver;
 
   constructor(
-    readonly base: ClientAndExplore,
+    readonly base: ClientAndExploreCached,
     readonly mutationStore: ClientMutationStore,
-    readonly name: string = 'client',
-    readonly readCacheEnabled: boolean = true
+    readonly condensate: boolean = false,
+    readonly name: string = 'client'
   ) {
+    this.logger = new Logger(`ClientCached-${name}`);
     this.events = new EventEmitter();
     this.events.setMaxListeners(1000);
     this.updateQueue = new AsyncQueue();
@@ -88,14 +89,14 @@ export class ClientMutationBase implements ClientAndExplore {
     perspectiveId: string,
     options?: GetPerspectiveOptions
   ): Promise<PerspectiveGetResult> {
-    /** Always ask the base layer to get the non-mutated details as base details.
-     * There should be cache layer below so that this does not hit the remote */
-    const baseResult = await this.base.getPerspective(perspectiveId, options);
-
+    /** TODO: updates in the queue should override the mutationStore data */
     const details = await this.mutationStore.getPerspective(perspectiveId);
     if (details) {
-      return { details: lodash.merge(baseResult.details, details), slice: baseResult.slice };
+      return { details };
     }
+
+    /** If the mutation store don't have any details, hit the base layer */
+    const baseResult = await this.base.getPerspective(perspectiveId, options);
 
     return baseResult;
   }
@@ -120,22 +121,40 @@ export class ClientMutationBase implements ClientAndExplore {
     throw new Error('base client not defined or not have explore function');
   }
 
+  clearExplore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions): Promise<void> {
+    if (this.base && this.base.clearExplore) {
+      return this.base.clearExplore(searchOptions, fetchOptions);
+    }
+    throw new Error('base client not defined or not have explore function');
+  }
+
   async updatePerspectiveEffective(update: Update) {
     if (LOGINFO) this.logger.log(`${this.name} updatePerspectiveEffective()`, { update });
+
+    // merge details with existing ones
+    let currentDetails = await this.mutationStore.getPerspective(update.perspectiveId);
+
+    // if currentDetails are not defined in the mutation, ask the base layer details and build upon them
+    if (!currentDetails) {
+      const result = await this.base.getPerspective(update.perspectiveId);
+      currentDetails = result.details;
+    }
+
+    update.details = lodash.merge(currentDetails, update.details);
 
     await this.mutationStore.addUpdate(update);
 
     /** emit update */
-    const options: SearchOptions = {
-      start: { elements: [{ id: update.perspectiveId, direction: 'above' }] },
-    };
-
-    const { perspectiveIds: parentsIds } = await this.explore(options);
+    const onEcosystem = update.indexData
+      ? update.indexData.onEcosystem
+        ? update.indexData.onEcosystem
+        : []
+      : [];
 
     if (LOGINFO)
-      this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, parentsIds);
+      this.logger.log(`${this.name} event : ${ClientEvents.ecosystemUpdated}`, onEcosystem);
 
-    this.events.emit(ClientEvents.ecosystemUpdated, parentsIds);
+    this.events.emit(ClientEvents.ecosystemUpdated, onEcosystem);
 
     if (LOGINFO)
       this.logger.log(`${this.name} event : ${ClientEvents.updated}`, [update.perspectiveId]);
@@ -177,9 +196,7 @@ export class ClientMutationBase implements ClientAndExplore {
     await this.enqueueTask(() =>
       Promise.all(
         perspectiveIds.map(async (perspectiveId) => {
-          this.mutationStore.deletedPerspective(perspectiveId);
-          /** set the current known details of that perspective, can update is set to true */
-          this.mutationStore.deleteNewPerspective(perspectiveId);
+          await this.mutationStore.deletePerspective(perspectiveId);
         })
       )
     );
@@ -202,7 +219,8 @@ export class ClientMutationBase implements ClientAndExplore {
   }
 
   newPerspective(newPerspective: NewPerspective): Promise<void> {
-    if (LOGINFO) this.logger.log(`${this.name} newPerspective()`, { newPerspective });
+    if (LOGINFO)
+      this.logger.log(`${this.name} newPerspective() - ${JSON.stringify(newPerspective.update)}`);
     return this.update({ newPerspectives: [newPerspective] });
   }
 
@@ -224,9 +242,10 @@ export class ClientMutationBase implements ClientAndExplore {
         throw new Error('base not defined');
       }
 
-      const diff = await this.diff(options);
+      /** gets all changes (it also removes them from the cache!) */
+      const diff = await this.diff(options, this.condensate, true);
 
-      if (LOGINFO) this.logger.log(`${this.name} flush -diff`, diff);
+      if (LOGINFO) this.logger.log(`${this.name} flush - diff`, diff);
 
       // if levels !== 0, apply the mutatio to the base client
       await this.base.update(diff);
@@ -237,18 +256,20 @@ export class ClientMutationBase implements ClientAndExplore {
           await (this.base as ClientFull).flush(options, levels - 1);
         }
       }
-
-      await this.clear(diff);
     });
   }
 
   async clear(elements: EveesMutation): Promise<void> {
     if (LOGINFO) this.logger.log(`${this.name} clear()`, { updateQueue: this.updateQueue });
-    this.mutationStore.clear(elements);
+    await this.mutationStore.clear(elements);
   }
 
   /** a mutation with all the changes made relative to the base client */
-  async diff(options?: SearchOptions, condensate: boolean = false): Promise<EveesMutation> {
+  async diff(
+    options?: SearchOptions,
+    condensate: boolean = false,
+    clear: boolean = false
+  ): Promise<EveesMutation> {
     if (LOGINFO) this.logger.log(`${this.name} diff()`, {});
 
     const mutation = await this.mutationStore.diff(options);
@@ -259,6 +280,11 @@ export class ClientMutationBase implements ClientAndExplore {
         mutation,
         options.start.elements.map((el) => el.id)
       );
+    }
+
+    /** clears before udpates are condensed to remove intermediate ones too */
+    if (clear) {
+      await this.clear(mutation);
     }
 
     if (condensate) {

@@ -41,6 +41,9 @@ export class EveesInfoPopper extends servicesConnect(LitElement) {
   @property({ type: String, attribute: 'evee-color' })
   eveeColor!: string;
 
+  @property({ type: String })
+  position = 'right';
+
   @property({ type: Object })
   eveesInfoConfig: EveesInfoConfig = {};
 
@@ -104,7 +107,7 @@ export class EveesInfoPopper extends servicesConnect(LitElement) {
     return html`
       <uprtcl-popper
         id="info-popper"
-        position="right"
+        position=${this.position}
         @drop-down-changed=${(e) => (this.dropdownShown = e.detail.shown)}
       >
         <div

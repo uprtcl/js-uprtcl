@@ -13,16 +13,12 @@ import {
   EveesMutation,
   EveesMutationCreate,
   PerspectiveGetResult,
-  Entity,
   SearchOptions,
   SearchResult,
-  hashObject,
-  CidConfig,
-  EntityCreate,
-  ClientRemote,
   EntityRemote,
-  MutationHelper,
 } from '@uprtcl/evees';
+
+import { RemoteWithUI } from '@uprtcl/evees-ui';
 
 import { HttpAuthenticatedConnection } from '@uprtcl/http-provider';
 
@@ -33,7 +29,7 @@ import { HttpEntityRemote } from './evees.http.entity.remote';
 const evees_api = 'evees-v1';
 const LOGINFO = false;
 
-export class EveesHttp implements ClientRemote {
+export class EveesHttp implements RemoteWithUI {
   logger = new Logger('HTTP-EVEES-PROVIDER');
 
   accessControl: EveesAccessControlHttp;
@@ -187,6 +183,13 @@ export class EveesHttp implements ClientRemote {
     }
 
     if (LOGINFO) this.logger.log('getPerspective() - result', result);
+
+    if (!result) {
+      this.logger.warn(`Error fetching perspective ${perspectiveId}`);
+      result = {
+        details: {},
+      };
+    }
 
     return result;
   }

@@ -26,6 +26,7 @@ import { LocalAccessControl } from './access.control.local';
 import { EntityRemoteLocal } from './entity.remote.local';
 import { LocalExplore } from './perspectives.explore.local';
 import { PerspectivesStoreDB } from './perspectives.store.db';
+import { Proposals } from 'src/evees/proposals';
 
 const LOGINFO = false;
 export const LOCAL_REMOTE_ID = 'local';
@@ -100,34 +101,24 @@ export class ClientRemoteLocal implements ClientRemote {
           update.perspectiveId
         );
 
-        const current = await this.db.perspectivesDetails.get(update.perspectiveId);
+        const onEcosystem = update.indexData
+          ? update.indexData.onEcosystem
+            ? update.indexData.onEcosystem
+            : []
+          : [];
 
-        const onEcosystemChanges = IndexDataHelper.getArrayChanges(
-          update.indexData,
-          LinksType.onEcosystem
-        );
-        const childrenChanges = IndexDataHelper.getArrayChanges(
-          update.indexData,
-          LinksType.children
-        );
-
-        const currentOnEcosystem = current ? (current.onEcosystem ? current.onEcosystem : []) : [];
-        const currentChildren = current ? (current.children ? current.children : []) : [];
-
-        const newOnEcosystem = currentOnEcosystem.concat(
-          onEcosystemChanges.added.filter((e) => !currentOnEcosystem.includes(e))
-        );
-
-        const newChildren = currentOnEcosystem.concat(
-          childrenChanges.added.filter((e) => !currentChildren.includes(e))
-        );
+        const children = update.indexData
+          ? update.indexData.links
+            ? update.indexData.links.children
+            : []
+          : [];
 
         return this.db.perspectivesDetails.put({
           perspectiveId: update.perspectiveId,
           details: update.details,
           context: perspective.object.payload.context,
-          onEcosystem: newOnEcosystem,
-          children: newChildren,
+          onEcosystem: onEcosystem,
+          children,
         });
       })
     );
@@ -158,6 +149,10 @@ export class ClientRemoteLocal implements ClientRemote {
     fetchOptions?: GetPerspectiveOptions | undefined
   ): Promise<SearchResult> {
     return this.exploreService.explore(searchOptions, fetchOptions);
+  }
+
+  clearExplore(searchOptions: SearchOptions, fetchOptions?: GetPerspectiveOptions): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   userId?: string | undefined;

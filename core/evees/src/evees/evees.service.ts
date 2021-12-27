@@ -24,6 +24,7 @@ import {
   GetPerspectiveOptions,
   SearchResult,
   Secured,
+  IndexData,
 } from './interfaces/index';
 
 import { HasChildren, LinkingBehaviorNames } from '../patterns/behaviours/has-links';
@@ -34,7 +35,6 @@ import { PatternRecognizer } from '../patterns/recognizer/pattern-recognizer';
 
 import { createCommit, getHome } from './default.perspectives';
 import { ClientMutationMemory } from './clients/memory/mutation.memory';
-import { arrayDiff } from './merge/utils';
 import { FindAncestor } from './utils/find.ancestor';
 import { Proposals } from './proposals/proposals';
 import { Entity, EntityCreate } from './interfaces/entity';
@@ -83,15 +83,31 @@ interface PendingUpdateDetails {
   commit: Secured<Commit>;
   data: Entity;
   timeout?: number;
+  updatePromise?: Promise<void>;
 }
 
+/**
+ * This is the entry point to all \_Prtcl features. Apps should use one instance of this class as the interface with
+ * \_Prtcl data. The EveesService behaves as a `Client` but includes several other support methods. */
 export class Evees implements Client {
+  /** Subscribe to events of type `EveesEvents` */
   readonly events: EventEmitter;
+
   protected logger = new Logger('Evees');
 
-  /** debounce updates to the same perspective */
+  /**
+   * Keeps track of pending updates to all perspectives and can be used to debounce (overwrite)
+   * new events over penging ones.
+   */
   protected pendingUpdates: Map<string, PendingUpdateDetails> = new Map();
 
+  /** Instantiate a new instance of the EveesService:
+   * @param cient: A full Client that supports mutations and explore.
+   * @param entityResolver: The global entityResolver.
+   * @param remotes: An array of the ClientRemotes registered in the application
+   * @param config: User configuration of the EveesService.
+   * @param modules: The EveesContentModules installed in this app.
+   */
   constructor(
     private client: ClientFull,
     readonly entityResolver: EntityResolver,
@@ -106,16 +122,31 @@ export class Evees implements Client {
 
   proposals?: Proposals | undefined;
 
+  /**
+   * Get the actual client isntance used by the EveesService
+   * */
   getClient(): ClientMutation {
     return this.client;
   }
 
+  /**
+   * Get the ProposalsService of the client
+   * */
   getProposals(): Proposals | undefined {
     return this.client.proposals;
   }
 
+  /**
+   * @description: Create a new instance of the EveesService with another name, client or configuration. If no client
+   * is provided, a new inmemory client is created on top of the current client.
+   *
+   * @param name (optional): The name of the client (useful for debugging)
+   * @param client (optional): The base client to be used on the new EveesService.
+   * @param config (optional): The EveesConfig config of the new EveesService.
+   * @returns The new instance of the EveesService.
+   */
   clone(name: string = 'new-client', client?: ClientFull, config?: EveesConfig): Evees {
-    client = client || new ClientMutationMemory(this.client, name);
+    client = client || new ClientMutationMemory(this.client, false, name);
 
     return new Evees(
       client,
@@ -127,8 +158,14 @@ export class Evees implements Client {
     );
   }
 
-  /** Clone a new Evees service using another client that keeps the client of the curren service as it's based
-   * client. Useful to create temporary workspaces to compute differences and merges without affecting the app client. */
+  /**
+   * @description: Clone a new instance of this `EveesService` using `this.clone()` and apply a state mutation.
+   *
+   * @param name (optional): The name of the client (useful for debugging)
+   * @param client (optional): The base client to be used on the new EveesService.
+   * @param mutation (optional): The EveesMutation with the state changes with which the new EveesService will be initialized.
+   * @returns The new instance of the EveesService.
+   */
   async cloneAndUpdate(
     name: string = 'NewClient',
     client?: ClientFull,
@@ -143,12 +180,24 @@ export class Evees implements Client {
     return evees;
   }
 
+  /**
+   * @description: Find a remote from the list of registered EveesRemote that matches the input query.
+   *
+   * @param query
+   * @returns
+   */
   findRemote<T extends ClientRemote>(query: string): T {
     const remote = this.remotes.find((r) => r.id.includes(query));
     if (!remote) throw new Error(`remote starting with ${query} not found`);
     return remote as T;
   }
 
+  /**
+   * @description: Returns the EveesRemote that exactly matches the `remoteId`.
+   *
+   * @param remoteId
+   * @returns
+   */
   getRemote<T extends ClientRemote>(remoteId?: string): T {
     if (remoteId) {
       const remote = this.remotes.find((r) => r.id === remoteId);
@@ -159,6 +208,12 @@ export class Evees implements Client {
     }
   }
 
+  /**
+   * @description: Return the EveesRemote of a perspective out the perspective id.
+   *
+   * @param perspectiveId
+   * @returns
+   */
   async getPerspectiveRemote<T extends ClientRemote>(perspectiveId: string): Promise<T> {
     const perspective = await this.getEntity(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
@@ -166,39 +221,107 @@ export class Evees implements Client {
     return this.getRemote<T>(remoteId);
   }
 
+  /**
+   * @description: Return the context of a perspective out of the perspective id.
+   *
+   * @param perspectiveId
+   * @returns
+   */
   async getPerspectiveContext(perspectiveId: string): Promise<string> {
     const perspective = await this.getEntity<Signed<Perspective>>(perspectiveId);
     if (!perspective) throw new Error('perspective not found');
     return perspective.object.payload.context;
   }
 
+  /**
+   * @description: Directly expose the getEntity method of the entityResolver
+   *
+   * @param hash
+   * @returns
+   */
   async getEntity<T = any>(hash: string): Promise<Entity<T>> {
     return this.entityResolver.getEntity<T>(hash);
   }
 
+  /**
+   * @description: Directly expose the getEntities method of the entityResolver
+   *
+   * @param hashes
+   * @returns
+   */
   getEntities(hashes: string[]): Promise<Entity<any>[]> {
     return this.entityResolver.getEntities(hashes);
   }
 
+  /**
+   * @description: Directly expose the hashObject method of the entityResolver
+   *
+   * @param entity
+   * @param putFlag
+   * @returns
+   */
   async hashObject(entity: EntityCreate, putFlag: boolean = true): Promise<Entity> {
     return this.entityResolver.hashObject(entity, putFlag);
   }
 
+  /**
+   * @description: Directly expose the putEntity method of the entityResolver
+   *
+   * @param entity
+   * @returns
+   */
   async putEntity(entity: Entity) {
     return this.entityResolver.putEntity(entity);
   }
 
+  /**
+   * @description: Directly expose the explore method of the client service
+   *
+   * @param searchOptions
+   * @param fetchOptions
+   * @returns
+   */
   async explore(
     searchOptions: SearchOptions,
     fetchOptions?: GetPerspectiveOptions
   ): Promise<SearchResult> {
-    if (!(this.client as any).explore) {
+    if (!this.client.explore) {
       throw new Error('explore not defined');
     }
 
     return this.client.explore(searchOptions, fetchOptions);
   }
 
+  /**
+   * @description: A method to manually clear the cache of a explore query to force
+   * hitting the underlying layers. Search results reactivity is way too complex,
+   * so applications need to manually call this method when they make updates that
+   * they they know will change the results of a queries they want to see updates.
+   *
+   * Otherwise the query will return the latest cached results.
+   *
+   * @param searchOptions
+   * @param fetchOptions
+   * @returns
+   */
+  async clearExplore(
+    searchOptions: SearchOptions,
+    fetchOptions?: GetPerspectiveOptions
+  ): Promise<void> {
+    if (!this.client.clearExplore) {
+      throw new Error('explore not defined');
+    }
+
+    return this.client.clearExplore(searchOptions, fetchOptions);
+  }
+
+  /**
+   * @description: Returns the current head of a perpective.
+   *
+   * @param perspectiveId
+   * @param options
+   * @returns
+   */
   async getPerspective(
     perspectiveId: string,
     options?: GetPerspectiveOptions
@@ -304,7 +427,7 @@ export class Evees implements Client {
   private hasBehavior(object: object, behaviorName: string) {
     try {
       this.behavior(object, behaviorName);
-    } catch (e) {
+    } catch (e: any) {
       if (e.code === BEHAVIOUR_NOT_FOUND_ERROR) {
         return false;
       } else {
@@ -319,6 +442,16 @@ export class Evees implements Client {
   behaviorFirst<T = any>(object: object, behaviorName: string) {
     const allBehaviors = this.behavior(object, behaviorName);
     return allBehaviors[0];
+  }
+
+  tryBehaviorFirst<T = any>(object: object, behaviorName: string) {
+    try {
+      const allBehaviors = this.behavior(object, behaviorName);
+      return allBehaviors[0];
+    } catch (e) {
+      console.warn(e);
+      return undefined;
+    }
   }
 
   /** concatenate the results of behaviors matched by this object,
@@ -367,30 +500,16 @@ export class Evees implements Client {
       if (has) {
         const children = this.behaviorConcat(data.object, patternName);
 
-        let oldChildren: string[] = [];
-
-        if (head && head.object.payload.parentsIds.length > 0) {
-          const parent = await this.getEntity<Signed<Commit>>(head.object.payload.parentsIds[0]);
-          const oldData = await this.getEntity(parent.object.payload.dataId);
-
-          const oldHas = this.hasBehavior(oldData.object, patternName);
-          oldChildren = oldHas ? this.behaviorConcat(oldData.object, patternName) : [];
-        }
-
-        const { added, removed } = arrayDiff(oldChildren, children);
-
         if (!update.indexData) {
           update.indexData = {};
         }
 
+        if (!update.indexData.links) {
+          update.indexData.links = {};
+        }
+
         /** set the details */
-        update.indexData.linkChanges = {
-          ...update.indexData.linkChanges,
-          [patternName]: {
-            added,
-            removed,
-          },
-        };
+        update.indexData.links[patternName] = children;
       }
     }
 
@@ -411,6 +530,7 @@ export class Evees implements Client {
 
   /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
   async newPerspective(newPerspective: NewPerspective) {
+    if (LOGINFO) this.logger.log(`newPerspective`, { newPerspective });
     await this.entityResolver.putEntity(newPerspective.perspective);
     newPerspective.update = await this.appendIndexing(newPerspective.update);
     return this.client.newPerspective(newPerspective);
@@ -421,7 +541,7 @@ export class Evees implements Client {
     await this.appendIndexing(update);
   }
 
-  /** A helper method that injects the added and remvoed children to a newPerspective object and send it to the client */
+  /** A helper method that injects the added and removed children to a newPerspective object and send it to the client */
   async updatePerspective(update: Update, flush?: FlushConfig) {
     if (LOGINFO) this.logger.log('updatePerspective()', update);
     await this.indexUpdate(update);
@@ -435,6 +555,8 @@ export class Evees implements Client {
 
   // add indexing data to all updates on a mutation
   async update(mutation: EveesMutationCreate) {
+    if (LOGINFO) this.logger.log(`update`, { mutation });
+
     if (mutation.newPerspectives) {
       await Promise.all(
         mutation.newPerspectives.map(async (np) => {
@@ -462,7 +584,9 @@ export class Evees implements Client {
    * @ {PartialPerspective} - Optional perspective details
    * @ {string} parentId - ID of the parent object
    */
-  async createEvee(input: CreateEvee): Promise<string> {
+  async createEvee(input: CreateEvee = {}): Promise<string> {
+    if (LOGINFO) this.logger.log(`createEvee`, { input });
+
     let { remoteId } = input;
     const { object, partialPerspective, guardianId, indexData } = input;
 
@@ -508,6 +632,7 @@ export class Evees implements Client {
         details: {
           headId,
           guardianId,
+          canUpdate: true,
         },
         indexData,
       },
@@ -539,11 +664,11 @@ export class Evees implements Client {
   async awaitPending() {
     const pending = Array.from(this.pendingUpdates.entries());
     await Promise.all(
-      pending.map(([perspectiveId, e]) => {
-        if (e.timeout) {
-          clearTimeout(e.timeout);
+      pending.map(([perspectiveId, pending]) => {
+        if (pending.timeout) {
+          clearTimeout(pending.timeout);
         }
-        return this.executeUpdate(perspectiveId);
+        return this.executeUpdateWrapper(perspectiveId);
       })
     );
   }
@@ -557,26 +682,54 @@ export class Evees implements Client {
     return this.client.diff(options);
   }
 
-  async executeUpdate(perspectiveId: string) {
+  /** store the executeUpdate promise to track its execution and support waiting for it to be finisihed */
+  async executeUpdateWrapper(perspectiveId: string) {
     const pending = this.pendingUpdates.get(perspectiveId);
     if (!pending) throw new Error(`pending action for ${perspectiveId} undefined`);
 
-    this.pendingUpdates.delete(perspectiveId);
-
     if (LOGINFO)
-      this.logger.log('executePending()', {
+      this.logger.log('executeUpdateWrapper()', {
         perspectiveId,
+        pending,
         pendingUpdates: Array.from(this.pendingUpdates.entries()),
       });
 
-    await Promise.all([this.putEntity(pending.commit), this.putEntity(pending.data)]);
+    /** once the updatePromise is set, the getPerspective will return that new head as the current
+     * head
+     * TODO: We are not supporting reentring calls to updatePerspectiveData. Users must wait before
+     * calling it again.*/
 
-    await this.updatePerspective(pending.update, pending.flush);
+    pending.updatePromise = this.executeUpdate(pending);
+    if (LOGINFO)
+      this.logger.log('executeUpdateWrapper() - executing update', {
+        promise: pending.updatePromise,
+      });
+
+    /** await the update to be executed */
+    await pending.updatePromise;
+
+    this.pendingUpdates.delete(perspectiveId);
 
     if (this.pendingUpdates.size === 0) {
       if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, false);
       this.events.emit(EveesEvents.pending, false);
     }
+
+    if (LOGINFO)
+      this.logger.log('executeUpdateWrapper() - deleted', {
+        pendingUpdates: Array.from(this.pendingUpdates.entries()),
+      });
+  }
+
+  async executeUpdate(pending: PendingUpdateDetails) {
+    if (LOGINFO)
+      this.logger.log('executePending()', {
+        pending,
+        pendingUpdates: Array.from(this.pendingUpdates.entries()),
+      });
+
+    await Promise.all([this.putEntity(pending.commit), this.putEntity(pending.data)]);
+    await this.updatePerspective(pending.update, pending.flush);
   }
 
   /** Handles the pending updates, removes the old one if needed and creates a new
@@ -595,11 +748,10 @@ export class Evees implements Client {
     if (LOGINFO) this.logger.log(`event : ${EveesEvents.pending}`, true);
     this.events.emit(EveesEvents.pending, true);
 
-    /** create a timeout to execute (queue) this update */
+    /** create a timeout to execute this update */
     this.pendingUpdates.set(perspectiveId, updateDetails);
-
     updateDetails.timeout = setTimeout(
-      () => this.executeUpdate(perspectiveId),
+      () => this.executeUpdateWrapper(perspectiveId),
       updateDetails.flush.debounce
     );
   }
@@ -616,6 +768,13 @@ export class Evees implements Client {
     let parentsIds: string[] | undefined = undefined;
 
     if (!onHeadId) {
+      const pending = this.pendingUpdates.get(perspectiveId);
+      /** check if there is an update currently being executed,
+       * and wait for it if it does */
+      if (pending && pending.updatePromise) {
+        await pending.updatePromise;
+      }
+
       /** the parent is chosen based on the current head on the client */
       const { details } = await this.client.getPerspective(perspectiveId);
       onHeadId = details.headId;
@@ -633,7 +792,7 @@ export class Evees implements Client {
 
     const head = await this.hashObject({ object: headObject, remote: remote.id });
 
-    if (LOGINFO) this.logger.log('updatePerspectiveData() - createCommit after', head);
+    if (LOGINFO) this.logger.log('updatePerspectiveData() - createCommit after', { options, head });
 
     const update: Update = {
       perspectiveId,
@@ -892,7 +1051,8 @@ export class Evees implements Client {
     perspectiveId: string,
     remoteId?: string,
     guardianId?: string,
-    options: ForkOptions = { recurse: true, detach: false }
+    options: ForkOptions = { recurse: true, detach: false },
+    indexData?: IndexData
   ): Promise<string> {
     const refPerspective: Entity<Signed<Perspective>> = await this.getEntity(perspectiveId);
     const remote = await this.getRemote(remoteId);
@@ -929,6 +1089,7 @@ export class Evees implements Client {
       perspective,
       update: {
         perspectiveId: perspective.hash,
+        indexData,
         details: { headId: forkCommitId, guardianId },
       },
     });
@@ -994,9 +1155,13 @@ export class Evees implements Client {
     }
   }
 
-  async getHome(remoteId?: string, userId?: string): Promise<Secured<Perspective>> {
+  async getHome(
+    remoteId?: string,
+    userId?: string,
+    nonce: number = 0
+  ): Promise<Secured<Perspective>> {
     const remote = this.getRemote(remoteId);
-    const home = await getHome(remote, userId ? userId : remote.userId);
+    const home = await getHome(remote, userId ? userId : remote.userId, nonce);
     return home;
   }
 

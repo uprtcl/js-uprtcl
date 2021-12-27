@@ -7,6 +7,8 @@ export interface FromTo {
   to?: string;
   from?: string;
 }
+
+const LOGINFO = false;
 export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   perspectivesByContext: Map<string, FromTo> = new Map();
 
@@ -46,10 +48,12 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     const data = await this.evees.getPerspectiveData(perspectiveId);
     const children = this.evees.behaviorConcat(data.object, 'children');
 
+    if (LOGINFO) this.logger.log('readPerspective()', { data, children });
+
     const promises = children.map(async (child) => {
       const isPerspective = await this.isPattern(child, PerspectiveType);
       if (isPerspective) {
-        this.readPerspective(child, to);
+        await this.readPerspective(child, to);
       } else {
         Promise.resolve();
       }
@@ -59,6 +63,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
   }
 
   async readAllSubcontexts(toPerspectiveId: string, fromPerspectiveId: string): Promise<void> {
+    if (LOGINFO) this.logger.log('readAllSubcontexts()', { toPerspectiveId, fromPerspectiveId });
     const promises = [
       this.readPerspective(toPerspectiveId, true),
       this.readPerspective(fromPerspectiveId, false),
@@ -72,10 +77,17 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     fromPerspectiveId: string,
     config: MergeConfig
   ) {
+    if (LOGINFO)
+      this.logger.log('mergePerspectivesExternal()', {
+        toPerspectiveId,
+        fromPerspectiveId,
+        config,
+      });
     /** reset internal state */
     this.perspectivesByContext = new Map();
     /** by default use the toPerspectiveId as guardian */
     config.guardianId = config.guardianId || toPerspectiveId;
+    config.addOnEcosystem = config.addOnEcosystem || [toPerspectiveId];
 
     await this.readAllSubcontexts(toPerspectiveId, fromPerspectiveId);
     return this.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
@@ -86,6 +98,8 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     fromPerspectiveId: string,
     config: MergeConfig
   ): Promise<string> {
+    if (LOGINFO)
+      this.logger.log('mergePerspectives()', { toPerspectiveId, fromPerspectiveId, config });
     return super.mergePerspectives(toPerspectiveId, fromPerspectiveId, config);
   }
 
@@ -103,6 +117,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
     modificationsLinks: string[][],
     config: MergeConfig
   ): Promise<string[]> {
+    if (LOGINFO) this.logger.log('mergeChildren()', { originalLinks, modificationsLinks, config });
     if (!this.perspectivesByContext) throw new Error('perspectivesByContext undefined');
 
     /** The context is used as Merge ID for perspective to have a context-based merge. For other
@@ -119,6 +134,7 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
 
     const mergedLinks = mergeArrays(originalMergeIds, modificationsMergeIds);
 
+    if (LOGINFO) this.logger.log('mergeChildren() - mergedLinks', { mergedLinks });
     const dictionary = this.perspectivesByContext;
 
     const mergeLinks = mergedLinks.map(
@@ -132,6 +148,9 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
         const needsSubperspectiveMerge =
           perspectivesByContext.to !== undefined && perspectivesByContext.from !== undefined;
 
+        if (LOGINFO)
+          this.logger.log('mergeChildren() - mergedLinks', { recurse, needsSubperspectiveMerge });
+
         if (recurse && needsSubperspectiveMerge) {
           /** Two perspectives of the same context are merged, keeping the "to" perspecive id,
            *  and updating its head (here is where recursion start) */
@@ -139,8 +158,17 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
           config = {
             guardianId: perspectivesByContext.to,
             ...config,
+            addOnEcosystem: (config.addOnEcosystem ? config.addOnEcosystem : []).concat(
+              perspectivesByContext.to ? perspectivesByContext.to : []
+            ),
           };
 
+          if (LOGINFO)
+            this.logger.log('mergeChildren() -  Two perspectives of the same context are merged', {
+              to: perspectivesByContext.to,
+              from: perspectivesByContext.from,
+              config,
+            });
           await this.mergePerspectives(
             perspectivesByContext.to as string,
             perspectivesByContext.from as string,
@@ -151,19 +179,37 @@ export class RecursiveContextMergeStrategy extends SimpleMergeStrategy {
         } else {
           if (perspectivesByContext.to) {
             /** if the perspective is only present in the "to", just keep it */
+            if (LOGINFO)
+              this.logger.log('mergeChildren() -  perspective is only present in the "to"', {
+                to: perspectivesByContext.to,
+              });
             return perspectivesByContext.to;
           } else {
             /** otherwise, if merge config.forceOwner and this perspective is only present in the
              * "from", a fork will be created using parentId as the source for permissions*/
+            if (LOGINFO)
+              this.logger.log('mergeChildren() -  only present in the from', {
+                from: perspectivesByContext.from,
+              });
             if (config.forceOwner) {
+              if (LOGINFO)
+                this.logger.log('mergeChildren() -  forkPerspective', {
+                  id: perspectivesByContext.from,
+                  config,
+                });
               const newPerspectiveId = await this.evees.forkPerspective(
                 perspectivesByContext.from as string,
                 config.remote,
                 config.guardianId,
-                { recurse: true, detach: config.detach !== undefined ? config.detach : false }
+                { recurse: true, detach: config.detach !== undefined ? config.detach : false },
+                {
+                  onEcosystem: config.addOnEcosystem ? config.addOnEcosystem : [],
+                }
               );
               return newPerspectiveId;
             } else {
+              if (LOGINFO)
+                this.logger.log('mergeChildren() - keep', { id: perspectivesByContext.from });
               return perspectivesByContext.from as string;
             }
           }

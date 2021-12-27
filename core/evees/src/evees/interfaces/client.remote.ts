@@ -3,12 +3,12 @@ import { PartialPerspective, Perspective, Secured } from './types';
 import { Proposals } from '../proposals/proposals';
 import { Ready } from '../../utils/ready';
 import { ConnectionLogged } from './connection.logged';
-import { ClientAndExplore } from './client.explore';
+import { ClientAndExplore, ClientAndExploreCached } from './client.explore';
 import { EntityRemote } from './entity.remote';
 
 /** A remote is a Client that connects to backend. It is identified within
  * the app with a unique id. */
-export interface ClientRemote extends ClientAndExplore, Ready, ConnectionLogged {
+export interface ClientRemote extends ClientAndExploreCached, Ready, ConnectionLogged {
   accessControl: AccessControl;
   proposals?: Proposals;
   /**

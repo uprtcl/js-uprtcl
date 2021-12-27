@@ -14,6 +14,7 @@ import { EveesDiffUpdate } from './evees-diff-update';
 import { UprtclEntity } from './uprtcl-entity';
 import { ProposalsDropdown } from './evees-proposals-dropdown';
 import { EveesDiffRow } from './evees-diff-row';
+import { EveesInfoDebugger } from './evees-info.debugger';
 
 export const registerEveesElements = (): void => {
   customElements.define('evees-info-popper', EveesInfoPopper);
@@ -29,6 +30,7 @@ export const registerEveesElements = (): void => {
   customElements.define('evees-perspective-row', EveesPerspectiveRow);
   customElements.define('evees-proposal-row', EveesProposalRow);
   customElements.define('evees-perspective-icon', EveesPerspectiveIcon);
+  customElements.define('evees-info-debug', EveesInfoDebugger);
 
   customElements.define('uprtcl-entity', UprtclEntity);
 };

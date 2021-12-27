@@ -1,4 +1,12 @@
-import { LitElement, property, html, css, query, TemplateResult } from 'lit-element';
+import {
+  LitElement,
+  property,
+  html,
+  css,
+  query,
+  TemplateResult,
+  internalProperty,
+} from 'lit-element';
 
 import { MenuOptions, UprtclDialog } from '@uprtcl/common-ui';
 import {
@@ -53,37 +61,37 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   @property({ type: String, attribute: false })
   entityType: string | undefined = undefined;
 
-  @property({ attribute: false })
+  @internalProperty()
   loading: Boolean = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   isLogged = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   isLoggedOnDefault;
 
-  @property({ attribute: false })
+  @internalProperty()
   forceUpdate = 'true';
 
-  @property({ attribute: false })
+  @internalProperty()
   showUpdatesDialog = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   loggingIn = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   creatingNewPerspective = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   proposingUpdate = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   makingPublic = false;
 
-  @property({ attribute: false })
+  @internalProperty()
   firstHasChanges!: boolean;
 
-  @property({ attribute: false })
+  @internalProperty()
   merging = false;
 
   @query('#updates-dialog')
@@ -92,7 +100,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
   @query('#evees-diff-explorer')
   eveesDiffEl!: EveesDiffExplorer;
 
-  @property({ attribute: false })
+  @internalProperty()
   eveesDiffInfoMessage!: TemplateResult;
 
   perspectiveData!: PerspectiveData;

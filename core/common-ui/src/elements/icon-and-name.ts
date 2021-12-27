@@ -33,10 +33,10 @@ export class UprtclIconAndName extends LitElement {
           position: relative;
         }
         .icon-container {
-          margin: 5px;
+          width: var(--icon-margin);
           overflow: hidden;
-          width: 40px;
-          height: 40px;
+          width: var(--icon-size, 40px);
+          height: var(--icon-size, 40px);
           border-radius: var(--border-radius-complete);
           flex: 0 0 auto;
         }
@@ -45,8 +45,10 @@ export class UprtclIconAndName extends LitElement {
           height: 100%;
         }
         .name-container {
-          color: #636668;
-          font-weight: bold;
+          color: var(--font-color, #636668);
+          font-weight: var(--font-weight, bold);
+          font-size: var(--font-size);
+          margin-left: var(--name-margin-left, 6px);
           white-space: nowrap;
         }
         .overlay {

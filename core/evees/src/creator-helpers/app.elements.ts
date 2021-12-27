@@ -15,6 +15,7 @@ export interface AppElement {
 }
 
 const LOGINFO = false;
+
 /** the relative (to home) path of each app element */
 export class AppElements {
   readonly remote: ClientRemote;
@@ -24,10 +25,10 @@ export class AppElements {
     this.remote = this.evees.getRemote(remoteId);
   }
 
-  async check(): Promise<void> {
+  async check(nonce: number = 0): Promise<void> {
     if (LOGINFO) this.logger.log('check()');
     /** home space perspective is deterministic */
-    this.home.perspective = await this.evees.getHome(this.remote.id);
+    this.home.perspective = await this.evees.getHome(this.remote.id, undefined, nonce);
 
     await this.checkOrCreateHome(this.home.perspective as Secured<Perspective>);
 
@@ -99,12 +100,7 @@ export class AppElements {
 
     /** set onEcosystem indexing to then filter these at flush of the mutation stores */
     const indexData: IndexData = {
-      linkChanges: {
-        onEcosystem: {
-          added: [this.home.perspective.hash],
-          removed: [],
-        },
-      },
+      onEcosystem: [this.home.perspective.hash],
     };
 
     await this.evees.createEvee({
@@ -155,7 +151,7 @@ export class AppElements {
   }
 
   async initTree(element: AppElement) {
-    if (LOGINFO) this.logger.log('initTree()', { element });
+    this.logger.log('initTree()', { element });
 
     // Create perspectives from top to bottom
     if (element.children) {
