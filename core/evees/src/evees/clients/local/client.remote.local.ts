@@ -21,8 +21,9 @@ import {
   Secured,
   Update,
 } from '../../interfaces';
-import { LocalAccessControl } from './access.control.local';
+import { Proposals } from '../../proposals/proposals';
 
+import { LocalAccessControl } from './access.control.local';
 import { EntityRemoteLocal } from './entity.remote.local';
 import { LocalExplore } from './perspectives.explore.local';
 import { PerspectivesStoreDB } from './perspectives.store.db';
@@ -33,7 +34,7 @@ const LOGINFO = false;
 export class ClientRemoteLocal implements ClientRemote {
   logger = new Logger('ClientCachedWithBase');
 
-  id: string = LOCAL_REMOTE_ID;
+  id: string;
   defaultPath: string = '';
 
   entityRemote: EntityRemote;
@@ -41,17 +42,20 @@ export class ClientRemoteLocal implements ClientRemote {
 
   db: PerspectivesStoreDB;
   exploreService: ClientExplore;
+  proposals!: Proposals;
 
   constructor(
     readonly entityResolver: EntityResolver,
     db?: PerspectivesStoreDB,
     entityRemote?: EntityRemote,
-    exploreService?: LocalExplore
+    exploreService?: LocalExplore,
+    id: string = LOCAL_REMOTE_ID
   ) {
     this.entityRemote = entityRemote || new EntityRemoteLocal();
     this.db = db || new PerspectivesStoreDB();
     this.exploreService = exploreService || new LocalExplore(db);
     this.accessControl = new LocalAccessControl(this.entityResolver);
+    this.id = id;
   }
 
   async ready() {}

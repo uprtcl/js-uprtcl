@@ -3,7 +3,7 @@ import { PartialPerspective, Perspective, Secured } from './types';
 import { Proposals } from '../proposals/proposals';
 import { Ready } from '../../utils/ready';
 import { ConnectionLogged } from './connection.logged';
-import { ClientAndExplore, ClientAndExploreCached } from './client.explore';
+import { ClientAndExploreCached } from './client.explore';
 import { EntityRemote } from './entity.remote';
 
 /** A remote is a Client that connects to backend. It is identified within

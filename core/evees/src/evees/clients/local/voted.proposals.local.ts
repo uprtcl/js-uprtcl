@@ -33,23 +33,23 @@ export class VotedProposalsLocal implements VotedProposals {
     };
   }
 
-  createProposal(newProposal: Proposal): Promise<string> {
+  async createProposal(newProposal: Proposal): Promise<string> {
+    return '';
+  }
+
+  async getProposal(proposalId: string): Promise<Proposal> {
     throw new Error('Method not implemented.');
   }
 
-  getProposal(proposalId: string): Promise<Proposal> {
-    throw new Error('Method not implemented.');
+  async getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
+    return [];
   }
 
-  getProposalsToPerspective(perspectiveId: string): Promise<string[]> {
-    throw new Error('Method not implemented.');
+  async canPropose(proposalId: string, userId?: string): Promise<boolean> {
+    return true;
   }
 
-  canPropose(proposalId: string, userId?: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
-  }
-
-  canDelete(proposalId: string, userId?: string): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async canDelete(proposalId: string, userId?: string): Promise<boolean> {
+    return true;
   }
 }

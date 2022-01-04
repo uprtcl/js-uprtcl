@@ -9,6 +9,7 @@ import {
   GetPerspectiveOptions,
   ClientExplore,
   Update,
+  EntityResolver,
 } from '../../interfaces';
 
 import { PerspectiveLocal, PerspectivesStoreDB } from './perspectives.store.db';
@@ -45,6 +46,22 @@ export class LocalExplore implements ClientExplore {
               return [];
             }
           } else {
+            if (el.forks && el.forks.independent) {
+              if (!this.evees.entityResolver) {
+                throw new Error('cant explore forks without an entity resolver');
+              }
+              const perspective = await this.evees.entityResolver.getEntity<Signed<Perspective>>(
+                el.id
+              );
+              if (perspective) {
+                return this.db.perspectivesDetails
+                  .where('context')
+                  .equals(perspective.object.payload.context)
+                  .primaryKeys();
+              } else {
+                return [];
+              }
+            }
             return this.db.perspectivesDetails.where('onEcosystem').equals(el.id).primaryKeys();
           }
         })

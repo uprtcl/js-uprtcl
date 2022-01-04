@@ -1,4 +1,4 @@
-import { property, LitElement, internalProperty } from 'lit-element';
+import { property, LitElement, state } from 'lit-element';
 
 import {
   ClientEvents,
@@ -24,16 +24,16 @@ export class EveesBaseElement<T extends object = object> extends servicesConnect
   @property({ type: String, attribute: 'ui-parent' })
   uiParentId!: string;
 
-  @internalProperty()
+  @state()
   loading: boolean = true;
 
-  @internalProperty()
+  @state()
   isLogged: boolean = false;
 
-  @internalProperty()
+  @state()
   localEvees!: Evees;
 
-  @internalProperty()
+  @state()
   guardianId!: string | undefined;
 
   canUpdate!: boolean;

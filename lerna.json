@@ -1,4 +1,11 @@
 {
-  "packages": ["core/evees", "core/evees-ui", "core/common-ui", "modules/documents", "samples"],
+  "packages": [
+    "core/evees",
+    "core/evees-ui",
+    "core/common-ui",
+    "modules/documents",
+    "modules/wikis",
+    "samples"
+  ],
   "version": "independent"
 }

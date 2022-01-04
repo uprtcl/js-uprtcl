@@ -17,3 +17,4 @@ export * from './local/entity.remote.local';
 export * from './local/client.remote.local';
 export * from './local/perspectives.store.db';
 export * from './local/mutation.local';
+export * from './local/voted.proposals.local';

@@ -1,4 +1,4 @@
-import { html, css, LitElement, property, internalProperty, query } from 'lit-element';
+import { html, css, LitElement, property, state, query } from 'lit-element';
 
 import {
   ClientEvents,
@@ -30,25 +30,25 @@ export class EditableWiki extends servicesConnect(LitElement) {
   @query('#proposals-popper')
   proposalsPopper!: UprtclPopper;
 
-  @internalProperty()
+  @state()
   selectedPageId: string | undefined;
 
-  @internalProperty()
+  @state()
   isLogged = false;
 
-  @internalProperty()
+  @state()
   checkingChanges = false;
 
-  @internalProperty()
+  @state()
   canPropose = false;
 
-  @internalProperty()
+  @state()
   hasChanges = false;
 
-  @internalProperty()
+  @state()
   showChangesDialog = false;
 
-  @internalProperty()
+  @state()
   creatingProposal = false;
 
   mergeEvees: Evees | undefined;
@@ -106,8 +106,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
     this.logger.log('CheckChanges()');
 
     const { forksDetails } = await this.evees.explore({
-      under: { elements: [{ id: this.uref }] },
-      forks: { independent: true },
+      start: { elements: [{ id: this.uref, forks: { independent: true } }] },
     });
 
     if (!forksDetails) throw new Error('forksDetails undefined');
@@ -194,6 +193,7 @@ export class EditableWiki extends servicesConnect(LitElement) {
     const mutation = await this.mergeEvees.diff();
 
     const proposal: Proposal = {
+      id: '',
       toPerspectiveId: this.uref,
       mutation,
     };
