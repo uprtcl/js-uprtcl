@@ -37,3 +37,5 @@ export { RemoteExploreCachedOnMemoryWithUI } from './clients/remote.explore.cach
 
 export { registerComponents } from './register.components';
 export { initDefault } from './init';
+
+export { VotedProposalsElement } from './proposals/voted.proposals.element';

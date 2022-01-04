@@ -26,10 +26,9 @@ import { LocalAccessControl } from './access.control.local';
 import { EntityRemoteLocal } from './entity.remote.local';
 import { LocalExplore } from './perspectives.explore.local';
 import { PerspectivesStoreDB } from './perspectives.store.db';
-import { Proposals } from 'src/evees/proposals';
+import { LOCAL_REMOTE_ID } from './access.control.local';
 
 const LOGINFO = false;
-export const LOCAL_REMOTE_ID = 'local';
 
 export class ClientRemoteLocal implements ClientRemote {
   logger = new Logger('ClientCachedWithBase');

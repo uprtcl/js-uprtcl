@@ -1,6 +1,7 @@
 export * from './evees/interfaces';
 export * from './evees/clients';
 export * from './evees/utils';
+export * from './evees/proposals';
 export * from './patterns';
 export * from './utils';
 export * from './creator-helpers';
@@ -34,11 +35,6 @@ export {
 
 /** Utils */
 export { isAncestorOf } from './evees/merge/ancestor';
-
-/** Proposals */
-export { Proposal } from './evees/proposals/types';
-export { Proposals, ProposalEvents } from './evees/proposals/proposals';
-export { ProposalsWithEvees } from './evees/proposals/proposals.with.evees';
 
 /* merge */
 export { MergeConfig, MergeStrategy } from './evees/merge/merge-strategy';

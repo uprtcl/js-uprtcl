@@ -1,13 +1,4 @@
 {
-  "packages": [
-    "connections/http",
-    "connections/ethereum",
-    "core/evees",
-    "core/evees-ui",
-    "core/common-ui",
-    "modules/documents",
-    "remotes/http",
-    "samples"
-  ],
+  "packages": ["core/evees", "core/evees-ui", "core/common-ui", "modules/documents", "samples"],
   "version": "independent"
 }

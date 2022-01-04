@@ -1,6 +1,7 @@
 import { Signed } from '../../../patterns';
 import { AccessControl, EntityResolver, Perspective } from '../../interfaces';
-import { LOCAL_REMOTE_ID } from './client.remote.local';
+
+export const LOCAL_REMOTE_ID = 'local';
 
 export class LocalAccessControl implements AccessControl {
   constructor(protected entityResolver: EntityResolver) {}

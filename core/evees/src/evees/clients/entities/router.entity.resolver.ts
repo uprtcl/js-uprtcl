@@ -19,6 +19,10 @@ export class RouterEntityResolver implements EntityResolver {
     });
   }
 
+  addRemote(remote: EntityRemote) {
+    this.remotesMap.set(remote.id, remote);
+  }
+
   putEntities(entities: Entity[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
