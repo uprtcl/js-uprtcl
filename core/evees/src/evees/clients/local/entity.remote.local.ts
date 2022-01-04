@@ -6,13 +6,14 @@ import { EntityStoreDB } from './entity.store.local.db';
 const LOGINFO = false;
 export class EntityRemoteLocal implements EntityRemote {
   logger = new Logger('EntityRemoteLocal');
-  id: string = 'local';
-
+  
+  public id: string = 'local';
   readonly db: EntityStoreDB;
   protected cidConfig: CidConfig;
 
-  constructor(db?: EntityStoreDB, cidConfig?: CidConfig) {
+  constructor(db?: EntityStoreDB, cidConfig?: CidConfig, id: string = 'local') {
     this.db = db || new EntityStoreDB();
+    this.id = id;
     this.cidConfig = cidConfig || defaultCidConfig;
   }
 
