@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Querying Example | _Prtcl</title>
+    <meta name="generator" content="VuePress 1.9.5">
+    <link rel="icon" type="image/png" href="/js-uprtcl/favicon.png">
+    <meta name="description" content="Documentation site for the _Prtcl">
+    
+    <link rel="preload" href="/js-uprtcl/assets/css/0.styles.977dfdf6.css" as="style"><link rel="preload" href="/js-uprtcl/assets/js/app.97c52a5d.js" as="script"><link rel="preload" href="/js-uprtcl/assets/js/2.88174171.js" as="script"><link rel="preload" href="/js-uprtcl/assets/js/12.47eb25ed.js" as="script"><link rel="prefetch" href="/js-uprtcl/assets/js/10.72d2fc7b.js"><link rel="prefetch" href="/js-uprtcl/assets/js/11.e2609b95.js"><link rel="prefetch" href="/js-uprtcl/assets/js/13.f2308728.js"><link rel="prefetch" href="/js-uprtcl/assets/js/14.357fbdde.js"><link rel="prefetch" href="/js-uprtcl/assets/js/15.e3e5d7df.js"><link rel="prefetch" href="/js-uprtcl/assets/js/16.8d902d60.js"><link rel="prefetch" href="/js-uprtcl/assets/js/17.615d3aad.js"><link rel="prefetch" href="/js-uprtcl/assets/js/18.4b1b133a.js"><link rel="prefetch" href="/js-uprtcl/assets/js/19.30ef6807.js"><link rel="prefetch" href="/js-uprtcl/assets/js/20.041251fa.js"><link rel="prefetch" href="/js-uprtcl/assets/js/21.d9555aa0.js"><link rel="prefetch" href="/js-uprtcl/assets/js/22.69dd43e2.js"><link rel="prefetch" href="/js-uprtcl/assets/js/23.e56c9735.js"><link rel="prefetch" href="/js-uprtcl/assets/js/24.46a71a1a.js"><link rel="prefetch" href="/js-uprtcl/assets/js/3.7967c57d.js"><link rel="prefetch" href="/js-uprtcl/assets/js/4.dc4b564d.js"><link rel="prefetch" href="/js-uprtcl/assets/js/5.6b3ef29c.js"><link rel="prefetch" href="/js-uprtcl/assets/js/6.0e9fa4db.js"><link rel="prefetch" href="/js-uprtcl/assets/js/7.183495f6.js"><link rel="prefetch" href="/js-uprtcl/assets/js/8.201ff2c1.js"><link rel="prefetch" href="/js-uprtcl/assets/js/9.c5295f1c.js">
+    <link rel="stylesheet" href="/js-uprtcl/assets/css/0.styles.977dfdf6.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/js-uprtcl/" class="home-link router-link-active"><img src="/js-uprtcl/logo.png" alt="_Prtcl" class="logo"> <span class="site-name can-hide">_Prtcl</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/js-uprtcl/" class="nav-link">
+  Home
+</a></div><div class="nav-item"><a href="/js-uprtcl/guide/" class="nav-link router-link-active">
+  Guide
+</a></div><div class="nav-item"><a href="/js-uprtcl/resources/" class="nav-link">
+  Resources
+</a></div><div class="nav-item"><a href="https://github.com/uprtcl/js-uprtcl" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Github
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/js-uprtcl/" class="nav-link">
+  Home
+</a></div><div class="nav-item"><a href="/js-uprtcl/guide/" class="nav-link router-link-active">
+  Guide
+</a></div><div class="nav-item"><a href="/js-uprtcl/resources/" class="nav-link">
+  Resources
+</a></div><div class="nav-item"><a href="https://github.com/uprtcl/js-uprtcl" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Github
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav>  <ul class="sidebar-links"><li><a href="/js-uprtcl/guide/" aria-current="page" class="sidebar-link">Introduction</a></li><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>Evees</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/js-uprtcl/guide/01-core.concepts.html" class="sidebar-link">Introduction</a></li><li><a href="/js-uprtcl/guide/02-perspective-id.html" class="sidebar-link">Global Identifiers</a></li><li><a href="/js-uprtcl/guide/03-linking.html" class="sidebar-link">Linking Data</a></li><li><a href="/js-uprtcl/guide/04-querying.html" class="sidebar-link">Querying Data</a></li><li><a href="/js-uprtcl/guide/04b-querying-example.html" aria-current="page" class="active sidebar-link">Querying Example</a></li><li><a href="/js-uprtcl/guide/05-forking.html" class="sidebar-link">Forking Perspectives</a></li></ul></section></li><li><section class="sidebar-group depth-0"><p class="sidebar-heading"><span>Client</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/js-uprtcl/guide/06-architecture.html" class="sidebar-link">Introduction</a></li><li><a href="/js-uprtcl/guide/07-arquitectue.entities.html" class="sidebar-link">Entities and the EntitiyResolver</a></li><li><a href="/js-uprtcl/guide/08-architecture.detailed.html" class="sidebar-link">Client Interfaces</a></li><li><a href="/js-uprtcl/guide/09-arquitecture.stack.html" class="sidebar-link">Client Stack</a></li><li><a href="/js-uprtcl/guide/09b-arquitecture.stack-example.html" class="sidebar-link">Client Stack Example</a></li></ul></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="querying-example"><a href="#querying-example" class="header-anchor">#</a> Querying Example</h1> <p>Consider a set of perspectives nested and linked as shown in the figure below.</p> <p><img src="https://docs.google.com/drawings/d/e/2PACX-1vTVyLbMQIKa7wrLiyYH6ZEOWbkkttstlOwMySNTU8m4q41bR9xxMZJ43voPGWUv3_LKSqkHXW21sXgX/pub?w=922&amp;h=600&amp;a=2" alt=""></p> <p>We can assume that, for example, these objects represent a task management application, where <code>p1</code> and <code>p2</code> are container objects (boards), <code>p11</code>, <code>p12</code>, <code>p21</code>, <code>p22</code> and <code>p31</code> are cards, and <code>p221</code>, <code>p321</code> and <code>p421</code> are tasks inside a card. Note that <code>p12</code> is both inside <code>p1</code> and <code>p2</code>.</p> <h3 id="searching-under-a-given-ecosystem"><a href="#searching-under-a-given-ecosystem" class="header-anchor">#</a> Searching under a given ecosystem</h3> <p>A perspective ecosystem is given by the children and the children of the children, recursively, of a given perspective.</p> <p>If we want to search the cards and tasks that are &quot;on&quot; the second &quot;board&quot; (<code>p2</code>), based on a text string, we would simply do as follows.</p> <div class="language-gql extra-class"><pre class="language-text"><code>query = {
+  start: [
+    {
+      elements: [
+        {
+          id: p2,
+          levels: -1,
+          direction: 'under',
+        }
+      ]
+    }
+  ],
+  text: {
+    value: 'develop',
+  }
+}
+</code></pre></div><p>This query would match: <code>p2</code>, <code>p13</code>, <code>p21</code>, <code>p22</code>, and <code>p221</code>, which is shown in the figure below:</p> <p><img src="https://docs.google.com/drawings/d/e/2PACX-1vTk0ZFO1mpJtjMmgAtXnqB24JeKpm7K8QnbfBJqSWBevgkJzmpFgQmarh0TcJzi_HrpPgeKOiHVNNSP/pub?w=878&amp;h=609&amp;a=1" alt=""></p> <p>The levels property means that we want to search the entire ecosystem of <code>p2</code>, in as many children levels as there exist.</p> <p>Finally, note that <code>leves: -1</code> and <code>direction: 'under'</code> are not needed as these are the default values, but are included here for sake clarity.</p> <h3 id="searching-forks-of-a-given-perspective"><a href="#searching-forks-of-a-given-perspective" class="header-anchor">#</a> Searching forks of a given perspective</h3> <p>If we now want to search for the forks of a perspective, let's say all forks of <code>p1</code>, we can do this by including the <code>forks</code> property in the query, as follows:</p> <div class="language-gql extra-class"><pre class="language-text"><code>query = {
+  start: [
+    {
+      elements: [
+        {
+          id: p2,
+          levels: 1,
+          forks: {
+            exclusive: true
+          }
+        }
+      ]
+    }
+  ],
+}
+</code></pre></div><p>This would return all the forks of the <code>p2</code> perspective, and not of its children (since <code>levels = 1</code>), and it will not return <code>p2</code> since <code>exclusive = true</code>. The result of the query is, therefore, <code>p1</code>.</p> <p><img src="https://docs.google.com/drawings/d/e/2PACX-1vQjpny5StC0JmWhjRlHiu9rVDVXEGTbNdPTruMQtU8qkQ2WaomADxMZr-uoTj9coFfaBHqkzo-DpQYu/pub?w=878&amp;h=341&amp;a=1" alt=""></p> <h3 id="searching-forks-of-a-perspective-and-its-ecosystem"><a href="#searching-forks-of-a-perspective-and-its-ecosystem" class="header-anchor">#</a> Searching forks of a perspective and its ecosystem</h3> <p>If we want to search for forks of a given perspective and/r any element within its ecosystem, we would achieve this by setting <code>levels = -1</code>.</p> <p>This would correspond to the case where we would like to get any fork of the board or any card or task within the board <code>p2</code>.</p> <p>The query would then look like:</p> <div class="language-gql extra-class"><pre class="language-text"><code>query = {
+  start: [
+    {
+      elements: [
+        {
+          id: p2,
+          levels: -1,
+          forks: {
+            exclusive: true
+          }
+        }
+      ]
+    }
+  ],
+}
+</code></pre></div><p>This would return <code>p1</code>, <code>p11</code>, <code>p12</code>, <code>p32</code>, <code>p321</code> and <code>p421</code> since</p> <ul><li><code>p1</code> is a fork of <code>p2</code>,</li> <li><code>p11</code> is a fork of <code>p21</code>,</li> <li><code>p12</code> and <code>p32</code> are both forks of <code>p22</code>,</li> <li><code>p321</code> and <code>p421</code> are both forks of <code>p221</code>.</li></ul> <p><img src="https://docs.google.com/drawings/d/e/2PACX-1vTGLRon8cslYergVP6jLRcTAQkUeEFLHNA_gkq8NZt6q9WpxPoKcRMTC2Cx7GWpiuhmZrwjO0mEHya1/pub?w=878&amp;h=341" alt=""></p> <p>This is a typical case where forks of an ecosystem are somewhat redundant in the sense that when a board is forked, a fork of each of its elements is also created by default.</p> <p>In this example, its probably the case that <code>p2</code> was forked from <code>p1</code> when <code>p1</code> had only <code>p11</code> and <code>p12</code> as children. When the fork was done, <code>p2</code> was created and so were <code>p21</code> and <code>p22</code>.</p> <p>Knowing that the <code>p2</code> board has a fork (<code>p1</code>) is enough to infer that the cards <code>p21</code> and <code>p22</code> also have a fork.</p> <p>To reduce this redundancy from the query results. We have included the concept of an independent fork.</p> <blockquote><p>An independent fork of perspective A, when perspective A is a child of perspective B, is defined as a fork of perspective A which does not have a parent that is also a fork of perspective B.</p></blockquote> <p>In this example, the fork <code>p11</code> of perspective <code>p21</code> is not and independent fork of <code>p21</code> under <code>p2</code>, because <code>p11</code> has a parent (<code>p1</code>) which is a fork of the parent of <code>p21</code> (<code>p2</code>). The same occurs to <code>p12</code>.</p> <p>On the other hand <code>p32</code> is a fork of <code>p22</code>, but it is not the child of he any fork of <code>p2</code>, and is, thus, an independent fork of <code>p2</code>.</p> <p><code>p321</code> is a fork of <code>p221</code>, but its parent <code>p32</code> is also a fork of <code>p22</code>, and thus, <code>p321</code> is not an independent fork of <code>p221</code>.</p> <p>Finally, note that <code>p421</code> is an independent fork of <code>p321</code>.</p> <p>The final set of independent forks of <code>p2</code> and its ecosystem is shown below. This set provides a clean overview of all the relevant forks of elements inside <code>p2</code>.</p> <p><img src="https://docs.google.com/drawings/d/e/2PACX-1vRQD92-CnKMtw0tjT2IVw9pl1L_WnWZxp-6zEfcP5G-qKzR5ztPtTawAsW7fAWfI90Z-l07w1JLRfpD/pub?w=878&amp;h=341&amp;a=1" alt=""></p> <h2 id="filtering-based-on-cross-links"><a href="#filtering-based-on-cross-links" class="header-anchor">#</a> Filtering based on cross-links</h2> <p>As already mentioned in the <a href="/js-uprtcl/guide/03-linking/">Linking Data</a> section, cross-links can be used to build bottom-up categories, this is, categories which are defined by each of the elements they contain, and not by the owner of the category perspective.</p> <p>This could be used, for example, by content-management applications to create tags for the objects they handle, a feature that is common in many applications. However, tags, if local to the workspace of one author, can also be achieved using &quot;children&quot; links, since one perspective can be the child of many parents, and thus one can apply many tags to one element using children links.</p> <p>A better use case for cross-links emerge when categories are supposed to have a meaning outside of the workspace of a single user. This can be used for supporting interoperability among applications by the creation of remote-less (and authority-less) perspectives.</p> <p>We call a remote-less perspective a &quot;concept perspective&quot;. A &quot;concept perspective&quot; will have the <code>remote</code> property empty, and will include additional information in the other properties that will make it unique.</p> <p>For example, a simple concept perspective will be a perspective to represent the concept of a &quot;blog-post&quot;. It could be of the form:</p> <div class="language-ts extra-class"><pre class="language-ts"><code><span class="token keyword">const</span> perspective<span class="token operator">:</span> Perspective <span class="token operator">=</span> <span class="token punctuation">{</span>
+  remote<span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">,</span>
+  path<span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">,</span>
+  creatorId<span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">,</span>
+  timestamp<span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
+  context<span class="token operator">:</span> <span class="token string">'blog-bost'</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> pC1<span class="token operator">:</span> <span class="token builtin">string</span> <span class="token operator">=</span> <span class="token function">hashObject</span><span class="token punctuation">(</span>perspective<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><p>Once the concept perspective id is found, an application can mark some of the content created by its users as a &quot;blog-posts&quot; by adding a cross-link between the perspective that holds the content (say a bunch of text), and the blog-post concept perspective.</p> <h3 id="getting-all-objects-of-a-given-category-on-a-remote"><a href="#getting-all-objects-of-a-given-category-on-a-remote" class="header-anchor">#</a> Getting all objects of a given category on a remote</h3> <p>With the use of the concept perspective, a user can, for example query a given remote for all the blog-posts it contains with the following query:</p> <div class="language-gql extra-class"><pre class="language-text"><code>query = {
+  linksTo: 'pC1'
+}
+</code></pre></div><h3 id="getting-all-objects-of-a-given-category-and-of-one-user-on-a-remote"><a href="#getting-all-objects-of-a-given-category-and-of-one-user-on-a-remote" class="header-anchor">#</a> Getting all objects of a given category and of one user on a remote</h3> <p>Or, if what the user wants is to see the blog posts of a single user (a user feed), then this can be achieved by combing the concept of ecosystems and cross-links as follows:</p> <div class="language-gql extra-class"><pre class="language-text"><code>query = {
+  start: [
+    {
+      elements: [
+        {
+          id: userHome,
+          levels: -1,
+        }
+      ]
+    }
+  ],
+  linksTo: 'pC1'
+}
+</code></pre></div><p>Where <code>userHome</code> is the &quot;home perspective&quot; of that user in that remote, it's id is public, but its content can very well be private. The user &quot;home perspective&quot; on a give remote (<code>remote-a</code> in this simple example) can be computed by anyone as it will have this form:</p> <div class="language-ts extra-class"><pre class="language-ts"><code><span class="token keyword">const</span> perspective<span class="token operator">:</span> Perspective <span class="token operator">=</span> <span class="token punctuation">{</span>
+  remote<span class="token operator">:</span> <span class="token string">'remote-a'</span><span class="token punctuation">,</span>
+  path<span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">,</span>
+  creatorId<span class="token operator">:</span> <span class="token string">'userId'</span><span class="token punctuation">,</span>
+  timestamp<span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
+  context<span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> userIdHome<span class="token operator">:</span> <span class="token builtin">string</span> <span class="token operator">=</span> <span class="token function">hashObject</span><span class="token punctuation">(</span>perspective<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><h3 id="getting-all-objects-of-a-given-category-and-of-the-people-i-follow-on-a-remote"><a href="#getting-all-objects-of-a-given-category-and-of-the-people-i-follow-on-a-remote" class="header-anchor">#</a> Getting all objects of a given category and of the people I follow on a remote</h3> <p>Now if a user wants to get all the blog-posts of a set of user whom he &quot;follows&quot;, this can be achieved by creating a &quot;following&quot; perspective and adding, as children, the home perspectives of the users they want to follow. This can be done automatically by the consuming application, instead of manually by the user.</p> <div class="language-gql extra-class"><pre class="language-text"><code>query = {
+  start: [
+    {
+      elements: [
+        {
+          id: following,
+          levels: -1,
+        }
+      ]
+    }
+  ],
+  linksTo: 'pC1'
+}
+</code></pre></div><h3 id="final-remarks"><a href="#final-remarks" class="header-anchor">#</a> Final remarks</h3> <p>As the examples above show, it's possible to build app familiar user experiences with the use of the concept of ecosystems and cross-links, and without having to create custom data types with their underlying database.</p> <p>This is a good first step for obtained interoperability, in the sense that objects are not stored on object-specific tables, but all objects/perspectives are stored on the same table where only the children and cross-links need to be indexed.</p> <p>Similar things can be achieved by using MBaaS platforms like Firebase and headless CMS platforms like Netlify. The key aspect of _Prtcl is that it is designed to support multiple remotes from one application by building a standard interface for basic CRUD operations and more complex data querying.</p></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><span class="prev">
+      ←
+      <a href="/js-uprtcl/guide/04-querying.html" class="prev">
+        Querying Data
+      </a></span> <span class="next"><a href="/js-uprtcl/guide/05-forking.html">
+        Forking Perspectives
+      </a>
+      →
+    </span></p></div> </main></div><div class="global-ui"></div></div>
+    <script src="/js-uprtcl/assets/js/app.97c52a5d.js" defer></script><script src="/js-uprtcl/assets/js/2.88174171.js" defer></script><script src="/js-uprtcl/assets/js/12.47eb25ed.js" defer></script>
+  </body>
+</html>
