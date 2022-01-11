@@ -1,5 +1,7 @@
 # Linking Data
 
+_\_Prtcl proposes to consider the space of data handled by web applications as a global file system where files (objects in this case) can be nested under each other by different authors and on different platforms._
+
 Linking and nesting in \_Prtcl is inspired on the data structure of most modern content-management web-applications, and is designed to support the typical functionalities of these applications.
 
 This is a subtle, but significant!, difference from the way linking was _reasoned_ about on Web 1.0 technologies and the semantic web, where links are supposed to be related with real-world relationships, and most linking examples are of the like: "is friend of".
@@ -13,8 +15,6 @@ One key result of this approach is that perspectives in \_Prtcl can be linked in
 Nesting is very common in most web-applications, and also in file systems, where files and folders are stored inside of folders.
 
 While it is usually not considered a typical "linking action", at the architecture level, it usually is an actual link between two objects, starting in the parent and pointing to the child.
-
-\_Prtcl proposes to consider the space of data handled by web applications as a global file system where files (objects in this case) can be nested under each other by different authors and on different platforms.
 
 ## Nesting and local hierarchies
 

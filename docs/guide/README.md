@@ -1,10 +1,10 @@
 # Introduction
 
-> ### :warning: Read this
+<!-- > ### :warning: Read this
 >
 > :broken_heart: **Unfortunately this project only reached the stage of prototype**. We faced technical issues that were out of our reach and had to move on. We are leaving this summary of our approach here as a reference for others.
 >
-> Keep strong and keep building :muscle:!
+> Keep strong and keep building :muscle:! -->
 
 The Underscore Protocol (**\_Prtcl**) offers a set of tools for building interoperable content-management applications compatible with Web3 platforms and Web2 APIs.
 
@@ -12,9 +12,9 @@ It combines some of the concepts of The Web and [Linked Data](https://solidproje
 
 Data objects from \_prtcl-compatible applications are suitable to be:
 
-- _referenced_ from any other application and platform, using URL-like global identifiers extended to include emerging web3 platforms.
+- _linked_ with other objects from any application and platform, using URL-like global identifiers extended to include emerging web3 platforms.
 
-- _rendered and updated_ from other applications, with reusable web-components and data-type recognition.
+- _rendered and updated_ from different applications, with reusable web-components and data-type recognition.
 
 - _forked_ by creating new branches of the same object on different platforms and by different authors.
 
@@ -32,10 +32,10 @@ For Web3 applications \_Prtcl offers connectors with Ethereum, Polkadot, Holocha
 
 ## Modules and UI Components
 
-\_Prtcl is building Intercreativity, a web-application that is similar to recent applications like Notion or Roam Research, but that is \_prtcl-compatible.
+\_Prtcl is building Intercreativity, a web-application that is similar to applications like Notion or Roam Research, but that is \_prtcl-compatible.
 
 Intercreativity is extensible and modules and UI components from Intercreativity, such as it's block-based text editor, are built to be reusable on other content-management applications.
 
 ## Ok! What's next then?
 
-**[\_Prtcl Architecture](/js-uprtcl/guide/01-core.concepts)**: An overview of \_Prtcl primitives used to handle linked objects from multiple platforms.
+**[Data Structures](/js-uprtcl/guide/01-core.concepts)**: An overview of \_Prtcl primitives used to handle linked objects from multiple platforms.

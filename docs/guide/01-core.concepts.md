@@ -1,6 +1,6 @@
 # Introduction
 
-\_Prtcl creates a clear distinction between an app and its data. \_Prtcl applications offer unique and reusable references to each digital object they handle. This is the basic feature on top of which interoperability is built.
+\_Prtcl makes a clear distinction between an app and its data. \_Prtcl applications offer unique and reusable references to each digital object they handle. This is the basic feature on top of which interoperability is built.
 
 ## Where is data stored in a \_Prtcl application?
 
@@ -41,9 +41,9 @@ In \_Prtcl, there is a clear distinction between Client Remotes, which are platf
 
 An application can use one or more Entity Remotes to store the same hashed objects. This is because an Entity Remote cannot manipulate the data it stores without changing its hash and, thus, it doest not need to be trusted the same way a Client Remote does.
 
-A single platform, such as a web server, can play the role both of an Client Remote and an Entity Remote, storing both the current head of each perspective, as long as it's associated entities.
+A single platform, such as a web server, can play the role both of a Client Remote and an Entity Remote, storing both the current head of each perspective, as long as it's associated entities.
 
-Separating between Client Remotes and Entity Remotes at the architecture level let's applications use different platforms for each function. In the case of Web3, it keeps the memory footprint on the consunsus layer that keeps the mutable references minimal and limited to a single hash, while the storage of the actual data into a data-availability layer.
+Separating between Client Remotes and Entity Remotes at the architecture level let's applications use different platforms for each function. In the case of Web3, it keeps the memory footprint on the consunsus layer that keeps the mutable references minimal and limited to a single hash, while the storage of the actual data is moved into a data-availability layer.
 
 Making explicit the Client Remotes and Entities Remote on the previous figure would result in the figure below. Note that both OrbitDB and Ethereum use the same Entity Remote (IPFS).
 

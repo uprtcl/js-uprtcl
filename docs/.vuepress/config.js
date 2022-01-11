@@ -21,7 +21,8 @@ const guidesSidebar = [
       '/guide/06-architecture',
       '/guide/07-arquitectue.entities',
       '/guide/08-architecture.detailed',
-      '/guide/09-arquitectue.stack',
+      '/guide/09-arquitecture.stack',
+      '/guide/09b-arquitecture.stack-example',
     ],
   },
 ];
