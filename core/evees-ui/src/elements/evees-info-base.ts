@@ -264,6 +264,7 @@ export class EveesInfoBase extends servicesConnect(LitElement) {
     const emitBecauseOfTarget = await this.evees.checkEmit(toPerspectiveId);
 
     const proposal: Proposal = {
+      id: '',
       toPerspectiveId,
       fromPerspectiveId,
       toHeadId: toDetails.headId,

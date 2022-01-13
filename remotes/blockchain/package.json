@@ -16,6 +16,8 @@
     "@uprtcl/evees": "^0.2.1",
     "@uprtcl/evees-ui": "^0.2.1",
     "@uprtcl/arweave-provider": "^0.2.1",
+    "@uprtcl/ipfs-provider": "^0.2.0",
+    "@uprtcl/orbitdb-provider": "^0.2.0",
     "dexie": "^3.0.2",
     "lit-html": "^1.1.2"
   },

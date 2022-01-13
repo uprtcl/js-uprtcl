@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/orbitdb-provider",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Orbitdb wrapper that can be programed with different custom stores",
   "homepage": "https://uprtcl.io",
   "scripts": {

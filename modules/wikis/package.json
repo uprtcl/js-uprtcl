@@ -12,10 +12,10 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.2.0",
-    "@uprtcl/documents": "^0.2.0",
-    "@uprtcl/evees": "^0.2.0",
-    "@uprtcl/evees-ui": "^0.2.0",
+    "@uprtcl/common-ui": "^0.2.1",
+    "@uprtcl/documents": "^0.2.1",
+    "@uprtcl/evees": "^0.2.1",
+    "@uprtcl/evees-ui": "^0.2.1",
     "lit-element": "^2.3.0",
     "npm-check-updates": "^10.2.1",
     "redux": "^4.0.4"
