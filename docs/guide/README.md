@@ -12,7 +12,7 @@ It combines some of the concepts of The Web and [Linked Data](https://solidproje
 
 Data objects from \_prtcl-compatible applications are suitable to be:
 
-- _linked_ with other objects from any application and platform, using URL-like global identifiers extended to include emerging web3 platforms.
+- _linked and nested_ with other objects from any application and platform, using URL-like global identifiers extended to include emerging web3 platforms.
 
 - _rendered and updated_ from different applications, with reusable web-components and data-type recognition.
 
@@ -25,6 +25,8 @@ Data objects from \_prtcl-compatible applications are suitable to be:
 ## Remotes
 
 \_Prtcl remotes are servers or connectors to Web3 networks that can store and update \_Prtcl content. Similar to the original concept of a web-server and URLs, they resolve object's unique ids into their current content.
+
+Remotes can be limited to data governance (CRUD operations) and/or may include data indexing to resolve queries.
 
 For Web2 applications \_Prtcl offers a NodeJS + DGraph headless CMS that can be deployed inhouse, or consumed directly from the cloud.
 
