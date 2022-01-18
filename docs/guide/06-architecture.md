@@ -14,7 +14,7 @@
 
 - Reusable web-components to visualize perspective details.
 
-# How can use \_Prtcl libraries in my app?
+# How can I use \_Prtcl libraries in my app?
 
 A simple example of how to initialize \_Prtcl's libraries can be seen in this [example app](https://github.com/uprtcl/example-local). The app runs locally.
 

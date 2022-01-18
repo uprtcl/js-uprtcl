@@ -1,7 +1,7 @@
 {
-  "name": "@uprtcl/evees-blockchain",
-  "version": "0.2.0",
-  "description": "EveesRemote base class to implement Evees on any blockchain + Orbitdb",
+  "name": "@uprtcl/arweave-provider",
+  "version": "0.2.1",
+  "description": "_Prtcl provider wrappers around arweave",
   "homepage": "https://uprtcl.io",
   "scripts": {
     "update-uprtcl": "ncu -u \"/^@uprtcl.*$/\"",
@@ -12,12 +12,9 @@
     "test:watch": "karma start --auto-watch=true --single-run=false"
   },
   "dependencies": {
-    "@uprtcl/common-ui": "^0.2.1",
-    "@uprtcl/evees": "^0.2.1",
-    "@uprtcl/evees-ui": "^0.2.1",
-    "@uprtcl/arweave-provider": "^0.2.1",
-    "dexie": "^3.0.2",
-    "lit-html": "^1.1.2"
+    "@uprtcl/evees": "0.2.0",
+    "cbor-js": "^0.1.0",
+    "concat-stream": "^2.0.0"    
   },
   "devDependencies": {
     "@open-wc/testing": "^2.5.6",
@@ -28,8 +25,8 @@
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^4.4.1",
     "karma-webpack": "^4.0.2",
+    "lit-html": "^1.1.2",
     "npm-check-updates": "^10.2.1",
-    "path": "^0.12.7",
     "rimraf": "^2.6.2",
     "rollup": "^2.0.5",
     "rollup-plugin-sourcemaps": "^0.5.0",
@@ -39,29 +36,32 @@
     "typescript": "^4.2.3",
     "webpack": "^4.42.1"
   },
-  "contributors": [
-    {
-      "name": "Pepo Ospina",
-      "email": "pepo@uprtcl.io",
-      "url": "https://github.com/pepoospina"
-    },
-    {
-      "name": "Guillem Cordoba",
-      "email": "guillem.cordoba@gmail.com",
-      "url": "https://github.com/guillemcordoba"
-    }
-  ],
-  "license": "BOOS-FL",
-  "main": "dist/uprtcl-evees-blockchain.umd.js",
-  "module": "dist/uprtcl-evees-blockchain.es5.js",
-  "typings": "dist/types/uprtcl-evees-blockchain.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/uprtcl/js-uprtcl/"
   },
+  "contributors": [
+    {
+      "name": "Pepo Ospina",
+      "email": "pepo@collectiveone.org",
+      "url": "https://github.com/pepoospina"
+    }
+  ],
+  "keywords": [
+    "service",
+    "provider",
+    "backend",
+    "websocket",
+    "web3",
+    "holochain"
+  ],
+  "license": "MIT",
+  "main": "dist/uprtcl-arweave-provider.umd.js",
+  "module": "dist/uprtcl-arweave-provider.es5.js",
+  "typings": "dist/types/uprtcl-arweave-provider.d.ts",
   "sideEffects": false,
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=10.0.0 <14"
   },
-  "gitHead": "68830108c265704d85a3ef48e7898768701f029b"
+  "gitHead": "4a694f4b932472046283ecedcd65de631ab08813"
 }
