@@ -8,9 +8,12 @@ import { EntityRemote } from './entity.remote';
 
 /** A remote is a Client that connects to backend. It is identified within
  * the app with a unique id. */
-export interface ClientRemote extends ClientAndExploreCached, Ready, ConnectionLogged {
+export interface ClientRemote<P extends Proposals = Proposals>
+  extends ClientAndExploreCached,
+    Ready,
+    ConnectionLogged {
   accessControl: AccessControl;
-  proposals?: Proposals;
+  proposals?: P;
   /**
    * The id is used to select the JS remote from the listed of available Remotes.
    * A path is used to addreess a given request to that remote.

@@ -84,7 +84,7 @@ export interface ClientRemote extends ClientAndExploreCached, Ready, ConnectionL
 
 ### ClientExplore
 
-As already mentioned in the Explore section, quering for perspectives based on their content, links and children is done by a `ClientExplore`. A client explore simple adds the `explore()` method to a `Client`.
+As already mentioned in the Explore section, querying for perspectives based on their content, links and children is done by a `ClientExplore`. A client explore simple adds the `explore()` method to a `Client`.
 
 ```ts
 export interface ClientExplore {

@@ -1,5 +1,6 @@
 import { EveesMutation } from '../interfaces/types';
 export interface Proposal {
+  id: string;
   creatorId?: string;
   timestamp?: number;
   toPerspectiveId: string;

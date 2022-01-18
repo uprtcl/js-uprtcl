@@ -38,7 +38,7 @@ interface Perspective {
 }
 ```
 
-The optional `meta` property can be used to add arbitrary propoties similar to "query" attributes in a URL.
+The optional `meta` property can be used to add arbitrary properties similar to "query" attributes in a URL.
 
 ## Offline computation
 
