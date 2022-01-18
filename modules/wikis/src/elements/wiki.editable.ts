@@ -360,6 +360,9 @@ export class EditableWiki extends servicesConnect(LitElement) {
           flex-direction: column;
           position: relative;
         }
+        .page-container {
+          padding: 0px 2vw;
+        }
       `,
     ];
   }
