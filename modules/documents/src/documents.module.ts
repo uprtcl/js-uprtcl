@@ -1,6 +1,6 @@
 import { EveesContentModule } from '@uprtcl/evees';
 
-import { registerComponents } from './elements/register.components';
+import { registerComponents } from './block-based-elements/register.components';
 import { TextNodeCommon, TextNodeTitle, TextNodePattern } from './patterns/text-node.pattern';
 import { CustomBlocks } from './types';
 
