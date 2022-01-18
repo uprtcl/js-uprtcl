@@ -1,6 +1,6 @@
 {
   "name": "@uprtcl/wikis",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Cortex module implementing texts and folders",
   "homepage": "https://uprtcl.io",
   "scripts": {
